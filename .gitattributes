@@ -1,0 +1,2 @@
+template-repo/_version.py export-subst
+python_template/_version.py export-subst
