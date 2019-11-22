@@ -3,7 +3,7 @@ Quick Setup
 - [x] update setup.py (name)
 - [x] update setup.cfg (versionfile_source, versionfile_build)
 - [x] rename folder of package
-- [ ] `pip install versioneer` and `versioneer install`
+- [x] `pip install versioneer` and `versioneer install`
 
 Optional for codecov
 - [ ] create token on codecov.com and add is as `CODECOV_TOKEN`
