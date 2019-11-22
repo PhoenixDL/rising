@@ -8,3 +8,8 @@ Quick Setup
 Optional for codecov
 - [ ] create token on codecov.com and add is as `CODECOV_TOKEN`
 - [ ] uncomment `Upload coverage to Codecov` in `.github/workflows.unittests.yml`
+
+
+Additional TODO Transforms:
+- [ ] Seg to Bbox trafo
+- [ ] One hot trafo
