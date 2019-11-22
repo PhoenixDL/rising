@@ -1,0 +1,22 @@
+import unittest
+from phdata.transforms.format import MapToSeq, SeqToMap
+
+
+class TestFormat(unittest.TestCase):
+    def test_map_to_seq(self):
+        trafo = MapToSeq('data', 'seg', 'label')
+        out = trafo(**{'data': 0, 'seg': 1, 'label': 2})
+        self.assertEqual(out[0], 0)
+        self.assertEqual(out[1], 1)
+        self.assertEqual(out[2], 2)
+
+    def test_seq_to_map(self):
+        trafo = SeqToMap('data', 'seg', 'label')
+        out = trafo(0, 1, 2)
+        self.assertEqual(out['data'], 0)
+        self.assertEqual(out['seg'], 1)
+        self.assertEqual(out['label'], 2)
+
+
+if __name__ == '__main__':
+    unittest.main()

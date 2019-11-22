@@ -1,3 +1,4 @@
 template-repo/_version.py export-subst
 python_template/_version.py export-subst
 data/_version.py export-subst
+phdata/_version.py export-subst
