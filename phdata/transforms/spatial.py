@@ -2,7 +2,7 @@ import typing
 import torch
 from .abstract import AbstractTransform
 
-from .functional.spatial import  mirror
+from .functional.spatial import mirror
 
 
 class MirrorTransform(AbstractTransform):
