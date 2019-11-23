@@ -22,14 +22,8 @@ def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:
     """
     if check_scalar(dims):
         dims = (dims,)
-
-    if 0 in dims:
-        data = data[:, :, ::-1]
-    if 1 in dims:
-        data = data[:, :, :, ::-1]
-    if 2 in dims:
-        data = data[:, :, :, :, ::-1]
-    return data
+    dims = [d + 2 for d in dims]
+    return data.flip(dims)
 
 
 def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):

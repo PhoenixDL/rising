@@ -17,7 +17,7 @@ def norm_range(data: torch.Tensor, min: float, max: float,
     Parameters
     ----------
     data: torch.Tensor
-        input data
+        input data. Per channel option supports [C,H,W] and [C,H,W,D].
     min: float
         minimal value
     max: float
@@ -42,7 +42,7 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True) -> torch.Tensor:
     Parameters
     ----------
     data: torch.Tensor
-        input data
+        input data. Per channel option supports [C,H,W] and [C,H,W,D].
     per_channel: bool
         range is normalized per channel
 
@@ -52,7 +52,7 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True) -> torch.Tensor:
         scaled data
     """
     if per_channel:
-        for _c in range(1, data.ndim):
+        for _c in range(data.shape[0]):
             _min = data[_c].min()
             _range = data[_c].max() - _min
             data[_c] = (data[_c] - _min) / _range
@@ -70,7 +70,7 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True) -> tor
     Parameters
     ----------
     data: torch.Tensor
-        input data
+        input data. Per channel option supports [C,H,W] and [C,H,W,D].
     per_channel: bool
         range is normalized per channel
 
@@ -80,11 +80,11 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True) -> tor
         normalized data
     """
     if per_channel:
-        for _c in range(1, data.ndim):
-            data[_c] = (data[_c] - data[_c].min()) / data[_c].std()
+        for _c in range(data.shape[0]):
+            data[_c] = (data[_c] - data[_c].mean()) / data[_c].std()
         return data
     else:
-        return (data - data.min()) / data.std()
+        return (data - data.mean()) / data.std()
 
 
 def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[float, Sequence],
@@ -95,7 +95,7 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[f
     Parameters
     ----------
     data: torch.Tensor
-        input data
+        input data. Per channel option supports [C,H,W] and [C,H,W,D].
     mean: float or Sequence
         used for mean normalization
     std: float or Sequence
@@ -113,11 +113,11 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[f
             mean = [mean] * data.shape[0]
         if check_scalar(std):
             std = [std] * data.shape[0]
-        for _c in range(1, data.ndim):
+        for _c in range(data.shape[0]):
             data[_c] = (data[_c] - mean[_c]) / std[_c]
         return data
     else:
-        return (data - data.mean()) / data.std()
+        return (data - mean) / std
 
 
 def add_noise(data: torch.Tensor, noise_type: str, **kwargs) -> torch.Tensor:
