@@ -17,7 +17,7 @@ class AbstractTransform(torch.nn.Module):
         Parameters
         ----------
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         """
         super().__init__()
         self.grad = grad
@@ -47,6 +47,22 @@ class AbstractTransform(torch.nn.Module):
         with context:
             return super().__call__(*args, **kwargs)
 
+    def forward(self, **data) -> dict:
+        """
+        Implement transform functionality here
+
+        Parameters
+        ----------
+        data: dict
+            dict with data
+
+        Returns
+        -------
+        dict
+            dict with transformed data
+        """
+        raise NotImplementedError
+
 
 class BaseTransform(AbstractTransform):
     def __init__(self, augment_fn: augment_callable, keys: Sequence = ('data',),
@@ -61,7 +77,7 @@ class BaseTransform(AbstractTransform):
         dims: tuple
             axes which should be mirrored
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to augment_fn
         """
@@ -104,6 +120,7 @@ class PerSampleTransform(BaseTransform):
         dict
             dict with augmented data
         """
+        # TODO: check if data must be cloned first
         for _key in self.keys:
             for _i in range(data[_key].shape[0]):
                 data[_key][_i] = self.augment_fn(data[_key][_i], **self.kwargs)
@@ -114,7 +131,7 @@ class RandomDimsTransform(AbstractTransform):
     def __init__(self, augment_fn: augment_axis_callable, dims: Sequence, keys: Sequence = ('data',),
                  prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
         """
-        Random mirror transform
+        Randomly choose axes to perform augmentation on
 
         Parameters
         ----------
@@ -128,7 +145,7 @@ class RandomDimsTransform(AbstractTransform):
             probability for mirror. If float value is provided, it is used
             for all dims
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to augment_fn
         """
@@ -155,7 +172,7 @@ class RandomDimsTransform(AbstractTransform):
         dict
             dict with augmented data
         """
-        rand_val = torch.rand(data[self.keys[0]].ndim - 2, requires_grad=False)
+        rand_val = torch.rand(len(self.dims), requires_grad=False)
         dims = [_dim for _dim, _prob in zip(self.dims, self.prob) if rand_val[_dim] < _prob]
 
         for key in self.keys:

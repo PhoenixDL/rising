@@ -43,7 +43,7 @@ class TestIntensityFunctional(unittest.TestCase):
         outp = norm_zero_mean_unit_std(inp, per_channel=False)
 
         self.assertTrue(isclose(outp.mean().item(), 0, abs_tol=1e-06))
-        self.assertTrue(isclose(outp.std().item(), 1, rel_tol=1e-08))
+        self.assertTrue(isclose(outp.std().item(), 1, rel_tol=1e-06))
 
     def test_zero_mean_unit_std_per_channel(self):
         inp = (self.batch_2d[0] * 10) + 1
@@ -51,14 +51,14 @@ class TestIntensityFunctional(unittest.TestCase):
 
         for c in range(inp.shape[0]):
             self.assertTrue(isclose(outp[c].mean().item(), 0, abs_tol=1e-06))
-            self.assertTrue(isclose(outp[c].std().item(), 1, rel_tol=1e-08))
+            self.assertTrue(isclose(outp[c].std().item(), 1, rel_tol=1e-06))
 
     def test_mean_std(self):
         inp = (self.batch_2d[0] * 10) + 1
         outp = norm_mean_std(inp, inp.mean().item(), inp.std().item(), per_channel=False)
 
         self.assertTrue(isclose(outp.mean().item(), 0, abs_tol=1e-06))
-        self.assertTrue(isclose(outp.std().item(), 1, rel_tol=1e-08))
+        self.assertTrue(isclose(outp.std().item(), 1, rel_tol=1e-06))
 
     def test_mean_std_per_channel(self):
         inp = (self.batch_2d[0] * 10) + 1
@@ -68,7 +68,7 @@ class TestIntensityFunctional(unittest.TestCase):
 
         for c in range(inp.shape[0]):
             self.assertTrue(isclose(outp[c].mean().item(), 0, abs_tol=1e-06))
-            self.assertTrue(isclose(outp[c].std().item(), 1, rel_tol=1e-08))
+            self.assertTrue(isclose(outp[c].std().item(), 1, rel_tol=1e-06))
 
     def test_mean_std_per_channel_scalar(self):
         # TEST: add error sensitive test to check correct behavior

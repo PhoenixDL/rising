@@ -27,7 +27,7 @@ class MirrorTransform(RandomDimsTransform):
             probability for mirror. If float value is provided, it is used
             for all dims
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to superclass
         """
@@ -50,7 +50,7 @@ class Rot90Transform(RandomDimsTransform):
             probability for rotation. If float value is provided, it is used
             for all dims
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to superclass
         """

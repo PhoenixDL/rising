@@ -11,7 +11,7 @@ class MapToSeq(AbstractTransform):
         keys: tuple
             keys which are mapped into sequence.
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             additional keyword arguments passed to superclass
         """
@@ -45,7 +45,7 @@ class SeqToMap(AbstractTransform):
         keys: tuple
             keys which are mapped into dict.
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             additional keyword arguments passed to superclass
         """

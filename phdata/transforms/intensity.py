@@ -18,7 +18,7 @@ class ClampTransform(BaseTransform):
         dims: tuple
             axes which should be mirrored
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to augment_fn
         """
@@ -42,7 +42,7 @@ class NormRangeTransform(PerSampleTransform):
         per_channel: bool
             normalize per channel
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to normalization function
         """
@@ -62,7 +62,7 @@ class NormMinMaxTransform(PerSampleTransform):
         per_channel: bool
             normalize per channel
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to normalization function
         """
@@ -82,7 +82,7 @@ class NormZeroMeanUnitStdTransform(PerSampleTransform):
         per_channel: bool
             normalize per channel
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to normalization function
         """
@@ -107,7 +107,7 @@ class NormMeanStdTransform(PerSampleTransform):
         per_channel: bool
             normalize per channel
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to normalization function
         """
@@ -127,7 +127,7 @@ class NoiseTransform(BaseTransform):
         keys: Sequence
             keys to normalize
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to noise function
 
@@ -150,7 +150,7 @@ class ExponentialNoiseTransform(NoiseTransform):
         keys: Sequence
             keys to normalize
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to noise function
         """
@@ -171,7 +171,7 @@ class GaussianNoiseTransform(NoiseTransform):
         keys: Sequence
             keys to normalize
         grad: bool
-            enables differentiation through the transform
+            enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to noise function
         """
