@@ -143,7 +143,7 @@ class RandomDimsTransform(AbstractTransform):
         dims: tuple
             possible axes
         keys: tuple
-            keys which should be mirrored
+            keys which should be augmented
         prob: typing.Union[float, tuple]
             probability for mirror. If float value is provided, it is used
             for all dims
