@@ -43,11 +43,11 @@ class Rot90Transform(RandomDimsTransform):
         Parameters
         ----------
         dims: tuple
-            dims which should be mirrored
+            dims which should be rotated
         keys: tuple
-            keys which should be mirrored
+            keys which should be rotated
         prob: typing.Union[float, tuple]
-            probability for mirror. If float value is provided, it is used
+            probability for rotation. If float value is provided, it is used
             for all dims
         grad: bool
             enables differentiation through the transform
