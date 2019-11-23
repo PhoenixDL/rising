@@ -160,9 +160,9 @@ class GaussianSmoothingTransform(KernelTransform):
         # The gaussian kernel is the product of the gaussian function of each dimension.
         kernel = 1
         meshgrids = torch.meshgrid([
-                torch.arange(size, dtype=torch.float32)
-                for size in self.kernel_size
-            ])
+            torch.arange(size, dtype=torch.float32)
+            for size in self.kernel_size
+        ])
 
         for size, std, mgrid in zip(self.kernel_size, self.std, meshgrids):
             mean = (size - 1) / 2
