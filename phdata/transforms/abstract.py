@@ -109,6 +109,8 @@ class PerSampleTransform(BaseTransform):
     def forward(self, **data) -> dict:
         """
         Apply transformation to each sample in batch individually
+        :param:`augment_fn` must be callable with option :param:`out`
+        where results are saved in
 
         Parameters
         ----------
@@ -120,10 +122,11 @@ class PerSampleTransform(BaseTransform):
         dict
             dict with augmented data
         """
-        # TODO: check if data must be cloned first
         for _key in self.keys:
+            out = torch.zeros_like(data[_key])
             for _i in range(data[_key].shape[0]):
-                data[_key][_i] = self.augment_fn(data[_key][_i], **self.kwargs)
+                out[_i] = self.augment_fn(data[_key][_i], out=out, **self.kwargs)
+            data[_key] = out
         return data
 
 

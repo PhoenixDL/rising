@@ -10,7 +10,7 @@ from phdata.utils import check_scalar
 
 
 def norm_range(data: torch.Tensor, min: float, max: float,
-               per_channel: bool = True) -> torch.Tensor:
+               per_channel: bool = True, out: torch.Tensor = None) -> torch.Tensor:
     """
     Scale range of tensor
 
@@ -24,18 +24,25 @@ def norm_range(data: torch.Tensor, min: float, max: float,
         maximal value
     per_channel: bool
         range is normalized per channel
+    out: torch.Tensor
+        if provided, result is saved into out
 
     Returns
     -------
     torch.Tensor
         normalized data
     """
-    data = norm_min_max(data, per_channel=per_channel)
+    if out is None:
+        out = torch.zeros_like(data)
+
+    out = norm_min_max(data, per_channel=per_channel, out=out)
     _range = max - min
-    return (data * _range) + min
+    out = (out * _range) + min
+    return out
 
 
-def norm_min_max(data: torch.Tensor, per_channel: bool = True) -> torch.Tensor:
+def norm_min_max(data: torch.Tensor, per_channel: bool = True,
+                 out: torch.Tensor = None) -> torch.Tensor:
     """
     Scale range to [0,1]
 
@@ -45,25 +52,32 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True) -> torch.Tensor:
         input data. Per channel option supports [C,H,W] and [C,H,W,D].
     per_channel: bool
         range is normalized per channel
+    out: torch.Tensor
+        if provided, result is saved into out
 
     Returns
     -------
     torch.Tensor
         scaled data
     """
+    if out is None:
+        out = torch.zeros_like(data)
+
     if per_channel:
         for _c in range(data.shape[0]):
             _min = data[_c].min()
             _range = data[_c].max() - _min
-            data[_c] = (data[_c] - _min) / _range
-        return data
+            out[_c] = (data[_c] - _min) / _range
     else:
         _min = data.min()
         _range = data.max() - _min
-        return (data - _min) / _range
+        out = (data - _min) / _range
+
+    return out
 
 
-def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True) -> torch.Tensor:
+def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
+                            out: torch.Tensor = None) -> torch.Tensor:
     """
     Normalize mean to zero and std to one
 
@@ -73,22 +87,28 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True) -> tor
         input data. Per channel option supports [C,H,W] and [C,H,W,D].
     per_channel: bool
         range is normalized per channel
+    out: torch.Tensor
+        if provided, result is saved into out
 
     Returns
     -------
     torch.Tensor
         normalized data
     """
+    if out is None:
+        out = torch.zeros_like(data)
+
     if per_channel:
         for _c in range(data.shape[0]):
-            data[_c] = (data[_c] - data[_c].mean()) / data[_c].std()
-        return data
+            out[_c] = (data[_c] - data[_c].mean()) / data[_c].std()
     else:
-        return (data - data.mean()) / data.std()
+        out = (data - data.mean()) / data.std()
+
+    return out
 
 
 def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[float, Sequence],
-                  per_channel: bool = True) -> torch.Tensor:
+                  per_channel: bool = True, out: torch.Tensor = None) -> torch.Tensor:
     """
     Normalize mean and std with provided values
 
@@ -102,22 +122,28 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[f
         used for std normalization
     per_channel: bool
         range is normalized per channel
+    out: torch.Tensor
+        if provided, result is saved into out
 
     Returns
     -------
     torch.Tensor
         normalized data
     """
+    if out is None:
+        out = torch.zeros_like(data)
+
     if per_channel:
         if check_scalar(mean):
             mean = [mean] * data.shape[0]
         if check_scalar(std):
             std = [std] * data.shape[0]
         for _c in range(data.shape[0]):
-            data[_c] = (data[_c] - mean[_c]) / std[_c]
-        return data
+            out[_c] = (data[_c] - mean[_c]) / std[_c]
     else:
-        return (data - mean) / std
+        out = (data - mean) / std
+
+    return out
 
 
 def add_noise(data: torch.Tensor, noise_type: str, **kwargs) -> torch.Tensor:

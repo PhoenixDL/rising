@@ -1,8 +1,12 @@
 import unittest
+import torch
 from phdata.transforms.utility import *
 
 
 class TestUtilityTransforms(unittest.TestCase):
+    def setUp(self) -> None:
+        torch.manual_seed(0)
+
     def test_do_nothing_transform(self):
         inp = {"data": 0, "seg": 1}
         trafo = DoNothingTransform()

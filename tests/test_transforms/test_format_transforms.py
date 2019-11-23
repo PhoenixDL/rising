@@ -1,8 +1,12 @@
 import unittest
+import torch
 from phdata.transforms.format import MapToSeq, SeqToMap
 
 
 class TestFormat(unittest.TestCase):
+    def setUp(self) -> None:
+        torch.manual_seed(0)
+
     def test_map_to_seq(self):
         trafo = MapToSeq('data', 'seg', 'label')
         out = trafo(**{'data': 0, 'seg': 1, 'label': 2})

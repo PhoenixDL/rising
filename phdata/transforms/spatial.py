@@ -1,11 +1,12 @@
 import torch
-from .abstract import RandomDimsTransform
+import random
+from .abstract import RandomDimsTransform, AbstractTransform
 from typing import Union, Sequence
+from itertools import permutations
 
 from .functional.spatial import mirror, rot90
 
 
-# TODO: Crops
 # TODO: Rotation
 # TODO: Deformable
 # TODO: Zoom/Scale
@@ -34,7 +35,7 @@ class MirrorTransform(RandomDimsTransform):
         super().__init__(augment_fn=mirror, dims=dims, keys=keys, prob=prob, grad=grad, **kwargs)
 
 
-class Rot90Transform(RandomDimsTransform):
+class Rot90Transform(AbstractTransform):
     def __init__(self, dims: tuple, keys: tuple = ('data',),
                  prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
         """
@@ -43,18 +44,25 @@ class Rot90Transform(RandomDimsTransform):
         Parameters
         ----------
         dims: tuple
-            dims which should be rotated
+            dims which should be rotated. If more than two dims are provided,
+            two dimensions are randomly chosen at each call
         keys: tuple
             keys which should be rotated
         prob: typing.Union[float, tuple]
-            probability for rotation. If float value is provided, it is used
-            for all dims
+            probability for rotation
         grad: bool
             enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to superclass
+
+        See Also
+        --------
+        :func:`torch.Tensor.rot90`
         """
-        super().__init__(augment_fn=rot90, dims=dims, keys=keys, prob=prob, grad=grad, **kwargs)
+        super().__init__(grad=grad, **kwargs)
+        self.dims = dims
+        self.keys = keys
+        self.prob = prob
 
     def forward(self, **data) -> dict:
         """
@@ -70,5 +78,19 @@ class Rot90Transform(RandomDimsTransform):
         dict
             dict with augmented data
         """
-        self.kwargs["k"] = torch.randint(0, 3, (1,), requires_grad=False).item()
-        return super().forward(**data)
+        if torch.rand(1) < self.prob:
+            k = random.randint(0, 4)
+            rand_dims = self._permutations[random.randint(0, len(self._permutations))]
+
+            for key in self.keys:
+                data[key] = rot90(data[key], k=k, dims=rand_dims)
+        return data
+
+    @property
+    def dims(self):
+        return self._dims
+
+    @dims.setter
+    def dims(self, dims):
+        self._dims = dims
+        self._permutations = tuple(permutations(dims, 2))

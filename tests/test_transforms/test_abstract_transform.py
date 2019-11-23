@@ -25,6 +25,7 @@ def sum_dim(data, dims, **kwargs):
 
 class TestAbstractTransform(unittest.TestCase):
     def setUp(self) -> None:
+        torch.manual_seed(0)
         self.batch_dict = {
             "data": torch.rand(1, 1, 32, 32),
             "seg": torch.rand(1, 1, 32, 32),
@@ -67,14 +68,14 @@ class TestAbstractTransform(unittest.TestCase):
 
     def test_per_sample_transform(self):
         mock = Mock(return_value=0)
-        trafo = PerSampleTransform(mock, keys=('label',))
+
+        def augment_fn(inp, *args, **kwargs):
+            return mock(inp)
+
+        trafo = PerSampleTransform(augment_fn, keys=('label',))
         output = trafo(**self.batch_dict)
-        # original values from tensor were overwritten to 0,0,0
-        calls = [
-            call(torch.tensor([0])),
-            call(torch.tensor([0])),
-            call(torch.tensor([0])),
-        ]
+        calls = [call(torch.tensor([0])), call(torch.tensor([1])),
+                 call(torch.tensor([2])), ]
         mock.assert_has_calls(calls)
 
     def test_random_dims_transform(self):

@@ -3,6 +3,8 @@ from typing import Sequence, Union
 
 from phdata.utils import check_scalar
 
+# TODO: rot
+
 
 def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:
     """
@@ -46,8 +48,3 @@ def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
     """
     dims = [d + 2 for d in dims]
     return torch.rot90(data, k, dims)
-
-
-def rot():
-    # TODO: Implement rot transformation
-    raise NotImplementedError
