@@ -78,6 +78,30 @@ class TestAbstractTransform(unittest.TestCase):
                  call(torch.tensor([2])), ]
         mock.assert_has_calls(calls)
 
+    def test_per_channel_transform_per_channel_true(self):
+        mock = Mock(return_value=0)
+
+        def augment_fn(inp, *args, **kwargs):
+            return mock(inp)
+
+        trafo = PerChannelTransform(augment_fn, per_channel=True, keys=('label',))
+        self.batch_dict["label"] = self.batch_dict["label"][None]
+        output = trafo(**self.batch_dict)
+        calls = [call(torch.tensor([0])), call(torch.tensor([1])),
+                 call(torch.tensor([2])), ]
+        mock.assert_has_calls(calls)
+
+    def test_per_channel_transform_per_channel_false(self):
+        mock = Mock(return_value=0)
+
+        def augment_fn(inp, *args, **kwargs):
+            return mock(inp)
+
+        trafo = PerChannelTransform(augment_fn, per_channel=False, keys=('label',))
+        self.batch_dict["label"] = self.batch_dict["label"][None]
+        output = trafo(**self.batch_dict)
+        mock.assert_called_once()
+
     def test_random_dims_transform(self):
         torch.manual_seed(0)
         self.batch_dict["data"] = torch.rand(1, 1, 32, 16)

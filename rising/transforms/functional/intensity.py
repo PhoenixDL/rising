@@ -171,12 +171,7 @@ def add_noise(data: torch.Tensor, noise_type: str, out: torch.Tensor = None,
         noise_type = noise_type + '_'
     noise_tensor = torch.empty_like(data, requires_grad=False)
     getattr(noise_tensor, noise_type)(**kwargs)
-
-    if out is None:
-        return data + noise_tensor
-    else:
-        out = data + noise_tensor
-        return out
+    return torch.add(data, noise_tensor, out=out)
 
 
 def gamma_correction(data: torch.Tensor, gamma: float) -> torch.Tensor:
@@ -219,7 +214,7 @@ def add_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -> tor
     torch.Tensor
         augmented data
     """
-    return torch.add(data, value, out)
+    return torch.add(data, value, out=out)
 
 
 def scale_by_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -> torch.Tensor:
@@ -242,4 +237,4 @@ def scale_by_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -
     torch.Tensor
         augmented data
     """
-    return torch.mul(data, value, out)
+    return torch.mul(data, value, out=out)

@@ -1,6 +1,6 @@
 import math
 import torch
-from typing import Sequence, Union
+from typing import Sequence, Union, Callable
 
 from .abstract import AbstractTransform
 from rising.utils import check_scalar
@@ -61,9 +61,10 @@ class KernelTransform(AbstractTransform):
         kernel = self.create_kernel()
         self.register_buffer('weight', kernel)
         self.groups = in_channels
-        self.set_conv(dim)
+        self.conv = self.get_conv(dim)
 
-    def set_conv(self, dim) -> None:
+    @staticmethod
+    def get_conv(dim) -> Callable:
         """
         Select convolution with regard to dimension
 
@@ -73,13 +74,13 @@ class KernelTransform(AbstractTransform):
             spatial dimension of data
         """
         if dim == 1:
-            self.conv = torch.nn.functional.conv1d
+            return torch.nn.functional.conv1d
         elif dim == 2:
-            self.conv = torch.nn.functional.conv2d
+            return torch.nn.functional.conv2d
         elif dim == 3:
-            self.conv = torch.nn.functional.conv3d
+            return torch.nn.functional.conv3d
         else:
-            raise RuntimeError('Only 1, 2 and 3 dimensions are supported. Received {}.'.format(dim))
+            raise TypeError('Only 1, 2 and 3 dimensions are supported. Received {}.'.format(dim))
 
     def create_kernel(self) -> torch.Tensor:
         """

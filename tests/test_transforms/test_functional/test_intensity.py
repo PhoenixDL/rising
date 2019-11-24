@@ -80,6 +80,18 @@ class TestIntensityFunctional(unittest.TestCase):
         diff = (outp - self.batch_2d).abs().mean()
         self.assertTrue(diff > 50)
 
+    def test_gamma_correction(self):
+        outp = gamma_correction(self.batch_2d, 2)
+        self.assertTrue((self.batch_2d.pow(2) == outp).all())
+
+    def test_add_value(self):
+        outp = add_value(self.batch_2d, 2)
+        self.assertTrue((torch.add(self.batch_2d, 2) == outp).all())
+
+    def test_scale_by_value(self):
+        outp = scale_by_value(self.batch_2d, 2)
+        self.assertTrue((torch.mul(self.batch_2d, 2) == outp).all())
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -201,7 +201,8 @@ class GammaCorrectionTransform(AbstractTransform):
         kwargs:
             keyword arguments passed to superclass
         """
-        super().__init__(augment_fn=gamma_correction, keys=keys, grad=grad, **kwargs)
+        super().__init__(augment_fn=gamma_correction, keys=keys, grad=grad)
+        self.kwargs = kwargs
         self.gamma = gamma
         if not check_scalar(self.gamma):
             if not len(self.gamma) == 2:
@@ -222,26 +223,28 @@ class GammaCorrectionTransform(AbstractTransform):
         dict
             dict with augmented data
         """
-        for _key in self.keys:
-            if check_scalar(self.gamma):
-                _gamma = self.gamma
-            elif self.gamma[1] < 1:
-                _gamma = random.uniform(self.gamma[0], self.gamma[1])
+        if check_scalar(self.gamma):
+            _gamma = self.gamma
+        elif self.gamma[1] < 1:
+            _gamma = random.uniform(self.gamma[0], self.gamma[1])
+        else:
+            if random.random() < 0.5:
+                _gamma = _gamma = random.uniform(self.gamma[0], 1)
             else:
-                if random.random() < 0.5:
-                    _gamma = _gamma = random.uniform(self.gamma[0], 1)
-                else:
-                    _gamma = _gamma = random.uniform(1, self.gamma[1])
+                _gamma = _gamma = random.uniform(1, self.gamma[1])
 
+        for _key in self.keys:
             data[_key] = self.augment_fn(data[_key], _gamma, **self.kwargs)
         return data
 
 
-class RandomAddValue(PerChannelTransform):
-    def __init__(self, random_mode, random_kwargs: dict = None, per_channel: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+class RandomValuePerChannelTransform(PerChannelTransform):
+    def __init__(self, augment_fn: callable, random_mode: str, random_kwargs: dict = None,
+                 per_channel: bool = False, keys: Sequence = ('data',),
+                 grad: bool = False, **kwargs):
         """
-        Increase values additively
+        Apply augmentations which take random values as input by keyword
+        :param:`value`
 
         Parameters
         ----------
@@ -259,27 +262,39 @@ class RandomAddValue(PerChannelTransform):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=add_value, per_channel=per_channel,
+        super().__init__(augment_fn=augment_fn, per_channel=per_channel,
                          keys=keys, grad=grad, **kwargs)
         self.random_mode = random_mode
         self.random_kwargs = {} if random_kwargs is None else random_kwargs
 
     def forward(self, **data) -> dict:
         """
-        Apply transformation
+        Perform Augmentation.
 
         Parameters
         ----------
         data: dict
-            dict with tensors
+            dict with data
 
         Returns
         -------
         dict
-            dict with augmented data
+            augmented data
         """
-        self.kwargs["value"] = self.random_fn(**self.random_kwargs)
-        return super().forward(**data)
+        if self.per_channel:
+            random_seed = random.random()
+            for _key in self.keys:
+                random.seed(random_seed)
+                out = torch.empty_like(data[_key])
+                for _i in range(data[_key].shape[1]):
+                    rand_value = self.random_fn(**self.random_kwargs)
+                    out[:, _i] = self.augment_fn(data[_key][:, _i], value=rand_value,
+                                                 out=out[:, _i], **self.kwargs)
+                data[_key] = out
+            return data
+        else:
+            self.kwargs["value"] = self.random_fn(**self.random_kwargs)
+            return super().forward(**data)
 
     @property
     def random_mode(self) -> str:
@@ -308,7 +323,34 @@ class RandomAddValue(PerChannelTransform):
         self.random_fn = getattr(random, mode)
 
 
-class RandomScaleValue(PerChannelTransform):
+class RandomAddValue(RandomValuePerChannelTransform):
+    def __init__(self, random_mode: str, random_kwargs: dict = None, per_channel: bool = False,
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+        """
+        Increase values additively
+
+        Parameters
+        ----------
+        random_mode: str
+            specifies distribution which should be used to sample additive value (supports all
+            random generators from python random package)
+        random_kwargs: dict
+            additional arguments for random function
+        per_channel: bool
+            enable transformation per channel
+        keys: Sequence
+            keys which should be augmented
+        grad: bool
+            enable gradient computation inside transformation
+        kwargs:
+            keyword arguments passed to augment_fn
+        """
+        super().__init__(augment_fn=add_value, random_mode=random_mode,
+                         random_kwargs=random_kwargs, per_channel=per_channel,
+                         keys=keys, grad=grad, **kwargs)
+
+
+class RandomScaleValue(RandomValuePerChannelTransform):
     def __init__(self, random_mode, random_kwargs: dict = None, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
@@ -330,37 +372,6 @@ class RandomScaleValue(PerChannelTransform):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=scale_by_value, per_channel=per_channel,
+        super().__init__(augment_fn=scale_by_value, random_mode=random_mode,
+                         random_kwargs=random_kwargs, per_channel=per_channel,
                          keys=keys, grad=grad, **kwargs)
-        self.random_mode = random_mode
-        self.random_kwargs = {} if random_kwargs is None else random_kwargs
-
-    def forward(self, **data) -> dict:
-        self.kwargs["value"] = self.random_fn(**self.random_kwargs)
-        return super().forward(**data)
-
-    @property
-    def random_mode(self) -> str:
-        """
-        Get random mode
-
-        Returns
-        -------
-        str
-            random mode
-        """
-        return self._random_mode
-
-    @random_mode.setter
-    def random_mode(self, mode) -> None:
-        """
-        Set random mode
-
-        Parameters
-        ----------
-        mode: str
-            specifies distribution which should be used to sample additive value (supports all
-            random generators from python random package)
-        """
-        self._random_mode = mode
-        self.random_fn = getattr(random, mode)
