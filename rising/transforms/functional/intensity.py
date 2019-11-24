@@ -2,11 +2,7 @@ import torch
 
 from typing import Union, Sequence
 
-from phdata.utils import check_scalar
-
-# TODO: Gammatransform
-# TODO: exponential transform ?
-# TODO: FilterTransform (e.g. Gaussian Blur)
+from rising.utils import check_scalar
 
 
 def norm_range(data: torch.Tensor, min: float, max: float,

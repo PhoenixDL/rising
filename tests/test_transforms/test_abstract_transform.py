@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock, call
 import torch
 
-from phdata.transforms.abstract import *
+from rising.transforms.abstract import *
 
 
 class AddTransform(AbstractTransform):

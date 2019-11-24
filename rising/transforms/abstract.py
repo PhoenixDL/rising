@@ -2,7 +2,7 @@ import torch
 import typing
 from typing import Callable, Union, Sequence, Any
 
-from phdata.utils import check_scalar
+from rising.utils import check_scalar
 
 
 augment_callable = Callable[[torch.Tensor], Any]

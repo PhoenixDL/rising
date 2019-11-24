@@ -1,6 +1,6 @@
 import unittest
 import torch
-from phdata.transforms.format import MapToSeq, SeqToMap
+from rising.transforms.format import MapToSeq, SeqToMap
 
 
 class TestFormat(unittest.TestCase):

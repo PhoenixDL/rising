@@ -3,7 +3,7 @@ import random
 import unittest
 
 
-from phdata.transforms.kernel import *
+from rising.transforms.kernel import *
 
 
 # TODO: Test: !!!!Implement sensitive tests!!!!

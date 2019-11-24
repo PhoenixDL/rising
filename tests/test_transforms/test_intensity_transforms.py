@@ -4,7 +4,7 @@ import random
 from math import isclose
 
 from tests.test_transforms import chech_data_preservation
-from phdata.transforms.intensity import *
+from rising.transforms.intensity import *
 
 
 class MyTestCase(unittest.TestCase):

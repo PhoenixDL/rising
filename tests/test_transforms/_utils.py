@@ -1,5 +1,5 @@
 import torch
-from phdata.transforms.abstract import AbstractTransform
+from rising.transforms.abstract import AbstractTransform
 
 
 def chech_data_preservation(trafo: AbstractTransform, batch: dict, key: str = 'data') -> bool:

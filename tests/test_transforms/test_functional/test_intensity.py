@@ -1,7 +1,7 @@
 import unittest
 from math import isclose
 
-from phdata.transforms.functional.intensity import *
+from rising.transforms.functional.intensity import *
 
 
 class TestIntensityFunctional(unittest.TestCase):

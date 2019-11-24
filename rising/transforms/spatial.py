@@ -7,11 +7,6 @@ from itertools import permutations
 from .functional.spatial import mirror, rot90
 
 
-# TODO: Rotation
-# TODO: Deformable
-# TODO: Zoom/Scale
-
-
 class MirrorTransform(RandomDimsTransform):
     def __init__(self, dims: Sequence, keys: Sequence = ('data',),
                  prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):

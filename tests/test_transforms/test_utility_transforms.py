@@ -1,6 +1,6 @@
 import unittest
 import torch
-from phdata.transforms.utility import *
+from rising.transforms.utility import *
 
 
 class TestUtilityTransforms(unittest.TestCase):

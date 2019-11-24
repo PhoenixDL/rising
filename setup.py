@@ -31,7 +31,7 @@ license = read_file(os.path.join(os.path.dirname(__file__), "LICENSE"))
 
 
 setup(
-    name='phdata',
+    name='rising',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),

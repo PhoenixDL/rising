@@ -2,7 +2,7 @@ import torch
 import unittest
 import numpy as np
 
-from phdata.ops import torch_one_hot, np_one_hot
+from rising.ops import torch_one_hot, np_one_hot
 
 
 class TestOneHot(unittest.TestCase):

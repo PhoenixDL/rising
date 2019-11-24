@@ -1,9 +1,7 @@
 import torch
 from typing import Sequence, Union
 
-from phdata.utils import check_scalar
-
-# TODO: rot
+from rising.utils import check_scalar
 
 
 def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:

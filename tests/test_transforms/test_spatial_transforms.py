@@ -3,7 +3,7 @@ import random
 import unittest
 
 from tests.test_transforms import chech_data_preservation
-from phdata.transforms.spatial import *
+from rising.transforms.spatial import *
 
 
 class TestSpatialTransforms(unittest.TestCase):

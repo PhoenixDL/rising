@@ -3,7 +3,7 @@ import torch
 from typing import Sequence, Union
 
 from .abstract import AbstractTransform
-from phdata.utils import check_scalar
+from rising.utils import check_scalar
 
 
 class KernelTransform(AbstractTransform):
