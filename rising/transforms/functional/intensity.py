@@ -21,7 +21,7 @@ def norm_range(data: torch.Tensor, min: float, max: float,
     per_channel: bool
         range is normalized per channel
     out: torch.Tensor
-        if provided, result is saved into out
+        if provided, result is saved in here
 
     Returns
     -------
@@ -49,7 +49,7 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True,
     per_channel: bool
         range is normalized per channel
     out: torch.Tensor
-        if provided, result is saved into out
+        if provided, result is saved in here
 
     Returns
     -------
@@ -84,7 +84,7 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
     per_channel: bool
         range is normalized per channel
     out: torch.Tensor
-        if provided, result is saved into out
+        if provided, result is saved in here
 
     Returns
     -------
@@ -142,7 +142,8 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[f
     return out
 
 
-def add_noise(data: torch.Tensor, noise_type: str, **kwargs) -> torch.Tensor:
+def add_noise(data: torch.Tensor, noise_type: str, out: torch.Tensor = None,
+              **kwargs) -> torch.Tensor:
     """
     Add noise to input
 
@@ -152,6 +153,8 @@ def add_noise(data: torch.Tensor, noise_type: str, **kwargs) -> torch.Tensor:
         input data
     noise_type: str
         supports all inplace functions of a pytorch tensor
+    out: torch.Tensor
+        if provided, result is saved in here
     kwargs:
         keyword arguments passed to generating function
 
@@ -168,4 +171,75 @@ def add_noise(data: torch.Tensor, noise_type: str, **kwargs) -> torch.Tensor:
         noise_type = noise_type + '_'
     noise_tensor = torch.empty_like(data, requires_grad=False)
     getattr(noise_tensor, noise_type)(**kwargs)
-    return data + noise_tensor
+
+    if out is None:
+        return data + noise_tensor
+    else:
+        out = data + noise_tensor
+        return out
+
+
+def gamma_correction(data: torch.Tensor, gamma: float) -> torch.Tensor:
+    """
+    Apply gamma correction to data
+    (currently this functions is intended as an interface in case
+    additional functionality should be added to transform)
+
+    Parameters
+    ----------
+    data: torch.Tensor
+        input data
+    gamma: float
+        gamma for correction
+
+    Returns
+    -------
+    torch.Tensor
+    """
+    return data.pow(gamma)
+
+
+def add_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -> torch.Tensor:
+    """
+    Increase brightness additively by value
+    (currently this functions is intended as an interface in case
+    additional functionality should be added to transform)
+
+    Parameters
+    ----------
+    data: torch.Tensor
+        input data
+    value: float
+        additive value
+    out: torch.Tensor
+        if provided, result is saved in here
+
+    Returns
+    -------
+    torch.Tensor
+        augmented data
+    """
+    return torch.add(data, value, out)
+
+
+def scale_by_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -> torch.Tensor:
+    """
+    Increase brightness scaled by value
+    (currently this functions is intended as an interface in case
+    additional functionality should be added to transform)
+
+    Parameters
+    ----------
+    data: torch.Tensor
+        input data
+    value: float
+        scaling value
+    out: torch.Tensor
+        if provided, result is saved in here
+
+    Returns
+    -------
+    torch.Tensor
+        augmented data
+    """
+    return torch.mul(data, value, out)

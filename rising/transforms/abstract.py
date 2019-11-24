@@ -74,8 +74,8 @@ class BaseTransform(AbstractTransform):
         ----------
         augment_fn: callable
             function for augmentation
-        dims: tuple
-            axes which should be mirrored
+        keys: Sequence
+            keys which should be augmented
         grad: bool
             enable gradient computation inside transformation
         kwargs:
@@ -123,11 +123,58 @@ class PerSampleTransform(BaseTransform):
             dict with augmented data
         """
         for _key in self.keys:
-            out = torch.zeros_like(data[_key])
+            out = torch.empty_like(data[_key])
             for _i in range(data[_key].shape[0]):
-                out[_i] = self.augment_fn(data[_key][_i], out=out, **self.kwargs)
+                out[_i] = self.augment_fn(data[_key][_i], out=out[_i], **self.kwargs)
             data[_key] = out
         return data
+
+
+class PerChannelTransform(BaseTransform):
+    def __init__(self, augment_fn: augment_callable, per_channel: bool = False,
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+        """
+        Apply transformation per channel (but still to whole batch)
+
+        Parameters
+        ----------
+        augment_fn: callable
+            function for augmentation
+        per_channel: bool
+            enable transformation per channel
+        keys: Sequence
+            keys which should be augmented
+        grad: bool
+            enable gradient computation inside transformation
+        kwargs:
+            keyword arguments passed to augment_fn
+        """
+        super().__init__(augment_fn=augment_fn, keys=keys, grad=grad, **kwargs)
+        self.per_channel = per_channel
+
+    def forward(self, **data) -> dict:
+        """
+        Apply transformation
+
+        Parameters
+        ----------
+        data: dict
+            dict with tensors
+
+        Returns
+        -------
+        dict
+            dict with augmented data
+        """
+        if self.per_channel:
+            for _key in self.keys:
+                out = torch.empty_like(data[_key])
+                for _i in range(data[_key].shape[1]):
+                    out[:, _i] = self.augment_fn(data[_key][:, _i], out=out[:, _i], **self.kwargs)
+                data[_key] = out
+            return data
+        else:
+            return super().forward(**data)
 
 
 class RandomDimsTransform(AbstractTransform):
