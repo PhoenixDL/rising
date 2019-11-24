@@ -2,5 +2,4 @@ include *.txt
 include *.md
 include LICENSE
 include versioneer.py
-include phdata/_version.py
 include rising/_version.py
