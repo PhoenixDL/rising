@@ -11,14 +11,11 @@ from rising.loading.debug_mode import get_current_debug_mode
 from torch.multiprocessing import Pool
 
 
-
 class Dataset(TorchDset):
     """
     Extension of PyTorch's Datasets by a ``get_subset`` method which returns a
     sub-dataset.
     """
-
-    # TODO: Add return type signature
     def get_subset(self, indices: typing.Sequence[int]) -> SubsetDataset:
         """
         Returns a Subset of the current dataset based on given indices
