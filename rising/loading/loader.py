@@ -23,7 +23,6 @@ class DataLoader(_DataLoader):
                  worker_init_fn: Callable = None,
                  multiprocessing_context=None,
                  auto_convert: bool = True):
-
         """
         A Dataloader introducing batch-transforms, numpy seeds for worker
         processes and compatibility to the debug mode
