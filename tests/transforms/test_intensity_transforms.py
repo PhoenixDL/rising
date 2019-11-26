@@ -4,7 +4,7 @@ import random
 from math import isclose
 from unittest.mock import Mock, call
 
-from tests.test_transforms import chech_data_preservation
+from tests.transforms import chech_data_preservation
 from rising.transforms.intensity import *
 
 
