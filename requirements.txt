@@ -1,2 +1,4 @@
 numpy
 torch
+threadpoolctl
+pandas
