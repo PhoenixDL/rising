@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Callable, Mapping, Sequence, Union, Any
 from torch.utils.data._utils.collate import default_convert
 from torch.utils.data import DataLoader as _DataLoader, Sampler
@@ -8,7 +9,6 @@ from rising.loading.debug_mode import get_current_debug_mode
 from functools import partial
 from rising.loading.dataset import Dataset
 from threadpoolctl import threadpool_limits
-from __future__ import annotations
 
 
 class DataLoader(_DataLoader):
