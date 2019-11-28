@@ -12,16 +12,52 @@ from rising.loading.splitter import SplitType
 # TODO: Add docstrings for Datacontainer
 class DataContainer:
     def __init__(self, dataset: Dataset, **kwargs):
+        """
+        Handles the splitting of datasets from different sources
+
+        Parameters
+        ----------
+        dataset : dataset
+            the dataset to split
+        kwargs
+        """
         self._dataset = dataset
         self._dset = {}
         self._fold = None
+        # TODO: this does not make sense, the constructor of object
+        #  (which is the implicit base class here) does not take arguments.
+        #  We should rather set them as attributes.
         super().__init__(**kwargs)
 
-    def split_by_index(self, split: SplitType):
+    def split_by_index(self, split: SplitType) -> None:
+        """
+        Splits dataset by a given split-dict
+
+        Parameters
+        ----------
+        split : dict
+            a dictionary containing tuples of strings and lists of indices
+            for each split
+
+        """
         for key, idx in split.items():
             self._dset[key] = self._dataset.get_subset(idx)
 
     def kfold_by_index(self, splits: typing.Iterable[SplitType]):
+        """
+        Produces kfold splits based on the given indices.
+
+        Parameters
+        ----------
+        splits : list
+            list containing split dicts for each fold
+
+        Yields
+        ------
+        DataContainer
+            the data container with updated dataset splits
+
+        """
         for fold, split in enumerate(splits):
             self.split_by_index(split)
             self._fold = fold
@@ -29,7 +65,21 @@ class DataContainer:
         self._fold = None
 
     def split_by_csv(self, path: typing.Union[pathlib.Path, str],
-                     index_column: str, **kwargs):
+                     index_column: str, **kwargs) -> None:
+        """
+        Splits a dataset by splits given in a CSV file
+
+        Parameters
+        ----------
+        path : str, pathlib.Path
+            the path to the csv file
+        index_column : str
+            the label of the index column
+        **kwargs :
+            additional keyword arguments (see :func:`pandas.read_csv` for
+            details)
+
+        """
         df = pd.read_csv(path, **kwargs)
         df = df.set_index(index_column)
         col = list(df.columns)
@@ -37,6 +87,25 @@ class DataContainer:
 
     def kfold_by_csv(self, path: typing.Union[pathlib.Path, str],
                      index_column: str, **kwargs) -> DataContainer:
+        """
+        Produces kfold splits based on the given csv file.
+
+        Parameters
+        ----------
+        path : str, pathlib.Path
+            the path to the csv file
+        index_column : str
+            the label of the index column
+        **kwargs :
+            additional keyword arguments (see :func:`pandas.read_csv` for
+            details)
+
+        Yields
+        ------
+        DataContainer
+            the data container with updated dataset splits
+
+        """
         df = pd.read_csv(path, **kwargs)
         df = df.set_index(index_column)
         folds = list(df.columns)
@@ -44,7 +113,23 @@ class DataContainer:
         yield from self.kfold_by_index((splits))
 
     @staticmethod
-    def _read_split_from_df(df: pd.DataFrame, col: str):
+    def _read_split_from_df(df: pd.DataFrame, col: str) -> SplitType:
+        """
+        Helper function to read a split from a given data frame
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            the dataframe containing the split
+        col : str
+            the column inside the data frame containing the split
+
+        Returns
+        -------
+        dict
+            a dictionary of lists. Contains a string-list-tuple per split
+
+        """
         split = defaultdict(list)
         for index, row in df[[col]].iterrows():
             split[str(row[col])].append(index)
@@ -66,6 +151,7 @@ class DataContainer:
             return self._fold
 
 
+# TODO: Add Docstrings for datacontainerID
 class DataContainerID(DataContainer):
     def split_by_id(self, split: SplitType):
         split_idx = defaultdict(list)
