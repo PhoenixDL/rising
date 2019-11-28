@@ -12,12 +12,36 @@ logger = logging.getLogger(__file__)
 SplitType = typing.Dict[str, list]
 
 
-# TODO: Add docstrings for Splitter
+# TODO: I would probably change this and make val_size optionally.
+#  We always need a testset, but not always a validationset
 class Splitter:
     def __init__(self,
                  dataset: Dataset,
                  val_size: typing.Union[int, float],
                  test_size: typing.Union[int, float] = None):
+        """
+        Splits a dataset by several options
+
+        Parameters
+        ----------
+        dataset : Dataset
+            the dataset to split
+        val_size : float, int
+            the validation split;
+                if float this will be interpreted as a percentage of the
+                    dataset
+                if int this will be interpreted as the number of samples
+        test_size : float, int , optionally
+            the size of the validation split; If provided it must be int or
+            float.
+                if float this will be interpreted as a percentage of the
+                    dataset
+                if int this will be interpreted as the number of samples
+            if not provided or explicitly set to None, no testset will be
+            created
+        """
+        # TODO: Since we only have object as implicit baseclass the
+        #  super().__init__() can probably be removed
         super().__init__()
         self._dataset = dataset
         self._total_num = len(self._dataset)
@@ -28,28 +52,62 @@ class Splitter:
         self._check_sizes()
 
     def _check_sizes(self):
-        if self._total_num < 0:
-            raise TypeError("Size must be larger than zero, not "
-                            "{}".format(self._total_num))
-        if self._val < 0:
-            raise TypeError("Size must be larger than zero, not "
-                            "{}".format(self._val))
-        if self._test < 0:
-            raise TypeError("Size must be larger than zero, not "
-                            "{}".format(self._test))
+        """
+        Checks if the given sizes are valid for splitting
 
+        Raises
+        ------
+        ValueError
+            at least one of the sizes is invalid
+
+        """
+        if self._total_num <= 0:
+            raise ValueError("Size must be larger than zero, not "
+                             "{}".format(self._total_num))
+        if self._val <= 0:
+            raise ValueError("Size must be larger than zero, not "
+                             "{}".format(self._val))
+        if self._test < 0:
+            raise ValueError("Size must be larger than zero, not "
+                             "{}".format(self._test))
+
+        # TODO: Can we explicitly call this check in the __init__ before
+        #  checking the sizes? Explicit is better than implicit
+        #  When I first checked the Code I was wondering where this was done
+        #  and I could not find it, since this function should only check
+        #  and not convert anything
         self._convert_prop_to_num()
         if self._total_num < self._val + self._test:
-            raise TypeError("Val + test size must be smaller than total, "
-                            "not {}".format(self._val + self._test))
+            raise ValueError("Val + test size must be smaller than total, "
+                             "not {}".format(self._val + self._test))
 
     def index_split(self, **kwargs) -> SplitType:
+        """
+        Splits the dataset's indices in a random way
+
+        Parameters
+        ----------
+        **kwargs :
+            optional keyword arguments.
+            See :func:`sklearn.model_selection.train_test_split` for details
+
+        Returns
+        -------
+        dict
+            the dictionary containing the corresponding splits under the
+            keys 'train', 'val' and (optionally) 'test'
+
+        """
         split_dict = {}
         split_dict["train"], tmp = train_test_split(
             self._idx, test_size=self._val + self._test,
             **kwargs)
 
         if self._test > 0:
+            # update stratified if provided,
+            # necessary for index_split_stratified
+            if 'stratify' in kwargs:
+                kwargs['stratify'] = [kwargs['stratify'][_i] for _i in tmp]
             split_dict["val"], split_dict["test"] = train_test_split(
                 tmp, test_size=self._val, **kwargs)
         else:
@@ -61,28 +119,59 @@ class Splitter:
             self,
             stratify_key: str = "label",
             **kwargs) -> SplitType:
-        split_dict = {}
+        """
+        Splits the dataset's indices in a stratified way
+
+        Parameters
+        ----------
+        stratify_key : str
+            the key specifying which value of each sample to use for
+            stratification
+        **kwargs :
+            optional keyword arguments.
+            See :func:`sklearn.model_selection.train_test_split` for details
+
+        Returns
+        -------
+        dict
+            the dictionary containing the corresponding splits under the
+            keys 'train', 'val' and (optionally) 'test'
+
+        """
         stratify = [d[stratify_key] for d in self._dataset]
 
-        split_dict["train"], tmp = train_test_split(
-            self._idx, test_size=self._val + self._test, stratify=stratify, **kwargs)
-
-        if self._test > 0:
-            stratify_tmp = [stratify[_i] for _i in tmp]
-            split_dict["val"], split_dict["test"] = train_test_split(
-                tmp, test_size=self._val, stratify=stratify_tmp, **kwargs)
-        else:
-            split_dict["val"] = tmp
-        self.log_split(split_dict, "Created Single Split with:")
-        return split_dict
+        return self.index_split(stratify=stratify, **kwargs)
 
     def index_split_grouped(
             self,
             groups_key: str = "id",
             **kwargs) -> SplitType:
         """
-        ..warning:: Shuffling cannot be deactivated
+        Splits the dataset's indices in a stratified way
+
+        Parameters
+        ----------
+        groups_key : str
+            the key specifying which value of each sample to use for
+            grouping
+        **kwargs :
+            optional keyword arguments.
+            See :func:`sklearn.model_selection.train_test_split` for details
+
+        Returns
+        -------
+        dict
+            the dictionary containing the corresponding splits under the
+            keys 'train', 'val' and (optionally) 'test'
+
+        Warnings
+        --------
+        Shuffling cannot be deactivated
         """
+        # TODO: maybe we should implement a single split function, which
+        #  handles random, stratificated and grouped splitting? This would not
+        #  be hard at all (based on the first look at sklearn internals) and
+        #  would remove some code duolication in here
         split_dict = {}
         groups = [d[groups_key] for d in self._dataset]
 
@@ -100,7 +189,24 @@ class Splitter:
         self.log_split(split_dict, "Created Single Split with:")
         return split_dict
 
+    # TODO: Maybe add kfolds without fixed testset?
     def index_kfold_fixed_test(self, **kwargs) -> typing.Iterable[SplitType]:
+        """
+        Calculates splits for a random kfold with given testset
+
+        Parameters
+        ----------
+        **kwargs :
+            optional keyword arguments.
+            See :func:`sklearn.model_selection.train_test_split` for details
+
+        Returns
+        -------
+        list
+            list containing one dict for each fold each containing the
+            corresponding splits under the keys 'train', 'val' and 'test'
+
+        """
         splits = []
 
         idx_dict = self.index_split(**kwargs)
@@ -120,6 +226,25 @@ class Splitter:
             self,
             stratify_key: str = "label",
             **kwargs) -> typing.Iterable[SplitType]:
+        """
+        Calculates splits for a stratified kfold with given testset
+
+        Parameters
+        ----------
+        stratify_key : str
+            the key specifying which value of each sample to use for
+            stratification
+        **kwargs :
+            optional keyword arguments.
+            See :func:`sklearn.model_selection.train_test_split` for details
+
+        Returns
+        -------
+        list
+            list containing one dict for each fold each containing the
+            corresponding splits under the keys 'train', 'val' and 'test'
+
+        """
         splits = []
 
         idx_dict = self.index_split_stratified(**kwargs)
@@ -139,6 +264,25 @@ class Splitter:
 
     def index_kfold_fixed_test_grouped(self, groups_key: str = "id",
                                        **kwargs) -> typing.Iterable[SplitType]:
+        """
+        Calculates splits for a stratified kfold with given testset
+
+        Parameters
+        ----------
+        groups_key : str
+            the key specifying which value of each sample to use for
+            grouping
+        **kwargs :
+            optional keyword arguments.
+            See :func:`sklearn.model_selection.train_test_split` for details
+
+        Returns
+        -------
+        list
+            list containing one dict for each fold each containing the
+            corresponding splits under the keys 'train', 'val' and 'test'
+
+        """
         splits = []
 
         idx_dict = self.index_split_grouped(**kwargs)
@@ -157,14 +301,39 @@ class Splitter:
             _fold += 1
         return splits
 
-    def _convert_prop_to_num(self, attributes: tuple = ("_val", "_test")):
+    def _convert_prop_to_num(self, attributes: tuple = ("_val", "_test")
+                             ) -> None:
+        """
+        Converts all given attributes from percentages to number of samples
+        if necessary
+
+        Parameters
+        ----------
+        attributes : tuple
+            tuple of strings containing the attribute names
+
+        """
         for attr in attributes:
             value = getattr(self, attr)
+            # TODO: When is a value close to 0?
+            #  Shouldn't we only check if 0<=value<1?
             if value < 1 and math.isclose(value, 0):
                 setattr(self, attr, value * self._total_num)
 
     @staticmethod
-    def log_split(dict_like: dict, desc: str = None):
+    def log_split(dict_like: dict, desc: str = None) -> None:
+        """
+        Logs the new created split
+
+        Parameters
+        ----------
+        dict_like : dict
+            the splits (usually this dict contains the keys 'train', 'val'
+            and (optionally) 'test' and a list of indices for each of them
+        desc : str, optional
+            the descriptor string to log before the actual splits
+
+        """
         if desc is not None:
             logger.info(desc)
         for key, item in dict_like.items():
@@ -172,9 +341,24 @@ class Splitter:
 
     @staticmethod
     def _copy_and_fill_dict(dict_like: dict, **kwargs) -> dict:
+        """
+        copies the dict and adds the kwargs to the copy
+
+        Parameters
+        ----------
+        dict_like : dict
+            the dict to copy and fill
+        **kwargs :
+            the keyword argument added to the dict copy
+
+        Returns
+        -------
+        dict
+            the copied and filled dict
+
+        """
         new_dict = copy.deepcopy(dict_like)
-        for key, item in kwargs.items():
-            new_dict[key] = item
+        new_dict.update(kwargs)
         return new_dict
 
     @property
