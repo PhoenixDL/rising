@@ -43,6 +43,8 @@ class DataContainer:
         for key, idx in split.items():
             self._dset[key] = self._dataset.get_subset(idx)
 
+    # TODO: Shouldn"t the kfold methods instead yield the current datasets
+    #  instead of the whole cointainer?
     def kfold_by_index(self, splits: typing.Iterable[SplitType]):
         """
         Produces kfold splits based on the given indices.
@@ -151,18 +153,43 @@ class DataContainer:
             return self._fold
 
 
-# TODO: Add Docstrings for datacontainerID
 class DataContainerID(DataContainer):
-    def split_by_id(self, split: SplitType):
+    """
+    Data Container Class for datasets with an ID
+    """
+    def split_by_id(self, split: SplitType) -> None:
+        """
+        Splits the internal dataset by the given splits
+
+        Parameters
+        ----------
+        split : dict
+            dictionary containing a string-list tuple per split
+
+        """
         split_idx = defaultdict(list)
         for key, _id in split.items():
             for _i in _id:
                 split_idx[key].append(self._dataset.get_index_by_id(_i))
-        super().split_by_index(split_idx)
+        return super().split_by_index(split_idx)
 
     def kfold_by_id(
             self,
-            splits: typing.Iterable[SplitType]) -> DataContainerID:
+            splits: typing.Iterable[SplitType]):
+        """
+        Produces kfold splits by an ID
+
+        Parameters
+        ----------
+        splits : list
+            list of dicts each containing the splits for a separate fold
+
+        Yields
+        ------
+        DataContaimnerID
+            the data container with updated internal datasets
+
+        """
         for fold, split in enumerate(splits):
             self.split_by_id(split)
             self._fold = fold
@@ -170,14 +197,47 @@ class DataContainerID(DataContainer):
         self._fold = None
 
     def split_by_csv_id(self, path: typing.Union[pathlib.Path, str],
-                        id_column: str, **kwargs):
+                        id_column: str, **kwargs) -> None:
+        """
+        Splits the internal dataset by a given id column in a given csv file
+
+        Parameters
+        ----------
+        path : str or pathlib.Path
+            the path to the csv file
+        id_column : str
+            the key of the id_column
+        **kwargs :
+            additionalm keyword arguments (see :func:`pandas.read_csv` for
+            details)
+
+        """
         df = pd.read_csv(path, **kwargs)
         df = df.set_index(id_column)
         col = list(df.columns)
-        self.split_by_id(self._read_split_from_df(df, col[0]))
+        return self.split_by_id(self._read_split_from_df(df, col[0]))
 
     def kfold_by_csv_id(self, path: typing.Union[pathlib.Path, str],
-                        id_column: str, **kwargs) -> DataContainerID:
+                        id_column: str, **kwargs):
+        """
+       Produces kfold splits by an ID column of a given csv file
+
+       Parameters
+       ----------
+       path : str or pathlib.Path
+            the path to the csv file
+        id_column : str
+            the key of the id_column
+        **kwargs :
+            additionalm keyword arguments (see :func:`pandas.read_csv` for
+            details)
+
+       Yields
+       ------
+       DataContaimnerID
+           the data container with updated internal datasets
+
+       """
         df = pd.read_csv(path, **kwargs)
         df = df.set_index(id_column)
         folds = list(df.columns)
@@ -185,11 +245,26 @@ class DataContainerID(DataContainer):
         yield from self.kfold_by_id((splits))
 
     def save_split_to_csv_id(self,
-                             path: typing.Union[pathlib.Path,
-                                                str],
+                             path: typing.Union[pathlib.Path, str],
                              id_key: str,
                              split_column: str = 'split',
-                             **kwargs):
+                             **kwargs) -> None:
+        """
+        Saves a split top a given csv id
+
+        Parameters
+        ----------
+        path : str or pathlib.Path
+            the path of the csv file
+        id_key : str
+            the id key inside the csv file
+        split_column : str
+            the name of the split_column inside the csv file
+        **kwargs :
+            additional keyword arguments (see :meth:`pd.DataFrame.to_csv`
+            for details)
+
+        """
         split_dict = {str(id_key): [], str(split_column): []}
         for key, item in self._dset.items():
             for sample in item:
