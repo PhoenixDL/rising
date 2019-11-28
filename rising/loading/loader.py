@@ -187,6 +187,9 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
 
         try:
             import numpy as np
+            # generate numpy seed. The range comes so that the seed in each
+            # worker (which is this baseseed plus the worker id) is always an
+            # uint32. This is because numpy only accepts uint32 as valid seeds
             npy_seed = np.random.randint(0,
                                          (2 ** 32) - (1 + loader.num_workers))
         except ImportError:
