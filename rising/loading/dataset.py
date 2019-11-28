@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import os
 import typing
 import pathlib
 from functools import partial
 from tqdm import tqdm
-from __future__ import annotations
 import warnings
 
 from torch.utils.data import Dataset as TorchDset
