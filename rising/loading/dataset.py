@@ -315,11 +315,23 @@ class LazyDataset(Dataset):
         return data_dict
 
 
-# TODO: Document IDManagers
+# TODO: Maybe we should add the dataset baseclass as baseclass of this as well
+#  (since it should just extend it and still have all the other dataset
+#  functionalities)?
+
 class IDManager:
     def __init__(self, id_key: str, cache_ids: bool = True, **kwargs):
         """
         Helper class to add additional functionality to Datasets
+
+        Parameters
+        ----------
+        id_key : str
+            the id key to cache
+        cache_ids : bool
+            whether to cache the ids
+        **kwargs :
+            additional keyword arguments
         """
         self.id_key = id_key
         self._cached_ids = None
@@ -327,20 +339,71 @@ class IDManager:
         if cache_ids:
             self.cache_ids()
 
-    def cache_ids(self):
+    def cache_ids(self) -> None:
+        """
+        Caches the IDs
+
+        """
         self._cached_ids = {
             sample[self.id_key]: idx for idx, sample in enumerate(self)}
 
     def _find_index_iterative(self, id: str) -> int:
+        """
+        Checks for the next index matching the given id
+
+        Parameters
+        ----------
+        id : str
+            the id to get the index for
+
+        Returns
+        -------
+        int
+            the returned index
+
+        Raises
+        ------
+        KeyError
+            no index matching the given id
+
+        """
         for idx, sample in enumerate(self):
             if sample[self.id_key] == id:
                 return idx
         raise KeyError(f"ID {id} not found.")
 
     def get_sample_by_id(self, id: str) -> dict:
+        """
+        Fetches the sample to a corresponding ID
+
+        Parameters
+        ----------
+        id : str
+            the id specifying the sample to return
+
+        Returns
+        -------
+        dict
+            the sample corresponding to the given ID
+
+        """
         return self[self.get_index_by_id(id)]
 
     def get_index_by_id(self, id: str) -> int:
+        """
+        Returns the index corresponding to a given id
+
+        Parameters
+        ----------
+        id : str
+            the id specifying the index of which sample should be returned
+
+        Returns
+        -------
+        int
+            the index of the sample matching the given id
+
+        """
         if self._cached_ids is not None:
             return self._cached_ids[id]
         else:
@@ -350,6 +413,24 @@ class IDManager:
 class CacheDatasetID(CacheDataset, IDManager):
     def __init__(self, data_path, load_fn, id_key, cache_ids=True,
                  **kwargs):
+        """
+        Caching version of ID Dataset
+
+        Parameters
+        ----------
+        data_path : str, Path or list
+            the path(s) containing the actual data samples
+        load_fn : function
+            function to load the actual data
+        id_key : str
+            the id key to cache
+        cache_ids : bool
+            whether to cache the ids
+        **kwargs :
+            additional keyword arguments
+        """
+        # TODO: Shouldn't we call the baseclasses explicitly here? with super
+        #  it is not clear, which baseclass is actually called
         super().__init__(data_path, load_fn, **kwargs)
         # check if AbstractDataset did not call IDManager with super
         if not hasattr(self, "id_key"):
@@ -359,6 +440,24 @@ class CacheDatasetID(CacheDataset, IDManager):
 class LazyDatasetID(LazyDataset, IDManager):
     def __init__(self, data_path, load_fn, id_key, cache_ids=True,
                  **kwargs):
+        """
+        Lazy version of ID Dataset
+
+        Parameters
+        ----------
+        data_path : str, Path or list
+            the path(s) containing the actual data samples
+        load_fn : function
+            function to load the actual data
+        id_key : str
+            the id key to cache
+        cache_ids : bool
+            whether to cache the ids
+        **kwargs :
+            additional keyword arguments
+        """
+        # TODO: Shouldn't we call the baseclasses explicitly here? with super
+        #  it is not clear, which baseclass is actually called
         super().__init__(data_path, load_fn, **kwargs)
         # check if AbstractDataset did not call IDManager with super
         if not hasattr(self, "id_key"):
