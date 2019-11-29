@@ -112,6 +112,23 @@ class TestAbstractTransform(unittest.TestCase):
         self.assertEqual(shapes[2], torch.Size([1, 1, 16]))
         self.assertEqual(shapes[3], torch.Size([1, 1, 32]))
 
+    def test_random_process_random(self):
+        random.seed(0)
+        expected_val = random.random()
+
+        process = RandomProcess(random_mode="random")
+        random.seed(0)
+        val = process.rand()
+        self.assertEqual(expected_val, val)
+
+    def test_random_process_uniform(self):
+        random.seed(0)
+        expected_val = random.uniform(0, 1)
+        process = RandomProcess(random_mode="uniform", random_kwargs={"a": 0, "b": 1})
+        random.seed(0)
+        val = process.rand()
+        self.assertEqual(expected_val, val)
+
 
 if __name__ == '__main__':
     unittest.main()

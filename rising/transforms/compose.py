@@ -1,22 +1,19 @@
 from typing import Sequence, Union
-import random
 from rising.utils import check_scalar
-from .abstract import AbstractTransform
+from .abstract import AbstractTransform, RandomProcess
 
 
 class Compose(AbstractTransform):
-    def __init__(self, *transforms, grad: bool = False):
+    def __init__(self, *transforms):
         """
-        Compose multiple transforms to one
+        Compose multiple transforms
 
         Parameters
         ----------
         transforms: Union[AbstractTransform, Sequence[AbstractTransform]]
             one or multiple transformations which are applied in consecutive order
-        grad: bool
-            enable gradient computation inside transformation
         """
-        super().__init__(grad=grad)
+        super().__init__(grad=True)
         if isinstance(transforms[0], Sequence):
             transforms = transforms[0]
         self.transforms = transforms
@@ -40,9 +37,10 @@ class Compose(AbstractTransform):
         return data
 
 
-class DropoutCompose(Compose):
+class DropoutCompose(RandomProcess, Compose):
     def __init__(self, *transforms, dropout: Union[float, Sequence[float]] = 0.5,
-                 grad: bool = False):
+                 random_mode: str = "random", random_args: Sequence = (),
+                 random_kwargs: dict = None, random_module: str = "random", **kwargs):
         """
         Compose multiple transforms to one
 
@@ -54,15 +52,23 @@ class DropoutCompose(Compose):
             if provided as float, each transform is skipped with the given probability
             if :param:`dropout` is a sequence, it needs to specify the dropout
             probability for each given transform
-        grad: bool
-            enable gradient computation inside transformation
+        random_mode: str
+            specifies distribution which should be used to sample additive value
+        random_args: Sequence
+            positional arguments passed for random function
+        random_kwargs: dict
+            keyword arguments for random function
+        random_module: str
+            module from where function random function should be imported
 
         Raises
         ------
         TypeError
             if dropout is a sequence it must have the same length as transforms
         """
-        super().__init__(*transforms, grad=grad)
+        super().__init__(*transforms, random_mode=random_mode,
+                         random_kwargs=random_kwargs, random_args=random_args,
+                         random_module=random_module, **kwargs)
         if check_scalar(dropout):
             dropout = [dropout] * len(self.transforms)
         if len(dropout) != len(self.transforms):
@@ -86,6 +92,6 @@ class DropoutCompose(Compose):
             dict with transformed data
         """
         for trafo, drop in zip(self.transforms, self.dropout):
-            if random.random() > drop:
+            if self.rand() > drop:
                 data = trafo(**data)
         return data

@@ -13,6 +13,15 @@ class TestCompose(unittest.TestCase):
             MirrorTransform(dims=(0,), prob=1.)
         ]
 
+    def test_multiple_grad_context(self):
+        aten = torch.rand(10, 10)
+        with torch.enable_grad():
+            with torch.no_grad():
+                aten2 = aten + 2
+        self.assertIsNone(aten._grad_fn)
+        with self.assertRaises(RuntimeError):
+            aten.mean().backward()
+
     def test_compose_single(self):
         single_compose = Compose(self.transforms[0])
         outp = single_compose(**self.batch)

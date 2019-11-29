@@ -1,5 +1,7 @@
 import torch
 import typing
+import random
+import importlib
 from typing import Callable, Union, Sequence, Any
 
 from rising.utils import check_scalar
@@ -228,3 +230,67 @@ class RandomDimsTransform(AbstractTransform):
         for key in self.keys:
             data[key] = self.augment_fn(data[key], dims=dims, **self.kwargs)
         return data
+
+
+class RandomProcess:
+    def __init__(self, *args, random_mode: str, random_args: Sequence = (),
+                 random_kwargs: dict = None, random_module: str = "random",
+                 **kwargs):
+        """
+        Saves specified function to generate random values to current class.
+        Function is saved inside :param:`random_fn`.
+
+        Parameters
+        ----------
+        random_mode: str
+            specifies distribution which should be used to sample additive value
+        random_args: Sequence
+            positional arguments passed for random function
+        random_kwargs: dict
+            keyword arguments for random function
+        random_module: str
+            module from where function random function should be imported
+        """
+        super().__init__(*args, **kwargs)
+        self.random_module = random_module
+        self.random_mode = random_mode
+        self.ranndom_args = random_args
+        self.random_kwargs = {} if random_kwargs is None else random_kwargs
+
+    def rand(self, **kwargs):
+        """
+        Return random value
+
+        Returns
+        -------
+        Any
+            object generated from function
+        """
+        return self.random_fn(*self.ranndom_args, **self.random_kwargs, **kwargs)
+
+    @property
+    def random_mode(self) -> str:
+        """
+        Get random mode
+
+        Returns
+        -------
+        str
+            random mode
+        """
+        return self._random_mode
+
+    @random_mode.setter
+    def random_mode(self, mode) -> None:
+        """
+        Set random mode
+
+        Parameters
+        ----------
+        mode: str
+            specifies distribution which should be used to sample additive value (supports all
+            random generators from python random package)
+        """
+        module = importlib.import_module(self.random_module)
+        self._random_mode = mode
+        self.random_fn = getattr(module, mode)

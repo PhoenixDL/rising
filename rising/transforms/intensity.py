@@ -2,7 +2,8 @@ import torch
 import random
 from typing import Union, Sequence
 
-from .abstract import BaseTransform, PerSampleTransform, AbstractTransform, PerChannelTransform
+from .abstract import BaseTransform, PerSampleTransform, AbstractTransform, \
+    PerChannelTransform, RandomProcess
 from .functional.intensity import *
 
 
@@ -238,21 +239,25 @@ class GammaCorrectionTransform(AbstractTransform):
         return data
 
 
-class RandomValuePerChannelTransform(PerChannelTransform):
-    def __init__(self, augment_fn: callable, random_mode: str, random_kwargs: dict = None,
-                 per_channel: bool = False, keys: Sequence = ('data',),
-                 grad: bool = False, **kwargs):
+class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
+    def __init__(self, augment_fn: callable, random_mode: str, random_args: Sequence = (),
+                 random_kwargs: dict = None, per_channel: bool = False,
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Apply augmentations which take random values as input by keyword
         :param:`value`
 
         Parameters
         ----------
+        augment_fn: callable
+            augmentation function
         random_mode: str
-            specifies distribution which should be used to sample additive value (supports all
-            random generators from python random package)
+            specifies distribution which should be used to sample additive value.
+            All function from python's random module are supported
+        random_args: Sequence
+            positional arguments passed for random function
         random_kwargs: dict
-            additional arguments for random function
+            keyword arguments for random function
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -263,9 +268,9 @@ class RandomValuePerChannelTransform(PerChannelTransform):
             keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=augment_fn, per_channel=per_channel,
-                         keys=keys, grad=grad, **kwargs)
-        self.random_mode = random_mode
-        self.random_kwargs = {} if random_kwargs is None else random_kwargs
+                         keys=keys, grad=grad, random_mode=random_mode,
+                         random_args=random_args, random_kwargs=random_kwargs,
+                         random_module="random", **kwargs)
 
     def forward(self, **data) -> dict:
         """
@@ -287,40 +292,14 @@ class RandomValuePerChannelTransform(PerChannelTransform):
                 random.seed(random_seed)
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    rand_value = self.random_fn(**self.random_kwargs)
+                    rand_value = self.rand()
                     out[:, _i] = self.augment_fn(data[_key][:, _i], value=rand_value,
                                                  out=out[:, _i], **self.kwargs)
                 data[_key] = out
             return data
         else:
-            self.kwargs["value"] = self.random_fn(**self.random_kwargs)
+            self.kwargs["value"] = self.rand()
             return super().forward(**data)
-
-    @property
-    def random_mode(self) -> str:
-        """
-        Get random mode
-
-        Returns
-        -------
-        str
-            random mode
-        """
-        return self._random_mode
-
-    @random_mode.setter
-    def random_mode(self, mode) -> None:
-        """
-        Set random mode
-
-        Parameters
-        ----------
-        mode: str
-            specifies distribution which should be used to sample additive value (supports all
-            random generators from python random package)
-        """
-        self._random_mode = mode
-        self.random_fn = getattr(random, mode)
 
 
 class RandomAddValue(RandomValuePerChannelTransform):
