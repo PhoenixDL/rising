@@ -1,10 +1,10 @@
 import torch
 import random
-from .abstract import RandomDimsTransform, AbstractTransform
+from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform
 from typing import Union, Sequence
 from itertools import permutations
 
-from .functional.spatial import mirror, rot90
+from .functional.spatial import *
 
 
 class MirrorTransform(RandomDimsTransform):
@@ -82,10 +82,56 @@ class Rot90Transform(AbstractTransform):
         return data
 
     @property
-    def dims(self):
+    def dims(self) -> Sequence:
+        """
+        Number of dimensions
+        """
         return self._dims
 
     @dims.setter
-    def dims(self, dims):
+    def dims(self, dims: Sequence):
+        """
+        Set number of dimensions and compute new set of permutations
+
+        Parameters
+        ----------
+        dims: Sequence
+            number of dimensions
+        """
         self._dims = dims
         self._permutations = tuple(permutations(dims, 2))
+
+
+class ResizeTransform(BaseTransform):
+    def __init__(self, size: Union[int, Sequence[int]], mode: str = 'nearest',
+                 align_corners: bool = None, preserve_range: bool = False,
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+        """
+        Apply augment_fn to keys
+
+        Parameters
+        ----------
+        size: Union[int, Sequence[int]]
+            output size (with channel and batch dim)
+        mode: str
+            one of :param:`nearest`, :param:`linear`, :param:`bilinear`, :param:`bicubic`,
+            :param:`trilinear`, :param:`area` (for more inforamtion see :func:`torch.nn.functional.interpolate`
+        align_corners: bool
+            input and output tensors are aligned by the center points of their corners pixels,
+            preserving the values at the corner pixels.
+        preserve_range: bool
+            output tensor has same range as input tensor
+        keys: Sequence
+            keys which should be augmented
+        grad: bool
+            enable gradient computation inside transformation
+        kwargs:
+            keyword arguments passed to augment_fn
+        """
+        super().__init__(augment_fn=resize, size=size, mode=mode,
+                         align_corners=align_corners, preserve_range=preserve_range,
+                         keys=keys, grad=grad, **kwargs)
+
+
+class ZoomTransform(BaseTransform):
+    pass
