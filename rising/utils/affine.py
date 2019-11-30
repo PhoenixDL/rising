@@ -7,7 +7,7 @@ def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
                      dim=-1)
 
 
-def matrix_to_homogeneos(batch: torch.Tensor) -> torch.Tensor:
+def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
     missing = torch.zeros((batch.size(0),
                            *[1 for tmp in batch.shape[1:-1]],
                            batch.size(-1)),
@@ -21,3 +21,6 @@ def matrix_to_homogeneos(batch: torch.Tensor) -> torch.Tensor:
 def to_cartesian(batch: torch.Tensor) -> torch.Tensor:
     return batch[:, :-1, ...]
 
+
+def matrix_permute_coordinate_order(matrix_batch):
+    return matrix_batch[:, ::-1, ::-1]
