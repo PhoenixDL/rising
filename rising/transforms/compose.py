@@ -40,7 +40,7 @@ class Compose(AbstractTransform):
 class DropoutCompose(RandomProcess, Compose):
     def __init__(self, *transforms, dropout: Union[float, Sequence[float]] = 0.5,
                  random_mode: str = "random", random_args: Sequence = (),
-                 random_kwargs: dict = None, random_module: str = "random", **kwargs):
+                 random_module: str = "random", **kwargs):
         """
         Compose multiple transforms to one
 
@@ -56,8 +56,6 @@ class DropoutCompose(RandomProcess, Compose):
             specifies distribution which should be used to sample additive value
         random_args: Sequence
             positional arguments passed for random function
-        random_kwargs: dict
-            keyword arguments for random function
         random_module: str
             module from where function random function should be imported
 
@@ -67,8 +65,8 @@ class DropoutCompose(RandomProcess, Compose):
             if dropout is a sequence it must have the same length as transforms
         """
         super().__init__(*transforms, random_mode=random_mode,
-                         random_kwargs=random_kwargs, random_args=random_args,
-                         random_module=random_module, **kwargs)
+                         random_args=random_args, random_module=random_module,
+                         rand_seq=False, **kwargs)
         if check_scalar(dropout):
             dropout = [dropout] * len(self.transforms)
         if len(dropout) != len(self.transforms):

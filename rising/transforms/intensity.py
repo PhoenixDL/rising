@@ -241,8 +241,8 @@ class GammaCorrectionTransform(AbstractTransform):
 
 class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
     def __init__(self, augment_fn: callable, random_mode: str, random_args: Sequence = (),
-                 random_kwargs: dict = None, per_channel: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+                 per_channel: bool = False, keys: Sequence = ('data',),
+                 grad: bool = False, **kwargs):
         """
         Apply augmentations which take random values as input by keyword
         :param:`value`
@@ -256,8 +256,6 @@ class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
             All function from python's random module are supported
         random_args: Sequence
             positional arguments passed for random function
-        random_kwargs: dict
-            keyword arguments for random function
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -269,8 +267,8 @@ class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
         """
         super().__init__(augment_fn=augment_fn, per_channel=per_channel,
                          keys=keys, grad=grad, random_mode=random_mode,
-                         random_args=random_args, random_kwargs=random_kwargs,
-                         random_module="random", **kwargs)
+                         random_args=random_args, random_module="random",
+                         rand_seq=False, **kwargs)
 
     def forward(self, **data) -> dict:
         """
@@ -303,7 +301,7 @@ class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
 
 
 class RandomAddValue(RandomValuePerChannelTransform):
-    def __init__(self, random_mode: str, random_kwargs: dict = None, per_channel: bool = False,
+    def __init__(self, random_mode: str, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Increase values additively
@@ -313,8 +311,6 @@ class RandomAddValue(RandomValuePerChannelTransform):
         random_mode: str
             specifies distribution which should be used to sample additive value (supports all
             random generators from python random package)
-        random_kwargs: dict
-            additional arguments for random function
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -325,12 +321,11 @@ class RandomAddValue(RandomValuePerChannelTransform):
             keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=add_value, random_mode=random_mode,
-                         random_kwargs=random_kwargs, per_channel=per_channel,
-                         keys=keys, grad=grad, **kwargs)
+                         per_channel=per_channel, keys=keys, grad=grad, **kwargs)
 
 
 class RandomScaleValue(RandomValuePerChannelTransform):
-    def __init__(self, random_mode, random_kwargs: dict = None, per_channel: bool = False,
+    def __init__(self, random_mode, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Scale values
@@ -340,8 +335,6 @@ class RandomScaleValue(RandomValuePerChannelTransform):
         random_mode: str
             specifies distribution which should be used to sample additive value (supports all
             random generators from python random package)
-        random_kwargs: dict
-            additional arguments for random function
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -352,5 +345,4 @@ class RandomScaleValue(RandomValuePerChannelTransform):
             keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=scale_by_value, random_mode=random_mode,
-                         random_kwargs=random_kwargs, per_channel=per_channel,
-                         keys=keys, grad=grad, **kwargs)
+                         per_channel=per_channel, keys=keys, grad=grad, **kwargs)
