@@ -22,5 +22,5 @@ def to_cartesian(batch: torch.Tensor) -> torch.Tensor:
     return batch[:, :-1, ...]
 
 
-def matrix_permute_coordinate_order(matrix_batch):
-    return matrix_batch[:, ::-1, ::-1]
+def matrix_permute_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
+    return batch[:, ::-1, ::-1]
