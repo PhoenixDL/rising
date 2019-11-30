@@ -96,7 +96,7 @@ def affine_image_transform(image_batch: torch.Tensor,
 
     if output_size is not None:
         if check_scalar(output_size):
-            output_size = tuple([output_size]*matrix_batch.size(-1))
+            output_size = tuple([output_size] * matrix_batch.size(-1))
 
             if adjust_size:
                 warnings.warn("Adjust size is mutually exclusive with a "
@@ -143,7 +143,7 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
     if check_scalar(curr_img_size):
         curr_img_size = [curr_img_size] * n_dim
 
-    ranges = [[0, tmp-1] for tmp in curr_img_size]
+    ranges = [[0, tmp - 1] for tmp in curr_img_size]
 
     possible_points = torch.tensor(list(product(*ranges)), dtype=matrix.dtype,
                                    device=matrix.device)
@@ -153,12 +153,3 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
         matrix)
 
     return (transformed_edges.max(1) - transformed_edges.min(1)).max(0)
-
-
-
-
-
-
-
-
-
