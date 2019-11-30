@@ -27,7 +27,7 @@ class TestSpatialFunctional(unittest.TestCase):
 
     def test_resize(self):
         out = resize(self.batch_2d.float(), (2, 2), preserve_range=True)
-        expected = torch.tensor([[1, 2],  [4, 5]])
+        expected = torch.tensor([[1, 2], [4, 5]])
         self.assertTrue((out == expected).all())
 
 
