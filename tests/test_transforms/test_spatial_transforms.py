@@ -59,6 +59,25 @@ class TestSpatialTransforms(unittest.TestCase):
         expected = resize(self.batch_dict["data"], mode="nearest", scale_factor=scale_factor)
         self.assertTrue((out["data"] == expected).all())
 
+    def test_progressive_resize(self):
+        sizes = [1, 3, 6]
+        scheduler = SizeStepScheduler([1, 2], [1, 3, 6])
+        trafo = ProgressiveResize(scheduler)
+        for i in range(3):
+            outp = trafo(**self.batch_dict)
+            self.assertTrue(all([s == sizes[i] for s in outp["data"].shape[2:]]))
+
+    def test_size_step_scheduler(self):
+        scheduler = SizeStepScheduler([10, 20], [16, 32, 64])
+        self.assertEqual(scheduler(0), 16)
+        self.assertEqual(scheduler(5), 16)
+        self.assertEqual(scheduler(11), 32)
+        self.assertEqual(scheduler(21), 64)
+
+    def test_size_step_scheduler_error(self):
+        with self.assertRaises(TypeError):
+            scheduler = SizeStepScheduler([10, 20], [32, 64])
+
 
 if __name__ == '__main__':
     unittest.main()
