@@ -229,12 +229,12 @@ class ProgressiveResize(ResizeTransform):
                          keys=keys, grad=grad, **kwargs)
         self.scheduler = scheduler
 
-    @classmethod
-    def reset_step(cls):
+    def reset_step(self):
         """
         Reset step to 0
         """
-        cls.step = 0
+        self.step = 0
+        type(self).step = 0
 
     def forward(self, **data) -> dict:
         """

@@ -67,8 +67,12 @@ class TestSpatialTransforms(unittest.TestCase):
             outp = trafo(**self.batch_dict)
             self.assertTrue(all([s == sizes[i] for s in outp["data"].shape[2:]]))
 
+        trafo.reset_step()
+        self.assertEqual(trafo.step, 0)
+
     def test_size_step_scheduler(self):
         scheduler = SizeStepScheduler([10, 20], [16, 32, 64])
+        self.assertEqual(scheduler(-1), 16)
         self.assertEqual(scheduler(0), 16)
         self.assertEqual(scheduler(5), 16)
         self.assertEqual(scheduler(11), 32)
