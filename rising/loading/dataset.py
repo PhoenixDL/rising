@@ -16,6 +16,7 @@ class Dataset(TorchDset):
     Extension of PyTorch's Datasets by a ``get_subset`` method which returns a
     sub-dataset.
     """
+
     def get_subset(self, indices: typing.Sequence[int]) -> SubsetDataset:
         """
         Returns a Subset of the current dataset based on given indices
