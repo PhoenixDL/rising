@@ -1,6 +1,6 @@
 import torch
 import random
-from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform
+from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform, RandomProcess
 from typing import Union, Sequence
 from itertools import permutations
 
@@ -133,5 +133,60 @@ class ResizeTransform(BaseTransform):
                          keys=keys, grad=grad, **kwargs)
 
 
-class ZoomTransform(BaseTransform):
-    pass
+class ZoomTransform(RandomProcess, BaseTransform):
+    def __init__(self, random_args: Sequence = (0.75, 1.25), random_kwargs: dict = None,
+                 random_mode: str = "uniform",
+                 mode: str = 'nearest', align_corners: bool = None, preserve_range: bool = False,
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+        """
+        Apply augment_fn to keys. By default the scaling factor is sampled from a uniform
+        distribution with the range specified by :param:`random_args`
+
+        Parameters
+        ----------
+        random_args: Sequence
+            positional arguments passed for random function
+        random_kwargs: dict
+            keyword arguments for random function
+        random_mode: str
+            specifies distribution which should be used to sample additive value
+        mode: str
+            one of :param:`nearest`, :param:`linear`, :param:`bilinear`, :param:`bicubic`,
+            :param:`trilinear`, :param:`area` (for more inforamtion see :func:`torch.nn.functional.interpolate`)
+        align_corners: bool
+            input and output tensors are aligned by the center points of their corners pixels,
+            preserving the values at the corner pixels.
+        preserve_range: bool
+            output tensor has same range as input tensor
+        keys: Sequence
+            keys which should be augmented
+        grad: bool
+            enable gradient computation inside transformation
+        kwargs:
+            keyword arguments passed to augment_fn
+
+        See Also
+        --------
+        :func:`random.uniform`, :func:`torch.nn.functional.interpolate`
+        """
+        super().__init__(augment_fn=resize, random_args=random_args, random_kwargs=random_kwargs,
+                         random_mode=random_mode, mode=mode,
+                         align_corners=align_corners, preserve_range=preserve_range,
+                         keys=keys, grad=grad, **kwargs)
+
+    def forward(self, **data) -> dict:
+        """
+        Augment data
+
+        Parameters
+        ----------
+        data: dict
+            input data
+
+        Returns
+        -------
+        dict
+            augmented data
+        """
+        self.kwargs["scale_factor"] = self.rand()
+        return super().forward(**data)

@@ -19,7 +19,7 @@ def torch_one_hot(target: torch.Tensor, num_classes: int = None) -> torch.Tensor
         one hot encoded tensor
     """
     if num_classes is None:
-        num_classes = target.max()
+        num_classes = target.max() + 1
     dtype, device = target.dtype, target.device
     target_onehot = torch.zeros(*target.shape, num_classes,
                                 dtype=dtype, device=device)

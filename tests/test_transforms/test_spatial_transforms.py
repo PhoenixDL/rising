@@ -11,8 +11,8 @@ class TestSpatialTransforms(unittest.TestCase):
         torch.manual_seed(0)
         random.seed(0)
         self.batch_dict = {
-            "data": torch.arange(1, 10).reshape(1, 1, 3, 3),
-            "seg": torch.rand(1, 1, 3, 3),
+            "data": torch.arange(1, 10).reshape(1, 1, 3, 3).float(),
+            "seg": torch.randint(0, 3, (1, 1, 3, 3)).long(),
             "label": torch.arange(3)
         }
 
@@ -40,6 +40,24 @@ class TestSpatialTransforms(unittest.TestCase):
         data_orig = self.batch_dict["data"].clone()
         outp = trafo(**self.batch_dict)
         self.assertTrue((outp["data"] == data_orig).all())
+
+    def test_resize_transform(self):
+        trafo = ResizeTransform((2, 2))
+        out = trafo(**self.batch_dict)
+        expected = torch.tensor([[1, 2], [4, 5]])
+        self.assertTrue((out["data"] == expected).all())
+
+    def test_zoom_transform(self):
+        _range = (2., 3.)
+        random.seed(0)
+        scale_factor = random.uniform(*_range)
+
+        trafo = ZoomTransform(random_args=_range)
+        random.seed(0)
+        out = trafo(**self.batch_dict)
+
+        expected = resize(self.batch_dict["data"], mode="nearest", scale_factor=scale_factor)
+        self.assertTrue((out["data"] == expected).all())
 
 
 if __name__ == '__main__':
