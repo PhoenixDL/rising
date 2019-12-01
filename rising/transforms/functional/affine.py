@@ -1,6 +1,6 @@
 import torch
-from rising.utils.affine import to_cartesian, matrix_to_homogeneous, \
-    points_to_homogeneous, matrix_permute_coordinate_order
+from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
+    points_to_homogeneous, matrix_revert_coordinate_order
 from itertools import product
 from rising.utils.checktype import check_scalar
 import warnings
@@ -27,12 +27,12 @@ def affine_point_transform(point_batch: torch.Tensor,
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
 
-    matrix_batch = matrix_permute_coordinate_order(matrix_batch)
+    matrix_batch = matrix_revert_coordinate_order(matrix_batch)
 
     transformed_points = torch.bmm(point_batch,
                                    matrix_batch.permute(0, 2, 1))
 
-    return to_cartesian(transformed_points)
+    return points_to_cartesian(transformed_points)
 
 
 def affine_image_transform(image_batch: torch.Tensor,
