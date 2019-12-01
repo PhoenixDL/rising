@@ -25,7 +25,7 @@ def switch_debug_mode():
     """
     Alternates the current debug mode
     """
-    set_debug_mode(not get_current_debug_mode())
+    set_debug_mode(not get_debug_mode())
 
 
 def set_debug_mode(mode: bool):
