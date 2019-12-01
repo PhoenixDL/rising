@@ -11,4 +11,5 @@ coverage:
 ignore:
   - "tests/"
   - "*/__init.py"
+  - "_version.py"
   

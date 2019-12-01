@@ -32,11 +32,17 @@ class TestBaseDataset(unittest.TestCase):
             return [LoadDummySample()(path, None)] * 4
 
         dataset = CacheDataset(self.paths, load_mul_sample,
+                               num_workers=0, verbose=True,
                                mode='extend')
         self.assertEqual(len(dataset), 40)
         self.check_dataset_access(dataset, [0, 20, 39])
         self.check_dataset_outside_access(dataset, [40, 45])
         self.check_dataset_iter(dataset)
+
+    def test_cache_dataset_mode_error(self):
+        with self.assertRaises(TypeError):
+            dataset = CacheDataset(self.paths, LoadDummySample(),
+                                   label_load_fct=None, mode="no_mode:P")
 
     def test_lazy_dataset(self):
         dataset = LazyDataset(self.paths, LoadDummySample(),

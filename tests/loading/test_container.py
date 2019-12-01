@@ -24,9 +24,11 @@ class LoadDummySampleID:
 class TestDataContainer(unittest.TestCase):
     def setUp(self):
         self.dset = DummyDataset(num_samples=6,
-                                 load_fn=(LoadDummySampleID()))
+                                 load_fn=(LoadDummySampleID()),
+                                 )
         self.dset_id = DummyDatasetID(num_samples=6,
-                                      load_fn=LoadDummySampleID())
+                                      load_fn=LoadDummySampleID(),
+                                      )
         self.split = {"train": [0, 1, 2], "val": [3, 4, 5]}
         self.kfold = [{"train": [0, 1, 2], "val": [3, 4, 5]},
                       {"val": [0, 1, 2], "train": [3, 4, 5]}]

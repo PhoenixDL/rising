@@ -32,7 +32,6 @@ class Dataset(TorchDset):
         :class:`SubsetDataset`
             the subset
         """
-
         # extract other important attributes from current dataset
         kwargs = {}
 
@@ -43,14 +42,10 @@ class Dataset(TorchDset):
                     continue
                 kwargs[key] = val
 
-        kwargs["old_getitem"] = self.__class__.__getitem__
+        old_getitem = self.__class__.__getitem__
         subset_data = [self[idx] for idx in indices]
 
-        return SubsetDataset(subset_data, **kwargs)
-
-
-# NOTE: For backward compatibility (should be removed ASAP)
-AbstractDataset = Dataset
+        return SubsetDataset(subset_data, old_getitem, **kwargs)
 
 
 class SubsetDataset(Dataset):
@@ -71,7 +66,7 @@ class SubsetDataset(Dataset):
         **kwargs :
             additional keyword arguments (are set as class attribute)
         """
-        super().__init__(None, None)
+        super().__init__()
 
         self.data = data
         self._old_getitem = old_getitem
@@ -109,9 +104,7 @@ class SubsetDataset(Dataset):
 
 class CacheDataset(Dataset):
     def __init__(self,
-                 data_path: typing.Union[typing.Union[pathlib.Path,
-                                                      str],
-                                         list],
+                 data_path: typing.Union[typing.Union[pathlib.Path, str], list],
                  load_fn: typing.Callable,
                  mode: str = "append",
                  num_workers: int = None,
@@ -163,8 +156,7 @@ class CacheDataset(Dataset):
         self._load_kwargs = load_kwargs
         self.data = self._make_dataset(data_path, mode)
 
-    def _make_dataset(self, path: typing.Union[typing.Union[pathlib.Path, str],
-                                               list],
+    def _make_dataset(self, path: typing.Union[typing.Union[pathlib.Path, str], list],
                       mode: str) -> typing.List[dict]:
         """
         Function to build the entire dataset
@@ -201,7 +193,7 @@ class CacheDataset(Dataset):
         else:
             if self._verbosity:
                 path = tqdm(path, unit='samples', desc="Loading Samples")
-                _data = map(load_fn, path)
+            _data = map(load_fn, path)
 
         for sample in _data:
             self._add_item(data, sample, mode)
@@ -249,6 +241,17 @@ class CacheDataset(Dataset):
 
         """
         return self.data[index]
+
+    def __len__(self) -> int:
+        """
+        Length of dataset
+
+        Returns
+        -------
+        int
+            number of elements
+        """
+        return len(self.data)
 
 
 class LazyDataset(Dataset):
@@ -315,11 +318,21 @@ class LazyDataset(Dataset):
                                   **self._load_kwargs)
         return data_dict
 
+    def __len__(self) -> int:
+        """
+        Length of dataset
+
+        Returns
+        -------
+        int
+            number of elements
+        """
+        return len(self.data)
+
 
 # TODO: Maybe we should add the dataset baseclass as baseclass of this as well
 #  (since it should just extend it and still have all the other dataset
 #  functionalities)?
-
 class IDManager:
     def __init__(self, id_key: str, cache_ids: bool = True, **kwargs):
         """
@@ -334,6 +347,7 @@ class IDManager:
         **kwargs :
             additional keyword arguments
         """
+        super().__init__(**kwargs)
         self.id_key = id_key
         self._cached_ids = None
 
@@ -411,7 +425,7 @@ class IDManager:
             return self._find_index_iterative(id)
 
 
-class CacheDatasetID(CacheDataset, IDManager):
+class CacheDatasetID(IDManager, CacheDataset):
     def __init__(self, data_path, load_fn, id_key, cache_ids=True,
                  **kwargs):
         """
@@ -432,13 +446,11 @@ class CacheDatasetID(CacheDataset, IDManager):
         """
         # TODO: Shouldn't we call the baseclasses explicitly here? with super
         #  it is not clear, which baseclass is actually called
-        super().__init__(data_path, load_fn, **kwargs)
-        # check if AbstractDataset did not call IDManager with super
-        if not hasattr(self, "id_key"):
-            IDManager.__init__(self, id_key, cache_ids=cache_ids)
+        super().__init__(data_path=data_path, load_fn=load_fn, id_key=id_key,
+                         cache_ids=cache_ids, **kwargs)
 
 
-class LazyDatasetID(LazyDataset, IDManager):
+class LazyDatasetID(IDManager, LazyDataset):
     def __init__(self, data_path, load_fn, id_key, cache_ids=True,
                  **kwargs):
         """
@@ -459,7 +471,5 @@ class LazyDatasetID(LazyDataset, IDManager):
         """
         # TODO: Shouldn't we call the baseclasses explicitly here? with super
         #  it is not clear, which baseclass is actually called
-        super().__init__(data_path, load_fn, **kwargs)
-        # check if AbstractDataset did not call IDManager with super
-        if not hasattr(self, "id_key"):
-            IDManager.__init__(self, id_key, cache_ids=cache_ids)
+        super().__init__(data_path=data_path, load_fn=load_fn, id_key=id_key,
+                         cache_ids=cache_ids, **kwargs)
