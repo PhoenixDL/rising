@@ -139,6 +139,7 @@ class TestBaseDataset(unittest.TestCase):
         with self.assertRaises(IndexError):
             subset[len(idx)]
 
+
 class TestDatasetID(unittest.TestCase):
     def test_load_dummy_sample(self):
         load_fn = LoadDummySample()
