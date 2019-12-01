@@ -152,7 +152,6 @@ def _format_scale(scale: Union[torch.Tensor, int, float],
                   batchsize: int, ndim: int,
                   device: Union[torch.device, str] = None,
                   dtype: Union[torch.dtype, str] = None) -> torch.Tensor:
-
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -281,7 +280,7 @@ def _format_translation(offset: Union[torch.Tensor, int, float],
     offset = offset.to(device=device, dtype=dtype)
 
     # translation matrix already built
-    if offset.size() == (batchsize, ndim+1, ndim+1):
+    if offset.size() == (batchsize, ndim + 1, ndim + 1):
         return offset
 
     # not completely built so far -> bring in shape (batchsize, ndim)
@@ -295,7 +294,7 @@ def _format_translation(offset: Union[torch.Tensor, int, float],
 
     # directly build homogeneous form -> use dim+1
     whole_translation_matrix = get_batched_eye(batchsize=batchsize,
-                                               ndim=ndim+1, device=device,
+                                               ndim=ndim + 1, device=device,
                                                dtype=dtype)
 
     whole_translation_matrix[:, :-1, -1] = offset.clone()
