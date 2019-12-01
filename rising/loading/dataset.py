@@ -8,7 +8,7 @@ from tqdm import tqdm
 import warnings
 
 from torch.utils.data import Dataset as TorchDset
-from rising.loading.debug_mode import get_current_debug_mode
+from rising.loading.debug_mode import get_debug_mode
 from torch.multiprocessing import Pool
 
 
@@ -137,16 +137,14 @@ class CacheDataset(Dataset):
         """
         super().__init__()
 
-        if (get_current_debug_mode() and
-                (num_workers is None or num_workers > 0)):
+        if get_debug_mode() and (num_workers is None or num_workers > 0):
             warnings.warn("The debug mode has been activated. "
-                          "Falling back to num_workers = 0")
+                          "Falling back to num_workers = 0", UserWarning)
             num_workers = 0
 
         if (num_workers is None or num_workers > 0) and verbose:
             warnings.warn("Verbosity is mutually exclusive with "
-                          "num_workers > 0. Setting it to False instead.",
-                          UserWarning)
+                          "num_workers > 0. Setting it to False instead.", UserWarning)
             verbose = False
 
         self._num_workers = num_workers

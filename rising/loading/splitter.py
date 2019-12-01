@@ -1,6 +1,7 @@
 import copy
 import typing
 import logging
+import warnings
 import math
 from sklearn.model_selection import train_test_split, GroupShuffleSplit, \
     KFold, GroupKFold, StratifiedKFold
@@ -12,13 +13,11 @@ logger = logging.getLogger(__file__)
 SplitType = typing.Dict[str, list]
 
 
-# TODO: I would probably change this and make val_size optionally.
-#  We always need a testset, but not always a validationset
 class Splitter:
     def __init__(self,
                  dataset: Dataset,
-                 val_size: typing.Union[int, float],
-                 test_size: typing.Union[int, float] = None):
+                 val_size: typing.Union[int, float] = 0,
+                 test_size: typing.Union[int, float] = 0):
         """
         Splits a dataset by several options
 
@@ -40,15 +39,17 @@ class Splitter:
             if not provided or explicitly set to None, no testset will be
             created
         """
-        # TODO: Since we only have object as implicit baseclass the
-        #  super().__init__() can probably be removed
         super().__init__()
+        if val_size == 0 and test_size == 0:
+            warnings.warn("Can not perform splitting if val and test size is 0.")
+
         self._dataset = dataset
         self._total_num = len(self._dataset)
         self._idx = list(range(self._total_num))
         self._val = val_size
-        self._test = test_size if test_size is not None else 0
+        self._test = test_size
 
+        self._convert_prop_to_num()
         self._check_sizes()
 
     def _check_sizes(self):
@@ -71,12 +72,6 @@ class Splitter:
             raise ValueError("Size must be larger than zero, not "
                              "{}".format(self._test))
 
-        # TODO: Can we explicitly call this check in the __init__ before
-        #  checking the sizes? Explicit is better than implicit
-        #  When I first checked the Code I was wondering where this was done
-        #  and I could not find it, since this function should only check
-        #  and not convert anything
-        self._convert_prop_to_num()
         if self._total_num < self._val + self._test:
             raise ValueError("Val + test size must be smaller than total, "
                              "not {}".format(self._val + self._test))
@@ -315,9 +310,7 @@ class Splitter:
         """
         for attr in attributes:
             value = getattr(self, attr)
-            # TODO: When is a value close to 0?
-            #  Shouldn't we only check if 0<=value<1?
-            if value < 1 and math.isclose(value, 0):
+            if 0 < value < 1:
                 setattr(self, attr, value * self._total_num)
 
     @staticmethod
@@ -378,6 +371,7 @@ class Splitter:
     @val_size.setter
     def val_size(self, value: typing.Union[int, float]):
         self._val = value
+        self._convert_prop_to_num()
         self._check_sizes()
 
     @property
@@ -387,6 +381,7 @@ class Splitter:
     @test_size.setter
     def test_size(self, value: typing.Union[int, float]):
         self._test = value
+        self._convert_prop_to_num()
         self._check_sizes()
 
     @property

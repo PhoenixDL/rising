@@ -10,7 +10,7 @@ __DEBUG_MODE = False
 # (even if this slows down things a lot!).
 
 
-def get_current_debug_mode():
+def get_debug_mode():
     """
     Getter function for the current debug mode
     Returns

@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader as _DataLoader, Sampler
 from torch.utils.data.dataloader import \
     _SingleProcessDataLoaderIter, _MultiProcessingDataLoaderIter as \
     __MultiProcessingDataLoaderIter
-from rising.loading.debug_mode import get_current_debug_mode
+from rising.loading.debug_mode import get_debug_mode
 from functools import partial
 from rising.loading.dataset import Dataset
 from threadpoolctl import threadpool_limits
@@ -115,7 +115,7 @@ class DataLoader(_DataLoader):
 
     def __iter__(self) -> Union[_SingleProcessDataLoaderIter,
                                 _MultiProcessingDataLoaderIter]:
-        if self.num_workers == 0 or get_current_debug_mode():
+        if self.num_workers == 0 or get_debug_mode():
             return _SingleProcessDataLoaderIter(self)
         else:
             return _MultiProcessingDataLoaderIter(self)
