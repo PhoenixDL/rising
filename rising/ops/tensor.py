@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 
-def torch_one_hot(target: torch.Tensor, num_classes: int) -> torch.Tensor:
+def torch_one_hot(target: torch.Tensor, num_classes: int = None) -> torch.Tensor:
     """
     Compute one hot encoding of input tensor
 
@@ -11,13 +11,15 @@ def torch_one_hot(target: torch.Tensor, num_classes: int) -> torch.Tensor:
     target: torch.Tensor
         tensor to be converted
     num_classes: int
-        number of classes
+        number of classes. If :param:`num_classes` is None, the maximum of target is used
 
     Returns
     -------
     torch.Tensor
         one hot encoded tensor
     """
+    if num_classes is None:
+        num_classes = target.max() - target.min() + 1
     dtype, device = target.dtype, target.device
     target_onehot = torch.zeros(*target.shape, num_classes,
                                 dtype=dtype, device=device)

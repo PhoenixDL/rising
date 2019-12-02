@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import Mock, call
 import torch
+import random
 
 from rising.transforms.abstract import *
 
@@ -124,7 +125,16 @@ class TestAbstractTransform(unittest.TestCase):
     def test_random_process_uniform(self):
         random.seed(0)
         expected_val = random.uniform(0, 1)
-        process = RandomProcess(random_mode="uniform", random_kwargs={"a": 0, "b": 1})
+        process = RandomProcess(random_mode="uniform", random_args=(0, 1))
+        random.seed(0)
+        val = process.rand()
+        self.assertEqual(expected_val, val)
+
+    def test_random_process_uniform_seq(self):
+        random.seed(0)
+        expected_val = (random.uniform(0, 1), random.uniform(0, 1))
+        process = RandomProcess(random_mode="uniform",
+                                random_args=((0, 1), (0, 1)))
         random.seed(0)
         val = process.rand()
         self.assertEqual(expected_val, val)

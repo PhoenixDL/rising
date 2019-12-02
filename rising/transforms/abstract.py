@@ -1,10 +1,13 @@
 import torch
 import typing
-import random
 import importlib
 from typing import Callable, Union, Sequence, Any
 
+from rising import AbstractMixin
 from rising.utils import check_scalar
+
+__all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
+           "PerChannelTransform", "RandomDimsTransform", "RandomProcess"]
 
 
 augment_callable = Callable[[torch.Tensor], Any]
@@ -232,9 +235,10 @@ class RandomDimsTransform(AbstractTransform):
         return data
 
 
-class RandomProcess:
-    def __init__(self, *args, random_mode: str, random_args: Sequence = (),
-                 random_kwargs: dict = None, random_module: str = "random",
+class RandomProcess(AbstractMixin):
+    def __init__(self, *args, random_mode: str,
+                 random_args: Union[Sequence, Sequence[Sequence]] = (),
+                 random_module: str = "random", rand_seq: bool = True,
                  **kwargs):
         """
         Saves specified function to generate random values to current class.
@@ -244,18 +248,21 @@ class RandomProcess:
         ----------
         random_mode: str
             specifies distribution which should be used to sample additive value
-        random_args: Sequence
-            positional arguments passed for random function
-        random_kwargs: dict
-            keyword arguments for random function
+        random_args: Union[Sequence, Sequence[Sequence]]
+            positional arguments passed for random function. If Sequence[Sequence]
+            is provided, a random value for each item in the outer
+            Sequence is generated
         random_module: str
             module from where function random function should be imported
+        rand_seq: bool
+            if enabled, multiple random values are generated if :param:`random_args`
+            is of type Sequence[Sequence]
         """
         super().__init__(*args, **kwargs)
         self.random_module = random_module
         self.random_mode = random_mode
-        self.ranndom_args = random_args
-        self.random_kwargs = {} if random_kwargs is None else random_kwargs
+        self.random_args = random_args
+        self.rand_seq = rand_seq
 
     def rand(self, **kwargs):
         """
@@ -266,7 +273,12 @@ class RandomProcess:
         Any
             object generated from function
         """
-        return self.random_fn(*self.ranndom_args, **self.random_kwargs, **kwargs)
+        if (self.rand_seq and len(self.random_args) > 0 and
+                isinstance(self.random_args[0], Sequence)):
+            val = tuple(self.random_fn(*args, **kwargs) for args in self.random_args)
+        else:
+            val = self.random_fn(*self.random_args, **kwargs)
+        return val
 
     @property
     def random_mode(self) -> str:
