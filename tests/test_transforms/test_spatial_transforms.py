@@ -4,6 +4,7 @@ import unittest
 
 from tests.test_transforms import chech_data_preservation
 from rising.transforms.spatial import *
+from rising.transforms.functional.spatial import resize
 
 
 class TestSpatialTransforms(unittest.TestCase):

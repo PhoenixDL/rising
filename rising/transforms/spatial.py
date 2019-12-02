@@ -6,6 +6,9 @@ from itertools import permutations
 
 from .functional.spatial import *
 
+__all__ = ["MirrorTransform", "Rot90Transform", "ResizeTransform",
+           "ZoomTransform", "ProgressiveResize", "SizeStepScheduler"]
+
 schduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 

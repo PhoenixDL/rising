@@ -1,4 +1,5 @@
 import unittest
+import torch
 from math import isclose
 
 from rising.transforms.functional.intensity import *

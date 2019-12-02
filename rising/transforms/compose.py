@@ -2,6 +2,8 @@ from typing import Sequence, Union
 from rising.utils import check_scalar
 from .abstract import AbstractTransform, RandomProcess
 
+__all__ = ["Compose", "DropoutCompose"]
+
 
 class Compose(AbstractTransform):
     def __init__(self, *transforms):

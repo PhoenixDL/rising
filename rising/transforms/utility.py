@@ -1,5 +1,7 @@
 from .abstract import AbstractTransform
 
+__all__ = ["DoNothingTransform"]
+
 
 class DoNothingTransform(AbstractTransform):
     def __init__(self, grad: bool = False, **kwargs):

@@ -2,7 +2,8 @@ import torch
 from typing import Sequence, Union
 
 from rising.utils import check_scalar
-from rising.ops import torch_one_hot
+
+__all__ = ["mirror", "rot90", "resize"]
 
 
 def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:

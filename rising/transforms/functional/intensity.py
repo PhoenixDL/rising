@@ -4,6 +4,9 @@ from typing import Union, Sequence
 
 from rising.utils import check_scalar
 
+__all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_std",
+           "add_noise", "add_value", "gamma_correction", "scale_by_value"]
+
 
 def norm_range(data: torch.Tensor, min: float, max: float,
                per_channel: bool = True, out: torch.Tensor = None) -> torch.Tensor:

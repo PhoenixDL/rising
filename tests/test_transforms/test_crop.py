@@ -3,6 +3,7 @@ import torch
 import random
 
 from rising.transforms.crop import *
+from rising.transforms.functional.crop import random_crop, center_crop
 
 
 class TestCrop(unittest.TestCase):

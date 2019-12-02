@@ -1,9 +1,10 @@
-# TODO: progressive resizing
 import torch
 import random
 from typing import Union, Sequence
 
 from rising.utils import check_scalar
+
+__all__ = ["crop", "center_crop", "random_crop"]
 
 
 def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):

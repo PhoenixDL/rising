@@ -1,10 +1,13 @@
 import torch
 import typing
-import random
 import importlib
 from typing import Callable, Union, Sequence, Any
 
+from rising import AbstractMixin
 from rising.utils import check_scalar
+
+__all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
+           "PerChannelTransform", "RandomDimsTransform", "RandomProcess"]
 
 
 augment_callable = Callable[[torch.Tensor], Any]
@@ -232,7 +235,7 @@ class RandomDimsTransform(AbstractTransform):
         return data
 
 
-class RandomProcess:
+class RandomProcess(AbstractMixin):
     def __init__(self, *args, random_mode: str,
                  random_args: Union[Sequence, Sequence[Sequence]] = (),
                  random_module: str = "random", rand_seq: bool = True,
