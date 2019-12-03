@@ -173,6 +173,7 @@ def apply_affine_image_transform(image_batch: torch.Tensor,
                                            padding_mode=padding_mode,
                                            align_corners=align_corners)
 
+
 def _assemble_matrix_if_necessary(batchsize, ndim,
                                   scale: AffineParamType,
                                   rotation: AffineParamType,
@@ -202,9 +203,9 @@ def _assemble_matrix_if_necessary(batchsize, ndim,
     if len(matrix.shape) == 2:
         matrix = matrix[None].expand(batchsize, -1, -1)
 
-    if matrix.shape == (batchsize, ndim, ndim+1):
+    if matrix.shape == (batchsize, ndim, ndim + 1):
         return matrix
-    elif matrix.shape == (batchsize, ndim+1, ndim+1):
+    elif matrix.shape == (batchsize, ndim + 1, ndim + 1):
         return matrix_to_cartesian(matrix)
 
     raise ValueError(
