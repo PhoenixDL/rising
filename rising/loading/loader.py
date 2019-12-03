@@ -9,10 +9,10 @@ from rising.loading.debug_mode import get_debug_mode
 from functools import partial
 from rising.loading.dataset import Dataset
 from threadpoolctl import threadpool_limits
+import numpy as np
 
 
 class DataLoader(_DataLoader):
-
     def __init__(self, dataset: Union[Sequence, Dataset],
                  batch_size: int = 1, shuffle: bool = False,
                  batch_transforms: Callable = None, sampler: Sampler = None,
@@ -153,7 +153,6 @@ class BatchTransformer(object):
         batch = self._collate_fn(*args, **kwargs)
 
         if self._transforms is not None:
-
             if isinstance(batch, Mapping):
                 batch = self._transforms(**batch)
             elif isinstance(batch, Sequence):
@@ -190,8 +189,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
             # generate numpy seed. The range comes so that the seed in each
             # worker (which is this baseseed plus the worker id) is always an
             # uint32. This is because numpy only accepts uint32 as valid seeds
-            npy_seed = np.random.randint(0,
-                                         (2 ** 32) - (1 + loader.num_workers))
+            npy_seed = np.random.randint(0, (2 ** 32) - (1 + loader.num_workers))
         except ImportError:
             # we don't generate a numpy seed here with torch, since we don't
             # need one; if the import fails in the main process it should
@@ -200,9 +198,12 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
 
         old_worker_init = loader.worker_init_fn
 
-        new_worker_init_fn = partial(_seed_npy_before_worker_init,
-                                     seed=npy_seed,
-                                     worker_init_fn=old_worker_init)
+        if npy_seed is None:
+            new_worker_init_fn = old_worker_init
+        else:
+            new_worker_init_fn = partial(_seed_npy_before_worker_init,
+                                         seed=npy_seed,
+                                         worker_init_fn=old_worker_init)
         loader.worker_init_fn = new_worker_init_fn
 
         with threadpool_limits(limits=1, user_api='blas'):
