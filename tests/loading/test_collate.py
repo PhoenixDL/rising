@@ -10,7 +10,6 @@ except ImportError:
 from rising.loading.collate import numpy_collate
 
 
-# TODO: Add more collate test cases
 class TestCollate(unittest.TestCase):
     @unittest.skipIf(np is None, 'numpy is not available')
     def test_numpy_collate_int(self):

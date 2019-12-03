@@ -6,8 +6,6 @@ import unittest
 from rising.transforms.kernel import *
 
 
-# TODO: Test: !!!!Implement sensitive tests!!!!
-
 class TestKernelTransforms(unittest.TestCase):
     def setUp(self) -> None:
         torch.manual_seed(0)
@@ -37,6 +35,7 @@ class TestKernelTransforms(unittest.TestCase):
                                     dim=2, stride=1, padding=1)
 
     def test_gaussian_smoothing_transform(self):
+        # TODO: Test: !!!!Implement sensitive tests!!!!
         trafo = GaussianSmoothingTransform(in_channels=1, kernel_size=3, std=1,
                                            dim=2, stride=1, padding=1)
         self.batch_dict["data"][0, 0, 1] = 1

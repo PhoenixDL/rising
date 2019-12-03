@@ -1,5 +1,7 @@
 from .abstract import AbstractTransform
 
+__all__ = ["MapToSeq", "SeqToMap"]
+
 
 class MapToSeq(AbstractTransform):
     def __init__(self, *keys, grad: bool = False, **kwargs):

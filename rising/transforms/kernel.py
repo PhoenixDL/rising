@@ -5,6 +5,8 @@ from typing import Sequence, Union, Callable
 from .abstract import AbstractTransform
 from rising.utils import check_scalar
 
+__all__ = ["KernelTransform", "GaussianSmoothingTransform"]
+
 
 class KernelTransform(AbstractTransform):
     def __init__(self, in_channels: int, kernel_size: Union[int, Sequence], dim: int = 2,
@@ -175,4 +177,5 @@ class GaussianSmoothingTransform(KernelTransform):
         # Reshape to depthwise convolutional weight
         kernel = kernel.view(1, 1, *kernel.size())
         kernel = kernel.repeat(self.in_channels, *[1] * (kernel.dim() - 1))
-        return kernel
+        kernel.requires_grad = False
+        return kernel.contiguous()
