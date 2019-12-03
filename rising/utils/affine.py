@@ -1,7 +1,9 @@
 import torch
 from rising.utils.checktype import check_scalar
 from math import pi
-from typing import Union
+from typing import Union, Sequence
+
+AffineParamType = Union[int, float, Sequence, torch.Tensor]
 
 
 def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
@@ -148,7 +150,7 @@ def get_batched_eye(batchsize: int, ndim: int,
         1, ndim, ndim).expand(batchsize, -1, -1)
 
 
-def _format_scale(scale: Union[torch.Tensor, int, float],
+def _format_scale(scale: AffineParamType,
                   batchsize: int, ndim: int,
                   device: Union[torch.device, str] = None,
                   dtype: Union[torch.dtype, str] = None) -> torch.Tensor:
@@ -228,7 +230,7 @@ def _format_scale(scale: Union[torch.Tensor, int, float],
                      % str(tuple(scale.size())))
 
 
-def _format_translation(offset: Union[torch.Tensor, int, float],
+def _format_translation(offset: AffineParamType,
                         batchsize: int, ndim: int,
                         device: Union[torch.device, str] = None,
                         dtype: Union[torch.dtype, str] = None
@@ -320,7 +322,7 @@ def deg_to_rad(angles: Union[torch.Tensor, float, int]
     return angles * pi / 180
 
 
-def _format_rotation(rotation: Union[torch.Tensor, int, float],
+def _format_rotation(rotation: AffineParamType,
                      batchsize: int, ndim: int,
                      degree: bool = False,
                      device: Union[torch.device, str] = None,
@@ -426,9 +428,9 @@ def _format_rotation(rotation: Union[torch.Tensor, int, float],
     return matrix_to_homogeneous(whole_rot_matrix)
 
 
-def parametrize_matrix(scale: Union[torch.Tensor, int, float],
-                       rotation: Union[torch.Tensor, int, float],
-                       translation: Union[torch.Tensor, int, float],
+def parametrize_matrix(scale: AffineParamType,
+                       rotation: AffineParamType,
+                       translation: AffineParamType,
                        batchsize: int, ndim: int,
                        degree: bool = False,
                        device: Union[torch.device, str] = None,

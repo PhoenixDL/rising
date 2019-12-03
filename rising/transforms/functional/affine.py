@@ -1,13 +1,70 @@
 import torch
 from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
-    points_to_homogeneous, matrix_revert_coordinate_order
+    points_to_homogeneous, matrix_revert_coordinate_order, \
+    parametrize_matrix, AffineParamType, matrix_to_cartesian
 from itertools import product
 from rising.utils.checktype import check_scalar
 import warnings
+from typing import Union
+
+
+def affine_image_transform(image_batch: torch.Tensor,
+                           scale: AffineParamType = None,
+                           rotation: AffineParamType = None,
+                           translation: AffineParamType = None,
+                           matrix: torch.Tensor = None,
+                           degree: bool = False,
+                           output_size: tuple = None,
+                           adjust_size: bool = False,
+                           interpolation_mode: str = 'bilinear',
+                           padding_mode: str = 'zeros',
+                           align_corners: bool = None) -> torch.Tensor:
+
+    batchsize = image_batch.size(0)
+    ndim = len(image_batch.shape) - 2  # substract batch and channel dim
+    device = image_batch.device
+    dtype = image_batch.dtype
+
+    matrix = _assemble_matrix_if_necessary(batchsize=batchsize, ndim=ndim,
+                                           scale=scale, rotation=rotation,
+                                           translation=translation,
+                                           matrix=matrix, degree=degree,
+                                           device=device, dtype=dtype)
+
+    return apply_affine_image_transform(
+        image_batch=image_batch,
+        matrix_batch=matrix,
+        output_size=output_size,
+        adjust_size=adjust_size,
+        interpolation_mode=interpolation_mode,
+        padding_mode=padding_mode,
+        align_corners=align_corners)
 
 
 def affine_point_transform(point_batch: torch.Tensor,
-                           matrix_batch: torch.Tensor) -> torch.Tensor:
+                           scale: AffineParamType = None,
+                           rotation: AffineParamType = None,
+                           translation: AffineParamType = None,
+                           matrix: torch.Tensor = None,
+                           degree: bool = False,
+                           ) -> torch.Tensor:
+
+    batchsize = point_batch.size(0)
+    ndim = point_batch.size(-1)
+    device = point_batch.device
+    dtype = point_batch.dtype
+
+    matrix = _assemble_matrix_if_necessary(batchsize=batchsize, ndim=ndim,
+                                           scale=scale, rotation=rotation,
+                                           translation=translation,
+                                           matrix=matrix, degree=degree,
+                                           device=device, dtype=dtype)
+
+    return apply_affine_point_transform(point_batch, matrix)
+
+
+def apply_affine_point_transform(point_batch: torch.Tensor,
+                                 matrix_batch: torch.Tensor) -> torch.Tensor:
     """
     Function to perform an affine transformation onto point batches
 
@@ -35,13 +92,13 @@ def affine_point_transform(point_batch: torch.Tensor,
     return points_to_cartesian(transformed_points)
 
 
-def affine_image_transform(image_batch: torch.Tensor,
-                           matrix_batch: torch.Tensor,
-                           output_size: tuple = None,
-                           adjust_size: bool = False,
-                           interpolation_mode: str = 'bilinear',
-                           padding_mode: str = 'zeros',
-                           align_corners: bool = None) -> torch.Tensor:
+def apply_affine_image_transform(image_batch: torch.Tensor,
+                                 matrix_batch: torch.Tensor,
+                                 output_size: tuple = None,
+                                 adjust_size: bool = False,
+                                 interpolation_mode: str = 'bilinear',
+                                 padding_mode: str = 'zeros',
+                                 align_corners: bool = None) -> torch.Tensor:
     """
     Performs an affine transformation on a batch of images
 
@@ -116,6 +173,46 @@ def affine_image_transform(image_batch: torch.Tensor,
                                            padding_mode=padding_mode,
                                            align_corners=align_corners)
 
+def _assemble_matrix_if_necessary(batchsize, ndim,
+                                  scale: AffineParamType,
+                                  rotation: AffineParamType,
+                                  translation: AffineParamType,
+                                  matrix: torch.Tensor,
+                                  degree: bool,
+                                  device: Union[torch.device, str],
+                                  dtype: Union[torch.dtype, str]
+                                  ):
+
+    if matrix is None:
+        matrix = parametrize_matrix(scale=scale, rotation=rotation,
+                                    translation=translation,
+                                    batchsize=batchsize,
+                                    ndim=ndim,
+                                    degree=degree,
+                                    device=device,
+                                    dtype=dtype)
+
+    else:
+        if not torch.is_tensor(matrix):
+            matrix = torch.tensor(matrix)
+
+        matrix = matrix.to(dtype=dtype, device=device)
+
+    # batch dimension missing -> Replicate for each sample in batch
+    if len(matrix.shape) == 2:
+        matrix = matrix[None].expand(batchsize, -1, -1)
+
+    if matrix.shape == (batchsize, ndim, ndim+1):
+        return matrix
+    elif matrix.shape == (batchsize, ndim+1, ndim+1):
+        return matrix_to_cartesian(matrix)
+
+    raise ValueError(
+        "Invalid Shape for affine transformation matrix. "
+        "Got %s but expected %s" % (
+            str(tuple(matrix.shape)),
+            str((batchsize, ndim, ndim + 1))))
+
 
 def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
     """
@@ -148,7 +245,7 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
     possible_points = torch.tensor(list(product(*ranges)), dtype=matrix.dtype,
                                    device=matrix.device)
 
-    transformed_edges = affine_point_transform(
+    transformed_edges = apply_affine_point_transform(
         possible_points[None].expand(matrix.size(0), *possible_points.shape),
         matrix)
 
