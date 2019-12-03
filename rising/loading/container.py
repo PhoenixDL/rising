@@ -39,8 +39,6 @@ class DataContainer:
         for key, idx in split.items():
             self._dset[key] = self._dataset.get_subset(idx)
 
-    # TODO: Shouldn"t the kfold methods instead yield the current datasets
-    #  instead of the whole cointainer?
     def kfold_by_index(self, splits: typing.Iterable[SplitType]):
         """
         Produces kfold splits based on the given indices.

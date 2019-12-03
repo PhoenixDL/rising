@@ -9,6 +9,7 @@ import warnings
 
 from torch.utils.data import Dataset as TorchDset
 from rising.loading.debug_mode import get_debug_mode
+from rising import AbstractMixin
 from torch.multiprocessing import Pool
 
 
@@ -328,10 +329,7 @@ class LazyDataset(Dataset):
         return len(self.data)
 
 
-# TODO: Maybe we should add the dataset baseclass as baseclass of this as well
-#  (since it should just extend it and still have all the other dataset
-#  functionalities)?
-class IDManager:
+class IDManager(AbstractMixin):
     def __init__(self, id_key: str, cache_ids: bool = True, **kwargs):
         """
         Helper class to add additional functionality to Datasets
@@ -442,8 +440,6 @@ class CacheDatasetID(IDManager, CacheDataset):
         **kwargs :
             additional keyword arguments
         """
-        # TODO: Shouldn't we call the baseclasses explicitly here? with super
-        #  it is not clear, which baseclass is actually called
         super().__init__(data_path=data_path, load_fn=load_fn, id_key=id_key,
                          cache_ids=cache_ids, **kwargs)
 
@@ -467,7 +463,5 @@ class LazyDatasetID(IDManager, LazyDataset):
         **kwargs :
             additional keyword arguments
         """
-        # TODO: Shouldn't we call the baseclasses explicitly here? with super
-        #  it is not clear, which baseclass is actually called
         super().__init__(data_path=data_path, load_fn=load_fn, id_key=id_key,
                          cache_ids=cache_ids, **kwargs)

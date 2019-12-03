@@ -155,10 +155,6 @@ class Splitter:
         --------
         Shuffling cannot be deactivated
         """
-        # TODO: maybe we should implement a single split function, which
-        #  handles random, stratificated and grouped splitting? This would not
-        #  be hard at all (based on the first look at sklearn internals) and
-        #  would remove some code duolication in here
         split_dict = {}
         groups = [d[groups_key] for d in self._dataset]
 
