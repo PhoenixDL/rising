@@ -10,8 +10,6 @@ from rising.loading.dataset import CacheDataset, LazyDataset, CacheDatasetID, \
 from rising.loading import get_debug_mode, set_debug_mode
 
 
-# TODO: Additional Tests for subsetdataset
-
 class LoadDummySample:
     def __call__(self, path, *args, **kwargs):
         data = {'data': np.random.rand(1, 256, 256),

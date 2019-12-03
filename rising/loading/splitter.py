@@ -2,7 +2,6 @@ import copy
 import typing
 import logging
 import warnings
-import math
 from sklearn.model_selection import train_test_split, GroupShuffleSplit, \
     KFold, GroupKFold, StratifiedKFold
 
@@ -110,10 +109,7 @@ class Splitter:
         self.log_split(split_dict, "Created Single Split with:")
         return split_dict
 
-    def index_split_stratified(
-            self,
-            stratify_key: str = "label",
-            **kwargs) -> SplitType:
+    def index_split_stratified(self, stratify_key: str = "label", **kwargs) -> SplitType:
         """
         Splits the dataset's indices in a stratified way
 
@@ -134,13 +130,9 @@ class Splitter:
 
         """
         stratify = [d[stratify_key] for d in self._dataset]
-
         return self.index_split(stratify=stratify, **kwargs)
 
-    def index_split_grouped(
-            self,
-            groups_key: str = "id",
-            **kwargs) -> SplitType:
+    def index_split_grouped(self, groups_key: str = "id", **kwargs) -> SplitType:
         """
         Splits the dataset's indices in a stratified way
 
@@ -184,10 +176,10 @@ class Splitter:
         self.log_split(split_dict, "Created Single Split with:")
         return split_dict
 
-    # TODO: Maybe add kfolds without fixed testset?
     def index_kfold_fixed_test(self, **kwargs) -> typing.Iterable[SplitType]:
         """
-        Calculates splits for a random kfold with given testset
+        Calculates splits for a random kfold with given testset.
+        If :param:`test_size` is zero, a normal kfold is generated
 
         Parameters
         ----------
@@ -223,6 +215,7 @@ class Splitter:
             **kwargs) -> typing.Iterable[SplitType]:
         """
         Calculates splits for a stratified kfold with given testset
+        If :param:`test_size` is zero, a normal kfold is generated
 
         Parameters
         ----------
@@ -261,6 +254,7 @@ class Splitter:
                                        **kwargs) -> typing.Iterable[SplitType]:
         """
         Calculates splits for a stratified kfold with given testset
+        If :param:`test_size` is zero, a normal kfold is generated
 
         Parameters
         ----------

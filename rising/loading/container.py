@@ -9,9 +9,8 @@ from rising.loading.dataset import Dataset
 from rising.loading.splitter import SplitType
 
 
-# TODO: Add docstrings for Datacontainer
 class DataContainer:
-    def __init__(self, dataset: Dataset, **kwargs):
+    def __init__(self, dataset: Dataset):
         """
         Handles the splitting of datasets from different sources
 
@@ -24,10 +23,7 @@ class DataContainer:
         self._dataset = dataset
         self._dset = {}
         self._fold = None
-        # TODO: this does not make sense, the constructor of object
-        #  (which is the implicit base class here) does not take arguments.
-        #  We should rather set them as attributes.
-        super().__init__(**kwargs)
+        super().__init__()
 
     def split_by_index(self, split: SplitType) -> None:
         """
