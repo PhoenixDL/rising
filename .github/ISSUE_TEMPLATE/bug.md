@@ -14,7 +14,7 @@ What happens? What should happen?
 * OS:
 * Python version:
 * `rising` version
-* How did you install `delira`? [ pip | source | conda | docker ]
+* How did you install `rising`? [ pip | source | conda | docker ]
 
 **Reproduction**
 Give us a minimal example to reproduce the error
