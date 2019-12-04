@@ -8,8 +8,9 @@ coverage:
         threshold: 0.50
         base: auto
     patch: off
+
 ignore:
   - "tests/"
   - "*/__init.py"
   - "_version.py"
-  
+  - "rising/loading/splitter.py"
