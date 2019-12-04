@@ -40,7 +40,6 @@ class TestKernelTransforms(unittest.TestCase):
                                            dim=2, stride=1, padding=1)
         self.batch_dict["data"][0, 0, 1] = 1
         outp = trafo(**self.batch_dict)
-        print(outp["data"].shape)
 
 
 if __name__ == '__main__':

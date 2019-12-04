@@ -1,0 +1,7 @@
+﻿index;fold0;fold1;fold2
+0;train;test;val
+1;train;test;val
+2;val;train;test
+3;val;train;test
+4;test;val;train
+5;test;val;train
