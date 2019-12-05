@@ -6,13 +6,13 @@ from itertools import permutations
 
 from .functional.spatial import *
 
-__all__ = ["MirrorTransform", "Rot90Transform", "ResizeTransform",
-           "ZoomTransform", "ProgressiveResize", "SizeStepScheduler"]
+__all__ = ["Mirror", "Rot90", "Resize",
+           "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
 schduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 
-class MirrorTransform(RandomDimsTransform):
+class Mirror(RandomDimsTransform):
     def __init__(self, dims: Sequence, keys: Sequence = ('data',),
                  prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
         """
@@ -35,7 +35,7 @@ class MirrorTransform(RandomDimsTransform):
         super().__init__(augment_fn=mirror, dims=dims, keys=keys, prob=prob, grad=grad, **kwargs)
 
 
-class Rot90Transform(AbstractTransform):
+class Rot90(AbstractTransform):
     def __init__(self, dims: tuple, keys: tuple = ('data',),
                  prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
         """
@@ -107,7 +107,7 @@ class Rot90Transform(AbstractTransform):
         self._permutations = tuple(permutations(dims, 2))
 
 
-class ResizeTransform(BaseTransform):
+class Resize(BaseTransform):
     def __init__(self, size: Union[int, Sequence[int]], mode: str = 'nearest',
                  align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -138,7 +138,7 @@ class ResizeTransform(BaseTransform):
                          keys=keys, grad=grad, **kwargs)
 
 
-class ZoomTransform(RandomProcess, BaseTransform):
+class Zoom(RandomProcess, BaseTransform):
     def __init__(self, random_args: Union[Sequence, Sequence[Sequence]] = (0.75, 1.25),
                  random_mode: str = "uniform", mode: str = 'nearest',
                  align_corners: bool = None, preserve_range: bool = False,
@@ -198,7 +198,7 @@ class ZoomTransform(RandomProcess, BaseTransform):
         return super().forward(**data)
 
 
-class ProgressiveResize(ResizeTransform):
+class ProgressiveResize(Resize):
     step = 0
 
     def __init__(self, scheduler: schduler_type, mode: str = 'nearest',

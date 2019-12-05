@@ -1,9 +1,9 @@
 from .abstract import AbstractTransform
 
-__all__ = ["DoNothingTransform"]
+__all__ = ["DoNothing"]
 
 
-class DoNothingTransform(AbstractTransform):
+class DoNothing(AbstractTransform):
     def __init__(self, grad: bool = False, **kwargs):
         """
         Forward input
