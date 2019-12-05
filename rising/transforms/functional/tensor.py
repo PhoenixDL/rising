@@ -2,12 +2,12 @@ import torch
 from torch import Tensor
 from typing import List, Tuple, Union, Mapping, Hashable
 
-__all__ = ["to_device"]
+__all__ = ["tensor_op"]
 
 data_type = Union[Tensor, List[Tensor], Tuple[Tensor], Mapping[Hashable, Tensor]]
 
 
-def to_device(data: data_type, device: Union[torch.device, str], **kwargs) -> data_type:
+def tensor_op(data: data_type, fn: str, *args, **kwargs) -> data_type:
     """
     Pushes data to device
 
@@ -16,10 +16,12 @@ def to_device(data: data_type, device: Union[torch.device, str], **kwargs) -> da
     data: data_type
         data which should be pushed to device. Sequence and mapping items are
         mapping individually to gpu
-    device: Union[torch.device, str]
-        target device
+    fn: str
+        tensor function
+    args:
+        positional arguments passed to tensor function
     kwargs:
-        keyword arguments passed to assiging function
+        keyword arguments passed to tensor function
 
     Returns
     -------
@@ -27,10 +29,10 @@ def to_device(data: data_type, device: Union[torch.device, str], **kwargs) -> da
         data which was pushed to device
     """
     if torch.is_tensor(data):
-        return data.to(device=device, **kwargs)
+        return getattr(data, fn)(*args, **kwargs)
     elif isinstance(data, Mapping):
-        return {key: to_device(item, device, **kwargs) for key, item in data.items()}
+        return {key: tensor_op(item, fn, *args, **kwargs) for key, item in data.items()}
     elif isinstance(data, (list, tuple)):
-        return type(data)([to_device(item, device, **kwargs) for item in data])
+        return type(data)([tensor_op(item, fn, *args, **kwargs) for item in data])
     else:
         return data
