@@ -21,6 +21,7 @@ class Dataset(TorchDset):
     Extension of PyTorch's Datasets by a ``get_subset`` method which returns a
     sub-dataset.
     """
+
     def __iter__(self) -> Any:
         """
         Simple iterator over dataset
