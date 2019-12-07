@@ -231,8 +231,9 @@ class RandomDimsTransform(AbstractTransform):
         rand_val = torch.rand(len(self.dims), requires_grad=False)
         dims = [_dim for _dim, _prob in zip(self.dims, self.prob) if rand_val[_dim] < _prob]
 
-        for key in self.keys:
-            data[key] = self.augment_fn(data[key], dims=dims, **self.kwargs)
+        if dims:
+            for key in self.keys:
+                data[key] = self.augment_fn(data[key], dims=dims, **self.kwargs)
         return data
 
 
