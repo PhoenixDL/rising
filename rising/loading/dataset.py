@@ -6,7 +6,7 @@ import logging
 from warnings import warn
 from functools import partial
 from tqdm import tqdm
-from typing import Any, Sequence, Callable, Union, List, Hashable
+from typing import Any, Sequence, Callable, Union, List, Hashable, Dict
 
 from torch.utils.data import Dataset as TorchDset, Subset
 from torch.multiprocessing import Pool
@@ -57,7 +57,7 @@ class CacheDataset(Dataset):
     def __init__(self,
                  data_path: Union[pathlib.Path, str, list],
                  load_fn: Callable, mode: str = "append",
-                 num_workers: int = None, verbose=False,
+                 num_workers: int = 0, verbose=False,
                  **load_kwargs):
         """
         A dataset to preload all the data and cache it for the entire
@@ -83,6 +83,11 @@ class CacheDataset(Dataset):
             ``num_workers is not None and num_workers > 0``
         **load_kwargs :
             additional keyword arguments. Passed directly to :param:`load_fn`
+
+        Warnings
+        --------
+        When using :param:`num_workers` > 0 there might be some problems
+        in combination with :param:`mode` == "extend" and some loading functions.
         """
         super().__init__()
 
@@ -275,7 +280,10 @@ class LazyDataset(Dataset):
 class IDManager(AbstractMixin):
     def __init__(self, id_key: str, cache_ids: bool = True, **kwargs):
         """
-        Helper class to add additional functionality to datasets.
+        Helper class which can be used as an baseclass for datasets with
+        support for samples with unique ID. This class implements
+        additional function which can be used to select samples
+        by an ID (similar to dicts) instead of their index.
         Because get_subset is overwritten this class should be the first class
         in the mro.
 
@@ -392,21 +400,21 @@ class IDManager(AbstractMixin):
 
 
 class CacheDatasetID(IDManager, CacheDataset):
-    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable,
+    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable[[Any], Dict],
                  id_key: Hashable, cache_ids: bool = True, **kwargs):
         """
-        Caching version of ID Dataset
+        Extends CacheDataset with an option to draw samples by their ID (similar to dicts).
 
         Parameters
         ----------
         data_path : str, Path or list
             the path(s) containing the actual data samples
-        load_fn : function
+        load_fn : Callable[[Any], Dict]
             function to load the actual data
         id_key : str
-            the id key to cache
+            the id key inside the data dict which should be used as an identifier
         cache_ids : bool
-            whether to cache the ids
+            if `True` the ids are cached which speeds up lookups but costs more memory
         **kwargs :
             additional keyword arguments
         """
@@ -415,21 +423,21 @@ class CacheDatasetID(IDManager, CacheDataset):
 
 
 class LazyDatasetID(IDManager, LazyDataset):
-    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable,
+    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable[[Any], Dict],
                  id_key: Hashable, cache_ids: bool = True, **kwargs):
         """
-        Lazy version of ID Dataset
+        Extends LazyDataset with an option to draw samples by their ID (similar to dicts).
 
         Parameters
         ----------
         data_path : str, Path or list
             the path(s) containing the actual data samples
-        load_fn : function
+        load_fn : Callable[[Any], Dict]
             function to load the actual data
         id_key : str
-            the id key to cache
+            the id key inside the data dict which should be used as an identifier
         cache_ids : bool
-            whether to cache the ids
+            if `True` the ids are cached which speeds up lookups but costs more memory
         **kwargs :
             additional keyword arguments
         """
