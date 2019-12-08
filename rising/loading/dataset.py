@@ -108,7 +108,7 @@ class CacheDataset(Dataset):
                  data_path: typing.Union[typing.Union[pathlib.Path, str], list],
                  load_fn: typing.Callable,
                  mode: str = "append",
-                 num_workers: int = None,
+                 num_workers: int = 0,
                  verbose=False,
                  **load_kwargs):
         """
@@ -135,6 +135,11 @@ class CacheDataset(Dataset):
             ``num_workers is not None and num_workers > 0``
         **load_kwargs :
             additional keyword arguments. Passed directly to :param:`load_fn`
+
+        Warnings
+        --------
+        When using :param:`num_workers` > 0 there might be some problems
+        in combination with :param:`mode` == "extend" and some loading functions.
         """
         super().__init__()
 

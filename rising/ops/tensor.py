@@ -19,12 +19,10 @@ def torch_one_hot(target: torch.Tensor, num_classes: int = None) -> torch.Tensor
         one hot encoded tensor
     """
     if num_classes is None:
-        num_classes = target.max() - target.min() + 1
+        num_classes = int(target.max().detach().item() + 1)
     dtype, device = target.dtype, target.device
-    target_onehot = torch.zeros(*target.shape, num_classes,
-                                dtype=dtype, device=device)
-    target_onehot.scatter_(1, target.unsqueeze(1), 1.0)
-    return target_onehot.to(dtype=dtype, device=device)
+    target_onehot = torch.zeros(*target.shape, num_classes, dtype=dtype, device=device)
+    return target_onehot.scatter_(1, target.unsqueeze_(1), 1.0)
 
 
 def np_one_hot(target: np.ndarray, num_classes: int) -> np.ndarray:
