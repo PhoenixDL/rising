@@ -9,7 +9,7 @@ data_type = Union[Tensor, List[Tensor], Tuple[Tensor], Mapping[Hashable, Tensor]
 
 def tensor_op(data: data_type, fn: str, *args, **kwargs) -> data_type:
     """
-    Pushes data to device
+    Invokes a function form a tensor
 
     Parameters
     ----------
