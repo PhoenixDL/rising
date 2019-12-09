@@ -1,6 +1,4 @@
-<div align="center">
 # PhoenixRising
-</div>
 
 ### :warning: Current release disclaimer :warning:
 This is an alpha release which is highly experimental. All transforms should be stable and tested but there might be some bugs.
@@ -16,13 +14,15 @@ Furthermore, the core development team of `Rising` is using pytorch :sunglasses:
 ### What can I do with `Rising`?
 Rising currently consists out of two main modules:
 
-`Loading`: Provides a lot classes which can be used to load your data.
+#### `Loading`
+Provides a lot classes which can be used to load your data.
 We provide some baseclasses like the `Cachedataset` or `Lazydataset` which can be easily used to load data into a uniform form.
 In contrast to the native PyTorch datasets you don't need to integrate your augmentation into your dataset -> the only perpose of the dataset is to provide an interface to access individual data samples.
 Our `DataLoader` is a direct subclass of the PyTorch dataloader and handles the batch assembly and applies the augmentation transformations to whole batches at once.
 Additionally, there exists a container class which can be used to hold multiple datasets at once and thus provides a interface for the entirety of your data (e.g. train/val split or kfold).
 
-`Transforms`: This module implements many augmentation transformations which can be used during training.
+#### `Transforms`
+This module implements many augmentation transformations which can be used during training.
 All of them are implemented directly in pytorch so gradient can be propagated through them or augmentations could be computed live on the GPU.
 Finally, all transforms are implemented for 2D/3D data to fully support most the available data.
 
