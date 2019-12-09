@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from torch.utils.data.dataloader import _SingleProcessDataLoaderIter
 
 from rising.loading.loader import _seed_npy_before_worker_init, DataLoader, \
-    BatchTransformer, _MultiProcessingDataLoaderIter
+    BatchTransformer, _MultiProcessingDataLoaderIter, default_transform_call
 
 
 class TestLoader(unittest.TestCase):
@@ -32,6 +32,24 @@ class TestLoader(unittest.TestCase):
             self.assertEqual(output_return, expected_return)
             worker_init.assert_called_once_with(1)
 
+    def test_dataloader_np_import_error(self):
+        with patch.dict('sys.modules', {'numpy': None}):
+            loader = DataLoader([0, 1, 2], num_workers=2)
+            iterator = iter(loader)
+            self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
+
+    def test_dataloader_single_process(self):
+        loader = DataLoader([0, 1, 2])
+        iterator = iter(loader)
+        self.assertIsInstance(iterator, _SingleProcessDataLoaderIter)
+
+    def test_dataloader_multi_process(self):
+        loader = DataLoader([0, 1, 2], num_workers=2)
+        iterator = iter(loader)
+        self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
+
+
+class BatchTransformerTest(unittest.TestCase):
     def check_batch_transformer(self, collate_output):
         collate = Mock(return_value=collate_output)
         transforms = Mock(return_value=2)
@@ -66,21 +84,28 @@ class TestLoader(unittest.TestCase):
         output = transformer(0)
         self.assertTrue((output == torch.tensor([0, 1])).all())
 
-    def test_dataloader_np_import_error(self):
-        with patch.dict('sys.modules', {'numpy': None}):
-            loader = DataLoader([0, 1, 2], num_workers=2)
-            iterator = iter(loader)
-            self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
 
-    def test_dataloader_single_process(self):
-        loader = DataLoader([0, 1, 2])
-        iterator = iter(loader)
-        self.assertIsInstance(iterator, _SingleProcessDataLoaderIter)
+class DefaultTransformCallTest(unittest.TestCase):
+    def check_transform_call(self, inp, outp=0, fn=default_transform_call) -> unittest.mock.Mock:
+        trafo = Mock(return_value=outp)
+        val = fn(inp, trafo)
+        self.assertEqual(outp, val)
+        return trafo
 
-    def test_dataloader_multi_process(self):
-        loader = DataLoader([0, 1, 2], num_workers=2)
-        iterator = iter(loader)
-        self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
+    def test_default_transform_call(self):
+        inp = "a"
+        mock = self.check_transform_call(inp)
+        mock.assert_called_once_with(inp)
+
+    def test_default_transform_call_seq(self):
+        inp = ("a", "b")
+        mock = self.check_transform_call(inp)
+        mock.assert_called_once_with(*inp)
+
+    def test_default_transform_call_map(self):
+        inp = {"a": 1}
+        mock = self.check_transform_call(inp)
+        mock.assert_called_once_with(**inp)
 
 
 if __name__ == '__main__':
