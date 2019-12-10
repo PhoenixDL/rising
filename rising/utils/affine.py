@@ -505,7 +505,7 @@ def parametrize_matrix(scale: AffineParamType,
     return torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
 
 
-def assemble_matrix_if_necessary(batchsize, ndim,
+def assemble_matrix_if_necessary(batchsize: int, ndim: int,
                                  scale: AffineParamType,
                                  rotation: AffineParamType,
                                  translation: AffineParamType,
@@ -513,7 +513,68 @@ def assemble_matrix_if_necessary(batchsize, ndim,
                                  degree: bool,
                                  device: Union[torch.device, str],
                                  dtype: Union[torch.dtype, str]
-                                 ):
+                                 ) -> torch.Tensor:
+    """
+    Assembles a matrix, if the matrix is not already given
+
+    Parameters
+    ----------
+    batchsize : int
+        number of samples per batch
+    ndim : int
+        the image dimensionality
+    scale : torch.Tensor, int, float
+        the scale factor(s). Supported are:
+            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
+            * a single parameter (as float or int), which will be replicated
+                for all dimensions and batch samples
+            * a single parameter per sample (as a 1d tensor), which will be
+                replicated for all dimensions
+            * a single parameter per dimension (either as 1d tensor or as
+                2d transformation matrix), which will be replicated for all
+                batch samples
+        None will be treated as a scaling factor of 1
+    rotation : torch.Tensor, int, float
+        the rotation factor(s). Supported are:
+            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
+            * a single parameter (as float or int), which will be replicated
+                for all dimensions and batch samples
+            * a single parameter per sample (as a 1d tensor), which will be
+                replicated for all dimensions
+            * a single parameter per dimension (either as 1d tensor or as
+                2d transformation matrix), which will be replicated for all
+                batch samples
+        None will be treated as a rotation factor of 1
+    translation : torch.Tensor, int, float
+        the translation offset(s). Supported are:
+            * a full homogeneous transformation matrix of shape
+                (BATCHSIZE x NDIM+1 x NDIM+1)
+            * a single parameter (as float or int), which will be replicated
+                for all dimensions and batch samples
+            * a single parameter per sample (as a 1d tensor), which will be
+                replicated for all dimensions
+            * a single parameter per dimension (either as 1d tensor or as
+                2d transformation matrix), which will be replicated for all
+                batch samples
+        None will be treated as a translation offset of 0
+    matrix : torch.Tensor
+        the transformation matrix. If other than None: overwrites separate
+        parameters for :param:`scale`, :param:`rotation` and
+        :param:`translation`
+    degree : bool
+        whether the given rotation is in degrees. Only valid for explicit
+        rotation parameters
+    device : str, torch.device
+        the device, the matrix should be put on
+    dtype : str, torch.dtype
+        the datatype, the matrix should have
+
+    Returns
+    -------
+    torch.Tensor
+        the assembled transformation matrix
+
+    """
     if matrix is None:
         matrix = parametrize_matrix(scale=scale, rotation=rotation,
                                     translation=translation,
