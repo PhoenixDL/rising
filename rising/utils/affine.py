@@ -503,3 +503,43 @@ def parametrize_matrix(scale: AffineParamType,
                                       ndim=ndim, device=device, dtype=dtype)
 
     return torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
+
+
+def assemble_matrix_if_necessary(batchsize, ndim,
+                                 scale: AffineParamType,
+                                 rotation: AffineParamType,
+                                 translation: AffineParamType,
+                                 matrix: torch.Tensor,
+                                 degree: bool,
+                                 device: Union[torch.device, str],
+                                 dtype: Union[torch.dtype, str]
+                                 ):
+    if matrix is None:
+        matrix = parametrize_matrix(scale=scale, rotation=rotation,
+                                    translation=translation,
+                                    batchsize=batchsize,
+                                    ndim=ndim,
+                                    degree=degree,
+                                    device=device,
+                                    dtype=dtype)
+
+    else:
+        if not torch.is_tensor(matrix):
+            matrix = torch.tensor(matrix)
+
+        matrix = matrix.to(dtype=dtype, device=device)
+
+    # batch dimension missing -> Replicate for each sample in batch
+    if len(matrix.shape) == 2:
+        matrix = matrix[None].expand(batchsize, -1, -1)
+
+    if matrix.shape == (batchsize, ndim, ndim + 1):
+        return matrix
+    elif matrix.shape == (batchsize, ndim + 1, ndim + 1):
+        return matrix_to_cartesian(matrix)
+
+    raise ValueError(
+        "Invalid Shape for affine transformation matrix. "
+        "Got %s but expected %s" % (
+            str(tuple(matrix.shape)),
+            str((batchsize, ndim, ndim + 1))))
