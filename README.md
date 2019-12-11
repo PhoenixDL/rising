@@ -8,13 +8,12 @@ Rising is a high-performance data loading and augmentation library for 2D *and* 
 Our goal is to provide a seamless integration into the PyTorch Ecosystem without sacrificing usability or features.
 
 ## Why another framework?
+|                      | Vanilla PyTorch | Albumentations | batchgenerators | `rising` |
+|----------------------|-----------------|-------------|-----------------|-----------|
+| 3D data augmentation | ❌              | ❌           | ✅              | ✅        |
+| gradient propagation | ❌              | ❌           | ❌              | ✅        |
+| augmentation on GPU  | ❌              | ❌           | ❌              | ✅        |
 
-|                      | Vanilla PyTorch | Albumations | batchgenerators | `rising` |
-|----------------------|-----------------|-------------|-----------------|----------|
-| 3D data augmentation | ❌               |             |                 | ✅        |
-| transforms           |                 |             |                 | ✅        |
-| another feature      |                 |             |                 | ✅        |
-| augmentation on GPU  |                |               |                 |✅        |
 ### What can I do with `rising`?
 Rising currently consists out of two main modules:
 
