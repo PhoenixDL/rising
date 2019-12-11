@@ -1,7 +1,7 @@
 import torch
 from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
     points_to_homogeneous, matrix_revert_coordinate_order
-from itertools import product
+from itertools import product, combinations
 from rising.utils.checktype import check_scalar
 import warnings
 
@@ -96,7 +96,7 @@ def affine_image_transform(image_batch: torch.Tensor,
 
     if output_size is not None:
         if check_scalar(output_size):
-            output_size = tuple([output_size] * matrix_batch.size(-1))
+            output_size = tuple([output_size] * matrix_batch.size(-2))
 
             if adjust_size:
                 warnings.warn("Adjust size is mutually exclusive with a "
@@ -105,9 +105,18 @@ def affine_image_transform(image_batch: torch.Tensor,
         new_size = output_size
 
     elif adjust_size:
-        new_size = tuple(_check_new_img_size(image_size, matrix_batch))
+        new_size = tuple([tmp.item()
+                          for tmp in _check_new_img_size(image_size,
+                                                         matrix_batch)])
     else:
         new_size = image_size
+
+    if len(image_size) < len(image_batch.shape):
+        missing_dims = len(image_batch.shape) - len(image_size)
+        new_size = (*image_batch.shape[:missing_dims], *new_size)
+
+    matrix_batch = matrix_batch.to(device=image_batch.device,
+                                   dtype=image_batch.dtype)
 
     grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size)
 
@@ -138,18 +147,20 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
 
     """
 
-    n_dim = matrix.size(-1)
+    n_dim = matrix.size(-2)
 
     if check_scalar(curr_img_size):
         curr_img_size = [curr_img_size] * n_dim
 
-    ranges = [[0, tmp - 1] for tmp in curr_img_size]
+    curr_img_size = [tmp - 1 for tmp in curr_img_size]
 
-    possible_points = torch.tensor(list(product(*ranges)), dtype=matrix.dtype,
-                                   device=matrix.device)
+    possible_points = torch.tensor(
+        list(set(combinations(curr_img_size + [0] * n_dim, n_dim))),
+        device=matrix.device, dtype=matrix.dtype)
 
     transformed_edges = affine_point_transform(
         possible_points[None].expand(matrix.size(0), *possible_points.shape),
         matrix)
 
-    return (transformed_edges.max(1) - transformed_edges.min(1)).max(0)
+    return (transformed_edges.max(1)[0]
+            - transformed_edges.min(1)[0]).max(0)[0] + 1
