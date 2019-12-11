@@ -119,7 +119,7 @@ def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
         reversed coordinate order
 
     """
-    return batch[:, ::-1, ::-1]
+    return batch.flip((1, 2))
 
 
 def get_batched_eye(batchsize: int, ndim: int,
