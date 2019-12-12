@@ -47,7 +47,9 @@ class Permute(AbstractTransform):
 class OneHot(BaseTransform):
     def __init__(self, num_classes: int, keys: Sequence = ('seg',), grad: bool = False, **kwargs):
         """
-        Apply augment_fn to keys
+        Convert to one hot encoding. One hot encoding is applied in first dimension
+        which results in shape N x NumClasses x [same as input] while input is expected to
+        have shape N x 1 x [arbitrary additional dimensions]
 
         Parameters
         ----------
