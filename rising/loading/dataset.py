@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import os
-import typing
 import pathlib
+import logging
+from warnings import warn
 from functools import partial
 from tqdm import tqdm
-import warnings
+from typing import Any, Sequence, Callable, Union, List, Hashable, Dict
 
-from torch.utils.data import Dataset as TorchDset
+from torch.utils.data import Dataset as TorchDset, Subset
+from torch.multiprocessing import Pool
 from rising.loading.debug_mode import get_debug_mode
 from rising import AbstractMixin
-from torch.multiprocessing import Pool
+
+logger = logging.getLogger(__file__)
 
 
 class Dataset(TorchDset):
@@ -19,7 +22,19 @@ class Dataset(TorchDset):
     sub-dataset.
     """
 
-    def get_subset(self, indices: typing.Sequence[int]) -> SubsetDataset:
+    def __iter__(self) -> Any:
+        """
+        Simple iterator over dataset
+
+        Returns
+        -------
+        Any
+            data contained inside dataset
+        """
+        for i in range(len(self)):
+            yield self[i]
+
+    def get_subset(self, indices: Sequence[int]) -> Subset:
         """
         Returns a Subset of the current dataset based on given indices
 
@@ -33,83 +48,16 @@ class Dataset(TorchDset):
         :class:`SubsetDataset`
             the subset
         """
-        # extract other important attributes from current dataset
-        kwargs = {}
-
-        for key, val in vars(self).items():
-            if not (key.startswith("__") and key.endswith("__")):
-
-                if key == "data":
-                    continue
-                kwargs[key] = val
-
-        old_getitem = self.__class__.__getitem__
-        subset_data = [self[idx] for idx in indices]
-
-        return SubsetDataset(subset_data, old_getitem, **kwargs)
-
-
-class SubsetDataset(Dataset):
-    """
-    A Dataset loading the data, which has been passed
-    in it's ``__init__`` by it's ``_sample_fn``
-    """
-
-    def __init__(self, data: typing.Sequence, old_getitem: typing.Callable,
-                 **kwargs):
-        """
-        Parameters
-        ----------
-        data : sequence
-            data to load (subset of original data)
-        old_getitem : function
-            get item method of previous dataset
-        **kwargs :
-            additional keyword arguments (are set as class attribute)
-        """
-        super().__init__()
-
-        self.data = data
-        self._old_getitem = old_getitem
-
-        for key, val in kwargs.items():
-            setattr(self, key, val)
-
-    def __getitem__(self, index: int) -> typing.Union[typing.Dict, typing.Any]:
-        """
-        returns single sample corresponding to ``index`` via the old get_item
-        Parameters
-        ----------
-        index : int
-            index specifying the data to load
-
-        Returns
-        -------
-        Any, dict
-            can be any object containing a single sample,
-            but is often a dict-like.
-        """
-        return self._old_getitem(self, index)
-
-    def __len__(self) -> int:
-        """
-        returns the length of the dataset
-
-        Returns
-        -------
-        int
-            number of samples
-        """
-        return len(self.data)
+        subset = Subset(self, indices)
+        subset.__iter__ = self.__iter__
+        return subset
 
 
 class CacheDataset(Dataset):
     def __init__(self,
-                 data_path: typing.Union[typing.Union[pathlib.Path, str], list],
-                 load_fn: typing.Callable,
-                 mode: str = "append",
-                 num_workers: int = 0,
-                 verbose=False,
+                 data_path: Union[pathlib.Path, str, list],
+                 load_fn: Callable, mode: str = "append",
+                 num_workers: int = 0, verbose=False,
                  **load_kwargs):
         """
         A dataset to preload all the data and cache it for the entire
@@ -144,13 +92,13 @@ class CacheDataset(Dataset):
         super().__init__()
 
         if get_debug_mode() and (num_workers is None or num_workers > 0):
-            warnings.warn("The debug mode has been activated. "
-                          "Falling back to num_workers = 0", UserWarning)
+            warn("The debug mode has been activated. "
+                 "Falling back to num_workers = 0", UserWarning)
             num_workers = 0
 
         if (num_workers is None or num_workers > 0) and verbose:
-            warnings.warn("Verbosity is mutually exclusive with "
-                          "num_workers > 0. Setting it to False instead.", UserWarning)
+            warn("Verbosity is mutually exclusive with "
+                 "num_workers > 0. Setting it to False instead.", UserWarning)
             verbose = False
 
         self._num_workers = num_workers
@@ -160,8 +108,7 @@ class CacheDataset(Dataset):
         self._load_kwargs = load_kwargs
         self.data = self._make_dataset(data_path, mode)
 
-    def _make_dataset(self, path: typing.Union[typing.Union[pathlib.Path, str], list],
-                      mode: str) -> typing.List[dict]:
+    def _make_dataset(self, path: Union[pathlib.Path, str, list], mode: str) -> List[Any]:
         """
         Function to build the entire dataset
 
@@ -204,7 +151,7 @@ class CacheDataset(Dataset):
         return data
 
     @staticmethod
-    def _add_item(data: list, item: typing.Any, mode: str) -> None:
+    def _add_item(data: list, item: Any, mode: str) -> None:
         """
         Adds items to the given data list. The actual way of adding these
         items depends on :param:`mode`
@@ -228,7 +175,7 @@ class CacheDataset(Dataset):
         else:
             raise TypeError(f"Unknown mode detected: {mode} not supported.")
 
-    def __getitem__(self, index: int) -> typing.Union[typing.Any, typing.Dict]:
+    def __getitem__(self, index: int) -> Any:
         """
         Making the whole Dataset indexeable.
 
@@ -259,9 +206,7 @@ class CacheDataset(Dataset):
 
 
 class LazyDataset(Dataset):
-    def __init__(self, data_path: typing.Union[str, list],
-                 load_fn: typing.Callable,
-                 **load_kwargs):
+    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable, **load_kwargs):
         """
         A dataset to load all the data just in time.
 
@@ -279,8 +224,7 @@ class LazyDataset(Dataset):
         self._load_kwargs = load_kwargs
         self.data = self._make_dataset(data_path)
 
-    def _make_dataset(self, path: typing.Union[typing.Union[pathlib.Path, str],
-                                               list]) -> typing.List[dict]:
+    def _make_dataset(self, path: Union[pathlib.Path, str, list]) -> List[str]:
         """
         Function to build the entire dataset
 
@@ -302,7 +246,7 @@ class LazyDataset(Dataset):
         sorted(path)
         return path
 
-    def __getitem__(self, index: int) -> dict:
+    def __getitem__(self, index: int) -> Any:
         """
         Making the whole Dataset indexeable. Loads the necessary sample.
 
@@ -318,8 +262,7 @@ class LazyDataset(Dataset):
             often a dict
 
         """
-        data_dict = self._load_fn(self.data[index],
-                                  **self._load_kwargs)
+        data_dict = self._load_fn(self.data[index], **self._load_kwargs)
         return data_dict
 
     def __len__(self) -> int:
@@ -337,7 +280,12 @@ class LazyDataset(Dataset):
 class IDManager(AbstractMixin):
     def __init__(self, id_key: str, cache_ids: bool = True, **kwargs):
         """
-        Helper class to add additional functionality to Datasets
+        Helper class which can be used as an baseclass for datasets with
+        support for samples with unique ID. This class implements
+        additional function which can be used to select samples
+        by an ID (similar to dicts) instead of their index.
+        Because get_subset is overwritten this class should be the first class
+        in the mro.
 
         Parameters
         ----------
@@ -425,23 +373,48 @@ class IDManager(AbstractMixin):
         else:
             return self._find_index_iterative(id)
 
+    def get_subset(self, indices: Sequence[int]) -> Subset:
+        """
+        Get subset from dataset
+
+        Parameters
+        ----------
+        indices: Sequence
+            indices to select for subset
+
+        Returns
+        -------
+        Subset
+            subst of old dataset
+        """
+        try:
+            subset = super().get_subset(indices)
+            subset.cache_ids = self.cache_ids
+            subset._find_index_iterative = self._find_index_iterative
+            subset.get_sample_by_id = self.get_sample_by_id
+            subset.get_index_by_id = self.get_index_by_id
+            return subset
+        except AttributeError:
+            warn(f"Get subset failed, try to recover form it by manually creating a subset.", UserWarning)
+            return Subset(self, indices)
+
 
 class CacheDatasetID(IDManager, CacheDataset):
-    def __init__(self, data_path, load_fn, id_key, cache_ids=True,
-                 **kwargs):
+    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable[[Any], Dict],
+                 id_key: Hashable, cache_ids: bool = True, **kwargs):
         """
-        Caching version of ID Dataset
+        Extends CacheDataset with an option to draw samples by their ID (similar to dicts).
 
         Parameters
         ----------
         data_path : str, Path or list
             the path(s) containing the actual data samples
-        load_fn : function
+        load_fn : Callable[[Any], Dict]
             function to load the actual data
         id_key : str
-            the id key to cache
+            the id key inside the data dict which should be used as an identifier
         cache_ids : bool
-            whether to cache the ids
+            if `True` the ids are cached which speeds up lookups but costs more memory
         **kwargs :
             additional keyword arguments
         """
@@ -450,10 +423,33 @@ class CacheDatasetID(IDManager, CacheDataset):
 
 
 class LazyDatasetID(IDManager, LazyDataset):
-    def __init__(self, data_path, load_fn, id_key, cache_ids=True,
-                 **kwargs):
+    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable[[Any], Dict],
+                 id_key: Hashable, cache_ids: bool = True, **kwargs):
         """
-        Lazy version of ID Dataset
+        Extends LazyDataset with an option to draw samples by their ID (similar to dicts).
+
+        Parameters
+        ----------
+        data_path : str, Path or list
+            the path(s) containing the actual data samples
+        load_fn : Callable[[Any], Dict]
+            function to load the actual data
+        id_key : str
+            the id key inside the data dict which should be used as an identifier
+        cache_ids : bool
+            if `True` the ids are cached which speeds up lookups but costs more memory
+        **kwargs :
+            additional keyword arguments
+        """
+        super().__init__(data_path=data_path, load_fn=load_fn, id_key=id_key,
+                         cache_ids=cache_ids, **kwargs)
+
+
+class LazyDatasetMulReturn(LazyDataset):
+    def __init__(self, data_path: Union[str, pathlib.Path, list], load_fn: Callable[[Any], Sequence],
+                 num_samples: int = None, **load_kwargs):
+        """
+        Lazy dataset which accepts callable which return multiple samples at once
 
         Parameters
         ----------
@@ -461,12 +457,53 @@ class LazyDatasetID(IDManager, LazyDataset):
             the path(s) containing the actual data samples
         load_fn : function
             function to load the actual data
-        id_key : str
-            the id key to cache
-        cache_ids : bool
-            whether to cache the ids
-        **kwargs :
-            additional keyword arguments
+        num_samples: int
+            if num_samples is None, the dataset iterates through the data
+            to determine the number of samples and create an internal mapping.
+            If :param:`load_fn` always returns the same number of samples the
+            iteration can be skipped and the mapping is directly created,
+            assuming :param:`load_fn` always return :param:`num_samples`.
+        load_kwargs:
+            additional keyword arguments passed to :param:`load_fn`
         """
-        super().__init__(data_path=data_path, load_fn=load_fn, id_key=id_key,
-                         cache_ids=cache_ids, **kwargs)
+        super().__init__(data_path=data_path, load_fn=load_fn, **load_kwargs)
+        self.mapping = None
+        self.num_samples = num_samples
+        self.cached_index = None
+        self.cached_data = None
+        self.create_mapping()
+
+    def __getitem__(self, index: int) -> Any:
+        """
+        Return a single sample
+
+        Parameters
+        ----------
+        index: int
+            index of sample
+
+        Returns
+        -------
+        Any
+            data
+        """
+        if self.mapping[index][0] != self.cached_index:
+            self.cached_data = super().__getitem__(index)
+            self.cached_index = self.mapping[index][0]
+        return self.cached_data[self.mapping[index][1]]
+
+    def create_mapping(self) -> None:
+        """
+        Creates an internal mapping of index to individual data samples
+        """
+        self.mapping = []
+        _data = []
+        for _index, path in enumerate(self.data):
+            if self.num_samples is None:
+                _num_samples = len(super().__getitem__(_index))
+            else:
+                _num_samples = self.num_samples
+
+            self.mapping.extend([(_index, _offset) for _offset in range(_num_samples)])
+            _data.extend([path] * _num_samples)
+        self.data = _data

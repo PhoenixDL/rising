@@ -6,7 +6,7 @@ import pickle
 
 import numpy as np
 from rising.loading.dataset import CacheDataset, LazyDataset, CacheDatasetID, \
-    LazyDatasetID
+    LazyDatasetID, LazyDatasetMulReturn, IDManager
 from rising.loading import get_debug_mode, set_debug_mode
 
 
@@ -196,6 +196,55 @@ class TestDatasetID(unittest.TestCase):
         dset.cache_ids()
         sample6 = dset.get_sample_by_id("sample6")
         self.assertTrue(sample6["id"], 6)
+        self.check_dset_subset(dset)
+
+    def check_dset_subset(self, dset, indices: tuple = (0, 3, 5), expected_length: int = None):
+        expected_length = len(indices) if expected_length is None else expected_length
+        subset = dset.get_subset(indices)
+        self.assertEqual(len(subset), expected_length)
+        for new_index, old_index in enumerate(indices):
+            self.assertEqual(dset[old_index]["id"], subset[new_index]["id"])
+        subset.get_index_by_id("sample5")
+
+
+class TestLazyDatasetMulReturn(unittest.TestCase):
+    def test_fixed_length(self):
+        dset = LazyDatasetMulReturn(list(range(10)), load_fn=lambda x: [x] * 2, num_samples=2)
+        self.assertEqual(20, len(dset))
+        self.assertEqual(dset[0], 0)
+        self.assertEqual(dset.cached_index, 0)
+        self.assertEqual(dset.cached_data, [0, 0])
+        self.assertEqual(dset[10], 5)
+        self.assertEqual(dset.cached_index, 5)
+        self.assertEqual(dset.cached_data, [5, 5])
+        self.assertEqual(dset[19], 9)
+        self.assertEqual(dset.cached_index, 9)
+        self.assertEqual(dset.cached_data, [9, 9])
+
+    def test_fixed_length_subset(self):
+        dset = LazyDatasetMulReturn(list(range(10)), load_fn=lambda x: [x] * 2, num_samples=2)
+        subset = dset.get_subset([0, 1, 4, 5, 18, 19])
+        self.assertEqual(subset[0], 0)
+        self.assertEqual(subset.dataset.cached_index, 0)
+        self.assertEqual(subset.dataset.cached_data, [0, 0])
+        self.assertEqual(len(subset), 6)
+
+    def test_variable_length(self):
+        dset = LazyDatasetMulReturn(list(range(1, 4)), load_fn=lambda x: [x] * int(x))
+        self.assertEqual(6, len(dset))
+        self.assertEqual(dset[0], 1)
+        self.assertEqual(dset.cached_index, 0)
+        self.assertEqual(dset.cached_data, [1])
+        self.assertEqual(dset[-1], 3)
+        self.assertEqual(dset.cached_index, 2)
+        self.assertEqual(dset.cached_data, [3, 3, 3])
+
+
+class TestIDManager(unittest.TestCase):
+    def test_get_subset(self):
+        manager = IDManager("id", cache_ids=False)
+        with self.assertWarns(UserWarning):
+            manager.get_subset([0])
 
 
 if __name__ == "__main__":

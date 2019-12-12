@@ -9,7 +9,33 @@ from rising.loading.debug_mode import get_debug_mode
 from functools import partial
 from rising.loading.dataset import Dataset
 from threadpoolctl import threadpool_limits
-import numpy as np
+from rising.transforms import AbstractTransform
+
+
+def default_transform_call(batch: Any, transform: Callable) -> Any:
+    """
+    Default function to call transforms. Mapping and Sequences are
+    unpacked during the transform call. Other types are passed
+    as a positional argument.
+
+    Parameters
+    ----------
+    batch: Any
+        current batch which is passed to transforms
+    transform: Callable
+        transform to perform
+
+    Returns
+    -------
+    Any
+        transformed batch
+    """
+    if isinstance(batch, Mapping):
+        return transform(**batch)
+    elif isinstance(batch, Sequence):
+        return transform(*batch)
+    else:
+        return transform(batch)
 
 
 class DataLoader(_DataLoader):
@@ -22,7 +48,8 @@ class DataLoader(_DataLoader):
                  timeout: Union[int, float] = 0,
                  worker_init_fn: Callable = None,
                  multiprocessing_context=None,
-                 auto_convert: bool = True):
+                 auto_convert: bool = True,
+                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
         """
         A Dataloader introducing batch-transforms, numpy seeds for worker
         processes and compatibility to the debug mode
@@ -100,8 +127,10 @@ class DataLoader(_DataLoader):
         auto_convert : bool, optional
             if set to ``True``, the batches will always be transformed to
             torch.Tensors, if possible. (default: ``True``)
+        transform_call: Callable[[Any, Callable], Any], optional
+            function which determines how transforms are called. By default
+            Mappings and Sequences are unpacked during the transform.
         """
-
         super().__init__(dataset=dataset, batch_size=batch_size,
                          shuffle=shuffle, sampler=sampler,
                          batch_sampler=batch_sampler, num_workers=num_workers,
@@ -110,8 +139,8 @@ class DataLoader(_DataLoader):
                          worker_init_fn=worker_init_fn,
                          multiprocessing_context=multiprocessing_context)
 
-        self.collate_fn = BatchTransformer(self.collate_fn, batch_transforms,
-                                           auto_convert)
+        self.collate_fn = BatchTransformer(self.collate_fn, transforms=batch_transforms,
+                                           auto_convert=auto_convert, transform_call=transform_call)
 
     def __iter__(self) -> Union[_SingleProcessDataLoaderIter,
                                 _MultiProcessingDataLoaderIter]:
@@ -128,7 +157,8 @@ class BatchTransformer(object):
     """
 
     def __init__(self, collate_fn: Callable, transforms: Callable = None,
-                 auto_convert: bool = True):
+                 auto_convert: bool = True,
+                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
         """
         Parameters
         ----------
@@ -143,22 +173,21 @@ class BatchTransformer(object):
         auto_convert : bool, optional
             if set to ``True``, the batches will always be transformed to
             torch.Tensors, if possible. (default: ``True``)
+        transform_call: Callable[[Any, Callable], Any], optional
+            function which determines how transforms are called. By default
+            Mappings and Sequences are unpacked during the transform.
         """
 
         self._collate_fn = collate_fn
         self._transforms = transforms
         self._auto_convert = auto_convert
+        self._transform_call = transform_call
 
     def __call__(self, *args, **kwargs) -> Any:
         batch = self._collate_fn(*args, **kwargs)
 
         if self._transforms is not None:
-            if isinstance(batch, Mapping):
-                batch = self._transforms(**batch)
-            elif isinstance(batch, Sequence):
-                batch = self._transforms(*batch)
-            else:
-                batch = self._transforms(batch)
+            batch = self._transform_call(batch, self._transforms)
 
         if self._auto_convert:
             batch = default_convert(batch)
