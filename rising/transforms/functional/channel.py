@@ -1,6 +1,8 @@
 import torch
 from rising.ops import torch_one_hot
 
+__all__ = ["one_hot_batch"]
+
 
 def one_hot_batch(target: torch.Tensor, num_classes: int = None) -> torch.Tensor:
     """
