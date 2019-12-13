@@ -1,7 +1,9 @@
 import torch
 from rising.utils.checktype import check_scalar
 from math import pi
-from typing import Union
+from typing import Union, Sequence
+
+AffineParamType = Union[int, float, Sequence, torch.Tensor]
 
 
 def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
@@ -117,7 +119,7 @@ def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
         reversed coordinate order
 
     """
-    return batch[:, ::-1, ::-1]
+    return batch.flip((1, 2))
 
 
 def get_batched_eye(batchsize: int, ndim: int,
@@ -148,11 +150,10 @@ def get_batched_eye(batchsize: int, ndim: int,
         1, ndim, ndim).expand(batchsize, -1, -1)
 
 
-def _format_scale(scale: Union[torch.Tensor, int, float],
+def _format_scale(scale: AffineParamType,
                   batchsize: int, ndim: int,
                   device: Union[torch.device, str] = None,
                   dtype: Union[torch.dtype, str] = None) -> torch.Tensor:
-
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -229,7 +230,7 @@ def _format_scale(scale: Union[torch.Tensor, int, float],
                      % str(tuple(scale.size())))
 
 
-def _format_translation(offset: Union[torch.Tensor, int, float],
+def _format_translation(offset: AffineParamType,
                         batchsize: int, ndim: int,
                         device: Union[torch.device, str] = None,
                         dtype: Union[torch.dtype, str] = None
@@ -281,7 +282,7 @@ def _format_translation(offset: Union[torch.Tensor, int, float],
     offset = offset.to(device=device, dtype=dtype)
 
     # translation matrix already built
-    if offset.size() == (batchsize, ndim+1, ndim+1):
+    if offset.size() == (batchsize, ndim + 1, ndim + 1):
         return offset
 
     # not completely built so far -> bring in shape (batchsize, ndim)
@@ -295,7 +296,7 @@ def _format_translation(offset: Union[torch.Tensor, int, float],
 
     # directly build homogeneous form -> use dim+1
     whole_translation_matrix = get_batched_eye(batchsize=batchsize,
-                                               ndim=ndim+1, device=device,
+                                               ndim=ndim + 1, device=device,
                                                dtype=dtype)
 
     whole_translation_matrix[:, :-1, -1] = offset.clone()
@@ -321,7 +322,7 @@ def deg_to_rad(angles: Union[torch.Tensor, float, int]
     return angles * pi / 180
 
 
-def _format_rotation(rotation: Union[torch.Tensor, int, float],
+def _format_rotation(rotation: AffineParamType,
                      batchsize: int, ndim: int,
                      degree: bool = False,
                      device: Union[torch.device, str] = None,
@@ -427,9 +428,9 @@ def _format_rotation(rotation: Union[torch.Tensor, int, float],
     return matrix_to_homogeneous(whole_rot_matrix)
 
 
-def parametrize_matrix(scale: Union[torch.Tensor, int, float],
-                       rotation: Union[torch.Tensor, int, float],
-                       translation: Union[torch.Tensor, int, float],
+def parametrize_matrix(scale: AffineParamType,
+                       rotation: AffineParamType,
+                       translation: AffineParamType,
                        batchsize: int, ndim: int,
                        degree: bool = False,
                        device: Union[torch.device, str] = None,
@@ -502,3 +503,104 @@ def parametrize_matrix(scale: Union[torch.Tensor, int, float],
                                       ndim=ndim, device=device, dtype=dtype)
 
     return torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
+
+
+def assemble_matrix_if_necessary(batchsize: int, ndim: int,
+                                 scale: AffineParamType,
+                                 rotation: AffineParamType,
+                                 translation: AffineParamType,
+                                 matrix: torch.Tensor,
+                                 degree: bool,
+                                 device: Union[torch.device, str],
+                                 dtype: Union[torch.dtype, str]
+                                 ) -> torch.Tensor:
+    """
+    Assembles a matrix, if the matrix is not already given
+
+    Parameters
+    ----------
+    batchsize : int
+        number of samples per batch
+    ndim : int
+        the image dimensionality
+    scale : torch.Tensor, int, float
+        the scale factor(s). Supported are:
+            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
+            * a single parameter (as float or int), which will be replicated
+                for all dimensions and batch samples
+            * a single parameter per sample (as a 1d tensor), which will be
+                replicated for all dimensions
+            * a single parameter per dimension (either as 1d tensor or as
+                2d transformation matrix), which will be replicated for all
+                batch samples
+        None will be treated as a scaling factor of 1
+    rotation : torch.Tensor, int, float
+        the rotation factor(s). Supported are:
+            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
+            * a single parameter (as float or int), which will be replicated
+                for all dimensions and batch samples
+            * a single parameter per sample (as a 1d tensor), which will be
+                replicated for all dimensions
+            * a single parameter per dimension (either as 1d tensor or as
+                2d transformation matrix), which will be replicated for all
+                batch samples
+        None will be treated as a rotation factor of 1
+    translation : torch.Tensor, int, float
+        the translation offset(s). Supported are:
+            * a full homogeneous transformation matrix of shape
+                (BATCHSIZE x NDIM+1 x NDIM+1)
+            * a single parameter (as float or int), which will be replicated
+                for all dimensions and batch samples
+            * a single parameter per sample (as a 1d tensor), which will be
+                replicated for all dimensions
+            * a single parameter per dimension (either as 1d tensor or as
+                2d transformation matrix), which will be replicated for all
+                batch samples
+        None will be treated as a translation offset of 0
+    matrix : torch.Tensor
+        the transformation matrix. If other than None: overwrites separate
+        parameters for :param:`scale`, :param:`rotation` and
+        :param:`translation`
+    degree : bool
+        whether the given rotation is in degrees. Only valid for explicit
+        rotation parameters
+    device : str, torch.device
+        the device, the matrix should be put on
+    dtype : str, torch.dtype
+        the datatype, the matrix should have
+
+    Returns
+    -------
+    torch.Tensor
+        the assembled transformation matrix
+
+    """
+    if matrix is None:
+        matrix = parametrize_matrix(scale=scale, rotation=rotation,
+                                    translation=translation,
+                                    batchsize=batchsize,
+                                    ndim=ndim,
+                                    degree=degree,
+                                    device=device,
+                                    dtype=dtype)
+
+    else:
+        if not torch.is_tensor(matrix):
+            matrix = torch.tensor(matrix)
+
+        matrix = matrix.to(dtype=dtype, device=device)
+
+    # batch dimension missing -> Replicate for each sample in batch
+    if len(matrix.shape) == 2:
+        matrix = matrix[None].expand(batchsize, -1, -1)
+
+    if matrix.shape == (batchsize, ndim, ndim + 1):
+        return matrix
+    elif matrix.shape == (batchsize, ndim + 1, ndim + 1):
+        return matrix_to_cartesian(matrix)
+
+    raise ValueError(
+        "Invalid Shape for affine transformation matrix. "
+        "Got %s but expected %s" % (
+            str(tuple(matrix.shape)),
+            str((batchsize, ndim, ndim + 1))))
