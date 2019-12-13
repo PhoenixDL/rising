@@ -9,3 +9,4 @@
 - [ ] Unittests (look at the line coverage of your tests, the goal is 100%!)
 - [ ] Update notebooks if necessary
 - [ ] Check test and documentation pipeline
+- [ ] Add Changes to Changelog
