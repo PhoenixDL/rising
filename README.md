@@ -1,11 +1,11 @@
 # `rising`
 
 [![PyPI status](https://img.shields.io/pypi/status/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
-[!PyPI - Python Version](https://img.shields.io/pypi/pyversions/rising)
-[!PyPI](https://img.shields.io/pypi/v/rising)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/rising)
+![PyPI](https://img.shields.io/pypi/v/rising)
 [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)
 [![codecov](https://codecov.io/gh/PhoenixDL/rising/branch/master/graph/badge.svg)](https://codecov.io/gh/PhoenixDL/rising)
-[!PyPI - License](https://img.shields.io/pypi/l/rising)
+![PyPI - License](https://img.shields.io/pypi/l/rising)
 
 ### :warning: Current release disclaimer :warning:
 This is an alpha release which is highly experimental. All transforms should be stable and tested but there might be some bugs.
