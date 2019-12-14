@@ -1,7 +1,7 @@
 # `rising`
 
-[![PyPI status](https://img.shields.io/pypi/status/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/rising)
+![Project Status](https://img.shields.io/badge/status-alpha-red)
+![Python](https://img.shields.io/badge/python-3.7-blue)
 ![PyPI](https://img.shields.io/pypi/v/rising)
 [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)
 [![codecov](https://codecov.io/gh/PhoenixDL/rising/branch/master/graph/badge.svg)](https://codecov.io/gh/PhoenixDL/rising)
