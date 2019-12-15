@@ -1,12 +1,6 @@
 # Contributing to `rising`
 
-If you are interested in contributing to `rising`, you will either
-
-* implement a new feature
-
-or
-
-* fix a bug.
+If you are interested in contributing to `rising`, you can either implement a new feature or fix a bug.
 
 For both types of contributions, the process is roughly the same:
 
@@ -18,12 +12,6 @@ implementation/fixing.
 
 3. Create a new branch (in your fork if necessary) for the implementation of your issue.
 Make sure to include basic unittests.
-
-> **Note:** To improve readability and maintainability, [PEP8 Style](https://www.python.org/dev/peps/pep-0008/) should always be followed (no exceptions).
-
-> **Note:** We prefer absolute imports over realtive ones..
-
-> **Note:** If you add a feature, you should also add it to the documentation
 
 4. After finishing the implementation, send a pull request to the correct branch of [this repo] (probably master branch).
 
@@ -75,6 +63,14 @@ again and again
 
 In case you want to reinstall, make sure that you uninstall `rising` first by running `pip uninstall rising`
 and `python setup.py clean`. Then you can install in `build develop` mode again.
+
+## Code Style
+* To improve readability and maintainability, [PEP8 Style](https://www.python.org/dev/peps/pep-0008/) should always be followed (no exceptions).
+* All imports inside the package should be absolute
+* If you add a feature, you should also add it to the documentation
+* Every module must have an `__all__` section
+* All functions should be typed
+* Keep functions short and give them meaningful names
 
 ## Unit testing
 
