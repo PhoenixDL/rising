@@ -4,41 +4,41 @@ If you are interested in contributing to `rising`, you will either
 
 * implement a new feature
 
-or 
+or
 
 * fix a bug.
 
-For both types of contribution, the process is roughly the same:
+For both types of contributions, the process is roughly the same:
 
-1. File an issue at [this repo] and discuss 
-the issue with us! Maybe we can give you some hints towards 
+1. Open an issue in [this repo] and discuss
+the issue with us! Maybe we can give you some hints towards
 implementation/fixing.
 
 2. If you're not part of the core development team, we need you to create your own fork of [this repo], implement it there and create a PR to [this repo] afterwards.
 
-3. Start a new branch (in your fork if necessary) for the implementation of your issue. 
+3. Create a new branch (in your fork if necessary) for the implementation of your issue.
 Make sure to include basic unittests.
 
 > **Note:** To improve readability and maintainability, [PEP8 Style](https://www.python.org/dev/peps/pep-0008/) should always be followed (no exceptions).
 
 > **Note:** We prefer absolute imports over realtive ones..
 
-> **Note:** If you added a feature, you should also add it to the documentation
+> **Note:** If you add a feature, you should also add it to the documentation
 
-4. After finishing the coding part, send a pull request to the correct branch of [this repo] (probably master branch).
+4. After finishing the implementation, send a pull request to the correct branch of [this repo] (probably master branch).
 
-5. Afterwards, have a look at your pull request since we might suggest some 
+5. Afterwards, have a look at your pull request since we might suggest some
 changes.
 
 
-If you are not familiar with creating a Pull Request, here are some guides:
+If you are not familiar with creating a pull request, here are some guides:
 - http://stackoverflow.com/questions/14680711/how-to-do-a-github-pull-request
 - https://help.github.com/articles/creating-a-pull-request/
 
 
 ## Development Install
 
-To develop `delira` on your machine, here are some tips:
+To develop `rising` on your machine, here are some tips:
 
 1. Uninstall all existing installs of `rising`:
 ```
@@ -55,13 +55,13 @@ cd rising
 
 3. Install `rising` in `build develop` mode:
 
-Install it via 
+Install it via
 
 ```
 python setup.py build develop
 ```
 
-or 
+or
 
 ```
 pip install -e .
@@ -70,7 +70,7 @@ pip install -e .
 This mode will symlink the python files from the current local source tree into the
 python install.
 
-Hence, if you modify a python file, you do not need to reinstall `rising` 
+Hence, if you modify a python file, you do not need to reinstall `rising`
 again and again
 
 In case you want to reinstall, make sure that you uninstall `rising` first by running `pip uninstall rising`
@@ -84,7 +84,7 @@ Unittests are located under `tests/`. Run the entire test suite with
 python -m unittest
 ```
 
-or run individual test files, like `python test/test_dummy.py`, for individual test suites.
+from the `rising` root directory or run individual test files, like `python test/test_dummy.py`, for individual test suites.
 
 ### Better local unit tests with unittest
 Testing is done with a `unittest` suite
