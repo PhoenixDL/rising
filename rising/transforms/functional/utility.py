@@ -9,7 +9,7 @@ def box_to_seg(boxes: Sequence[Sequence[int]], shape: Sequence[int] = None,
                dtype: torch.dtype = None, device: torch.device = None,
                out: Tensor = None) -> Tensor:
     """
-    Converts a sequence of bounding boxes to a segmentation
+    Convert a sequence of bounding boxes to a segmentation
 
     Parameters
     ----------
@@ -77,7 +77,7 @@ def seg_to_box(seg: Tensor, dim: int) -> List[Tensor]:
 
 def instance_to_semantic(instance: Tensor, cls: Sequence[int]) -> Tensor:
     """
-    Convert an instance segmentation to an semantic segmentation
+    Convert an instance segmentation to a semantic segmentation
 
     Parameters
     ----------
