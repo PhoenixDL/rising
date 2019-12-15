@@ -1,0 +1,43 @@
+# Use this CODEOWNERS file for automatically request reviews from owners at PRs. 
+# For Details see https://help.github.com/en/articles/about-code-owners
+# The order of the codeowners is simply alphabetically. 
+
+# Global repo stuff
+/* @justusschock @mibaumgartner
+
+# Test Pipeline
+/.github/workflows/ @justusschock @mibaumgartner
+
+# Core Package
+
+# Abstract Interface and Versioning
+/rising/* @mibaumgartner
+
+# Loading
+/rising/loading/* @justusschock
+/rising/loading/collate.py @justusschock @mibaumgartner
+/rising/loading/container.py @mibaumgartner
+/rising/loading/dataset.py @justusschock @mibaumgartner
+/rising/loading/debug_mode.py @justusschock
+/rising/loading/loader.py @justusschock
+/rising/loading/splitter.py @mibaumgartner
+
+# Ops
+/rising/ops/tensor.py @justusschock @mibaumgartner
+
+# Transforms
+/rising/transforms/abstract.py @justusschock @mibaumgartner
+/rising/transforms/channel.py @justusschock @mibaumgartner
+/rising/transforms/compose.py @mibaumgartner
+/rising/transforms/crop.py @mibaumgartner
+/rising/transforms/format.py @mibaumgartner
+/rising/transforms/intensity.py @justusschock @mibaumgartner
+/rising/transforms/kernel.py @mibaumgartner
+/rising/transforms/spatial.py @justusschock @mibaumgartner
+/rising/transforms/utility.py @justusschock @mibaumgartner
+# Functional Transforms
+/rising/transforms/functional/crop.py @mibaumgartner
+/rising/transforms/intensity.py @justusschock @mibaumgartner
+/rising/transforms/spatial.py @justusschock @mibaumgartner
+
+/rising/utils/checktype.py @mibaumgartner

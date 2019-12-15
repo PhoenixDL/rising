@@ -10,3 +10,4 @@
 - [ ] Update notebooks if necessary
 - [ ] Check test and documentation pipeline
 - [ ] Add Changes to Changelog
+- [ ] Update `CODEOWNERS` if necessary

@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -29,10 +28,10 @@ jobs:
       run: |
         coverage run -m unittest
         coverage xml # convert .coverage file to coverage.xml file
-#    - name: Upload coverage to Codecov  
-#      uses: codecov/codecov-action@v1.0.2
-#      with:
-#        token: ${{secrets.CODECOV_TOKEN}} #required
-#        file: ./coverage.xml #optional
-#        flags: unittests #optional
-#        name: codecov-mymisc #optional
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}} #required
+        file: ./coverage.xml #optional
+        flags: unittests #optional
+        name: codecov-rising #optional
