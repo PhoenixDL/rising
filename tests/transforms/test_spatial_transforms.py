@@ -18,32 +18,32 @@ class TestSpatialTransforms(unittest.TestCase):
         }
 
     def test_mirror_transform(self):
-        trafo = MirrorTransform((0, 1), prob=1)
+        trafo = Mirror((0, 1), prob=1)
         outp = trafo(**self.batch_dict)
 
         self.assertTrue((outp["data"][0, 0] == torch.tensor([[9, 8, 7], [6, 5, 4], [3, 2, 1]])).all())
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
-        trafo = MirrorTransform((0, 1), prob=0)
+        trafo = Mirror((0, 1), prob=0)
         data_orig = self.batch_dict["data"].clone()
         outp = trafo(**self.batch_dict)
         self.assertTrue((outp["data"] == data_orig).all())
 
     def test_rot90_transform(self):
         random.seed(0)
-        trafo = Rot90Transform((0, 1), prob=1)
+        trafo = Rot90((0, 1), prob=1)
         outp = trafo(**self.batch_dict)
         self.assertTrue((outp["data"][0, 0] == torch.tensor([[3, 6, 9], [2, 5, 8], [1, 4, 7]])).all())
         self.assertEqual(trafo.dims, (0, 1))
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
-        trafo = Rot90Transform((0, 1), prob=0)
+        trafo = Rot90((0, 1), prob=0)
         data_orig = self.batch_dict["data"].clone()
         outp = trafo(**self.batch_dict)
         self.assertTrue((outp["data"] == data_orig).all())
 
     def test_resize_transform(self):
-        trafo = ResizeTransform((2, 2))
+        trafo = Resize((2, 2))
         out = trafo(**self.batch_dict)
         expected = torch.tensor([[1, 2], [4, 5]])
         self.assertTrue((out["data"] == expected).all())
@@ -53,7 +53,7 @@ class TestSpatialTransforms(unittest.TestCase):
         random.seed(0)
         scale_factor = random.uniform(*_range)
 
-        trafo = ZoomTransform(random_args=_range)
+        trafo = Zoom(random_args=_range)
         random.seed(0)
         out = trafo(**self.batch_dict)
 

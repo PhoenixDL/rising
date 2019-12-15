@@ -70,8 +70,8 @@ class AbstractTransform(torch.nn.Module):
 
 
 class BaseTransform(AbstractTransform):
-    def __init__(self, augment_fn: augment_callable, keys: Sequence = ('data',),
-                 grad: bool = False, **kwargs):
+    def __init__(self, augment_fn: augment_callable, *args,
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Apply augment_fn to keys
 
@@ -89,6 +89,7 @@ class BaseTransform(AbstractTransform):
         super().__init__(grad=grad)
         self.augment_fn = augment_fn
         self.keys = keys
+        self.args = args
         self.kwargs = kwargs
 
     def forward(self, **data) -> dict:
@@ -106,7 +107,7 @@ class BaseTransform(AbstractTransform):
             dict with augmented data
         """
         for _key in self.keys:
-            data[_key] = self.augment_fn(data[_key], **self.kwargs)
+            data[_key] = self.augment_fn(data[_key], *self.args, **self.kwargs)
         return data
 
 
@@ -230,8 +231,9 @@ class RandomDimsTransform(AbstractTransform):
         rand_val = torch.rand(len(self.dims), requires_grad=False)
         dims = [_dim for _dim, _prob in zip(self.dims, self.prob) if rand_val[_dim] < _prob]
 
-        for key in self.keys:
-            data[key] = self.augment_fn(data[key], dims=dims, **self.kwargs)
+        if dims:
+            for key in self.keys:
+                data[key] = self.augment_fn(data[key], dims=dims, **self.kwargs)
         return data
 
 
