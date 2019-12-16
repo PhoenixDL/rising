@@ -12,7 +12,19 @@ class TestSegBox(unittest.TestCase):
         self.boxes = [torch.tensor([1, 1, 2, 2, 1, 2]), torch.tensor([5, 5, 7, 7, 1, 2])]
         self.cls = [2, 1]
 
-    def test_box_to_seg(self):
+    def test_box_to_seg_error(self):
+        self.boxes = [b[1:] for b in self.boxes]
+        with self.assertRaises(TypeError):
+            box_to_seg(self.boxes, self.seg.shape, self.seg.dtype, self.seg.device)
+
+    def test_box_to_seg_2d(self):
+        boxes_2d = [torch.tensor([2, 2, 2, 2])]
+        expected = torch.zeros(10, 10, dtype=torch.long)
+        expected[2, 2] = 1
+        seg = box_to_seg(boxes_2d, expected.shape, expected.dtype, expected.device)
+        self.assertTrue((expected == seg).all())
+
+    def test_box_to_seg_3d(self):
         seg = box_to_seg(self.boxes, self.seg.shape, self.seg.dtype, self.seg.device)
         self.assertTrue((self.seg == seg).all())
 
