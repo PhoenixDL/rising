@@ -65,7 +65,9 @@ In case you want to reinstall, make sure that you uninstall `rising` first by ru
 and `python setup.py clean`. Then you can install in `build develop` mode again.
 
 ## Code Style
-* To improve readability and maintainability, [PEP8 Style](https://www.python.org/dev/peps/pep-0008/) should always be followed (no exceptions).
+* To improve readability and maintainability, [PEP8 Style](https://www.python.org/dev/peps/pep-0008/) should always be followed
+    * maximum code line length is 120
+    * maximum doc string line length is 80
 * All imports inside the package should be absolute
 * If you add a feature, you should also add it to the documentation
 * Every module must have an `__all__` section
