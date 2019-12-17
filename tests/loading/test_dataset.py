@@ -56,7 +56,7 @@ class TestBaseDataset(unittest.TestCase):
         self.paths = list(range(10))
 
     def test_cache_dataset(self):
-        dataset = CacheDataset(self.paths, LoadDummySample(),
+        dataset = CacheDataset(self.paths, LoadDummySample(), verbose=True,
                                label_load_fct=None)
         self.assertEqual(len(dataset), 10)
         self.check_dataset_access(dataset, [0, 5, 9])
@@ -72,7 +72,6 @@ class TestBaseDataset(unittest.TestCase):
         set_debug_mode(False)
 
     def test_cache_verbose_warn(self):
-
         with self.assertWarns(UserWarning):
             dataset = CacheDataset(self.paths, LoadDummySample(),
                                    num_workers=4, verbose=True,
@@ -83,7 +82,7 @@ class TestBaseDataset(unittest.TestCase):
             return [LoadDummySample()(path, None)] * 4
 
         dataset = CacheDataset(self.paths, load_mul_sample,
-                               num_workers=0, verbose=True,
+                               num_workers=4, verbose=True,
                                mode='extend')
         self.assertEqual(len(dataset), 40)
         self.check_dataset_access(dataset, [0, 20, 39])

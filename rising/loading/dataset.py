@@ -3,17 +3,29 @@ from __future__ import annotations
 import os
 import pathlib
 import logging
+import dill
 from warnings import warn
 from functools import partial
 from tqdm import tqdm
-from typing import Any, Sequence, Callable, Union, List, Hashable, Dict
+from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator
 
 from torch.utils.data import Dataset as TorchDset, Subset
+from multiprocessing import cpu_count
 from torch.multiprocessing import Pool
 from rising.loading.debug_mode import get_debug_mode
 from rising import AbstractMixin
 
 logger = logging.getLogger(__file__)
+
+
+def dill_helper(payload):
+    fn, args = dill.loads(payload)
+    return fn(*args)
+
+
+def load_async(pool, fn, *args):
+    payload = dill.dumps((fn, args))
+    return pool.apply_async(dill_helper, (payload,))
 
 
 class Dataset(TorchDset):
@@ -137,18 +149,27 @@ class CacheDataset(Dataset):
         # add loading kwargs
         load_fn = partial(self._load_fn, **self._load_kwargs)
 
-        # multiprocessing dispatch
+        if self._verbosity:
+            path = tqdm(path, unit='samples', desc="Loading Samples")
+
         if self._num_workers is None or self._num_workers > 0:
-            with Pool() as p:
-                _data = p.map(load_fn, path)
+            _data = self.load_multi_process(load_fn, path)
         else:
-            if self._verbosity:
-                path = tqdm(path, unit='samples', desc="Loading Samples")
-            _data = map(load_fn, path)
+            _data = self.load_single_process(load_fn, path)
 
         for sample in _data:
             self._add_item(data, sample, mode)
         return data
+
+    def load_single_process(self, load_fn: Callable, path: Sequence) -> Iterator:
+        return map(load_fn, path)
+
+    def load_multi_process(self, load_fn: Callable, path: Sequence) -> List:
+        _processes = cpu_count() if self._num_workers is None else self._num_workers
+        with Pool(processes=_processes) as pool:
+            jobs = [load_async(pool, load_fn, p) for p in path]
+            _data = [j.get() for j in jobs]
+        return _data
 
     @staticmethod
     def _add_item(data: list, item: Any, mode: str) -> None:
