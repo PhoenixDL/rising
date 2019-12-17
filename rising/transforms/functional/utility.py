@@ -36,11 +36,11 @@ def box_to_seg(boxes: Sequence[Sequence[int]], shape: Sequence[int] = None,
 
     for _idx, box in enumerate(boxes, 1):
         if len(box) == 4:
-            out[..., box[0]:box[2], box[1]:box[3]] = _idx
+            out[..., box[0]:box[2] + 1, box[1]:box[3] + 1] = _idx
         elif (len(box)) == 6:
             out[..., box[0]:box[2] + 1, box[1]:box[3] + 1, box[4]:box[5] + 1] = _idx
         else:
-            raise TypeError(f"Boxes must have length 4 (2D) or 6(3D) forund {len(box)}")
+            raise TypeError(f"Boxes must have length 4 (2D) or 6(3D) found len {len(box)}")
     return out
 
 

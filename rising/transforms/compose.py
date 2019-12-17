@@ -1,12 +1,34 @@
-from typing import Sequence, Union
+from typing import Sequence, Union, Callable, Any
 from rising.utils import check_scalar
-from .abstract import AbstractTransform, RandomProcess
+from rising.transforms import AbstractTransform, RandomProcess
+from rising.loading import default_transform_call
+
 
 __all__ = ["Compose", "DropoutCompose"]
 
 
+def dict_call(batch: dict, transform: Callable) -> Any:
+    """
+    Unpacks the dict for every transformation
+
+    Parameters
+    ----------
+    batch: dict
+        current batch which is passed to transform
+    transform: Callable
+        transform to perform
+
+    Returns
+    -------
+    Any
+        transformed batch
+    """
+    return transform(**batch)
+
+
 class Compose(AbstractTransform):
-    def __init__(self, *transforms):
+    def __init__(self, *transforms,
+                 transform_call: Callable[[Any, Callable], Any] = dict_call):
         """
         Compose multiple transforms
 
@@ -14,11 +36,15 @@ class Compose(AbstractTransform):
         ----------
         transforms: Union[AbstractTransform, Sequence[AbstractTransform]]
             one or multiple transformations which are applied in consecutive order
+        transform_call: Callable[[Any, Callable], Any], optional
+            function which determines how transforms are called. By default
+            Mappings and Sequences are unpacked during the transform.
         """
         super().__init__(grad=True)
         if isinstance(transforms[0], Sequence):
             transforms = transforms[0]
         self.transforms = transforms
+        self.transform_call = transform_call
 
     def forward(self, **data) -> dict:
         """
@@ -35,14 +61,15 @@ class Compose(AbstractTransform):
             dict with transformed data
         """
         for trafo in self.transforms:
-            data = trafo(**data)
+            data = self.transform_call(data, trafo)
         return data
 
 
 class DropoutCompose(RandomProcess, Compose):
     def __init__(self, *transforms, dropout: Union[float, Sequence[float]] = 0.5,
-                 random_mode: str = "random", random_args: Sequence = (),
-                 random_module: str = "random", **kwargs):
+                 random_mode: str = "random", random_args: Sequence = (), random_module: str = "random",
+                 transform_call: Callable[[Any, Callable], Any] = dict_call,
+                 **kwargs):
         """
         Compose multiple transforms to one
 
@@ -60,6 +87,9 @@ class DropoutCompose(RandomProcess, Compose):
             positional arguments passed for random function
         random_module: str
             module from where function random function should be imported
+        transform_call: Callable[[Any, Callable], Any], optional
+            function which determines how transforms are called. By default
+            Mappings and Sequences are unpacked during the transform.
 
         Raises
         ------
@@ -68,7 +98,7 @@ class DropoutCompose(RandomProcess, Compose):
         """
         super().__init__(*transforms, random_mode=random_mode,
                          random_args=random_args, random_module=random_module,
-                         rand_seq=False, **kwargs)
+                         rand_seq=False, transform_call=transform_call, **kwargs)
         if check_scalar(dropout):
             dropout = [dropout] * len(self.transforms)
         if len(dropout) != len(self.transforms):
@@ -93,5 +123,5 @@ class DropoutCompose(RandomProcess, Compose):
         """
         for trafo, drop in zip(self.transforms, self.dropout):
             if self.rand() > drop:
-                data = trafo(**data)
+                data = self.transform_call(data, trafo)
         return data
