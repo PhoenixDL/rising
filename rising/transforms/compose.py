@@ -7,9 +7,28 @@ from rising.loading import default_transform_call
 __all__ = ["Compose", "DropoutCompose"]
 
 
+def dict_call(batch: dict, transform: Callable) -> Any:
+    """
+    Unpacks the dict for every transformation
+
+    Parameters
+    ----------
+    batch: dict
+        current batch which is passed to transform
+    transform: Callable
+        transform to perform
+
+    Returns
+    -------
+    Any
+        transformed batch
+    """
+    return transform(**batch)
+
+
 class Compose(AbstractTransform):
     def __init__(self, *transforms,
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
+                 transform_call: Callable[[Any, Callable], Any] = dict_call):
         """
         Compose multiple transforms
 
@@ -49,7 +68,7 @@ class Compose(AbstractTransform):
 class DropoutCompose(RandomProcess, Compose):
     def __init__(self, *transforms, dropout: Union[float, Sequence[float]] = 0.5,
                  random_mode: str = "random", random_args: Sequence = (), random_module: str = "random",
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call,
+                 transform_call: Callable[[Any, Callable], Any] = dict_call,
                  **kwargs):
         """
         Compose multiple transforms to one
