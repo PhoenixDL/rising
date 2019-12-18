@@ -127,6 +127,26 @@ class AffineHelperTests(unittest.TestCase):
                 self.assertTrue((matrix_to_cartesian(inp, keep_square=keep_square) == exp).all())
                 keep_square = not keep_square
 
+    def test_matrix_coordinate_order(self):
+        inputs = [
+            torch.tensor([[[1, 2, 3],
+                           [4, 5, 6],
+                           [7, 8, 9]]])
+        ]
+
+        expectations = [
+            torch.tensor([[[9, 8, 7],
+                           [6, 5, 4],
+                           [3, 2, 1]]])
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                self.assertTrue((matrix_revert_coordinate_order(inp) == exp).all())
+                self.assertTrue((inp == matrix_revert_coordinate_order(exp)).all())
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
