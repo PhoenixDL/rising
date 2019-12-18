@@ -43,6 +43,10 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
         the converted batch of matrices
 
     """
+    if batch.size(-1) == batch.size(-2):
+        missing = batch.new_zeros(size=(*batch.shape[:-1], 1))
+        batch = torch.cat([batch, missing], dim=-1)
+
     missing = torch.zeros((batch.size(0),
                            *[1 for tmp in batch.shape[1:-1]],
                            batch.size(-1)),
@@ -50,7 +54,7 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
 
     missing[..., -1] = 1
 
-    return torch.cat([batch, missing], dim=1)
+    return torch.cat([batch, missing], dim=-2)
 
 
 def matrix_to_cartesian(batch: torch.Tensor, keep_square: bool = False
