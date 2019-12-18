@@ -99,7 +99,7 @@ def points_to_cartesian(batch: torch.Tensor) -> torch.Tensor:
 
     """
 
-    return batch[..., :-1]
+    return batch[..., :-1] / batch[..., -1]
 
 
 def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
