@@ -145,7 +145,18 @@ class AffineHelperTests(unittest.TestCase):
                 self.assertTrue((matrix_revert_coordinate_order(inp) == exp).all())
                 self.assertTrue((inp == matrix_revert_coordinate_order(exp)).all())
 
+    def test_batched_eye(self):
+        for dtype in [torch.float, torch.long, torch.bool]:
+            for ndim in range(10):
+                for batchsize in range(10):
+                    with self.subTest(batchsize=batchsize, ndim=ndim, dtype=dtype):
+                        batched_eye = get_batched_eye(batchsize=batchsize, ndim=ndim, dtype=dtype)
+                        self.assertTupleEqual(batched_eye.size(), (batchsize, ndim, ndim))
+                        self.assertEquals(dtype, batched_eye.dtype)
 
+                        non_batched_eye = torch.eye(ndim, dtype=dtype)
+                        for _eye in batched_eye:
+                            self.assertTrue((_eye == non_batched_eye).all())
 
 
 if __name__ == '__main__':
