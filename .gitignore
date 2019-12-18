@@ -5,6 +5,7 @@ __pycache__/
 *.vscode
 __pycache__
 *.pyc
+playground.py
 
 # C extensions
 *.so
