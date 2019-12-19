@@ -4,6 +4,7 @@ from rising.utils.affine import points_to_homogeneous, matrix_to_homogeneous, \
     get_batched_eye, _format_scale, _format_translation, deg_to_rad, \
     _format_rotation, parametrize_matrix, assemble_matrix_if_necessary
 import torch
+import math
 
 
 class AffineHelperTests(unittest.TestCase):
@@ -237,6 +238,18 @@ class AffineHelperTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _format_translation([4, 5, 6, 7], batchsize=3, ndim=2)
 
+    def test_deg_to_rad(self):
+        inputs = [
+            torch.tensor([tmp * 45. for tmp in range(9)]),
+        ]
+
+        expectations = [
+            torch.tensor([tmp * math.pi/4 for tmp in range(9)])
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                self.assertTrue((deg_to_rad(inp) == exp).all())
 
 
 if __name__ == '__main__':
