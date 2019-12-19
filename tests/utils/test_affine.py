@@ -297,6 +297,8 @@ class AffineHelperTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _format_rotation([4, 5, 6, 7], batchsize=1, ndim=2)
 
+    # TODO: Add Test for whole parametrization and for parametrization skipp logic (assemble if necessary)
+
 
 if __name__ == '__main__':
     unittest.main()
