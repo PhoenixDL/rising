@@ -206,7 +206,7 @@ def _format_scale(scale: AffineParamType,
     scale = scale.to(device=device, dtype=dtype)
 
     # scale is already batched matrix
-    if scale.size() == (batchsize, ndim, ndim):
+    if scale.size() == (batchsize, ndim, ndim) or scale.size() == (batchsize, ndim, ndim+1):
         return matrix_to_homogeneous(scale)
 
     # scale is batched matrix with same element for each dimension or just
@@ -215,8 +215,7 @@ def _format_scale(scale: AffineParamType,
         new_scale = get_batched_eye(batchsize=batchsize, ndim=ndim,
                                     device=device, dtype=dtype)
 
-        for i in range(batchsize):
-            new_scale[i] *= scale[i]
+        return matrix_to_homogeneous(new_scale * scale.view(batchsize, -1, 1))
 
     # scale contains a non-diagonalized form (will be repeated for each batch
     # item)
