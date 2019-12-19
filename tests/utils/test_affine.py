@@ -158,6 +158,40 @@ class AffineHelperTests(unittest.TestCase):
                         for _eye in batched_eye:
                             self.assertTrue((_eye == non_batched_eye).all())
 
+    def test_format_scale(self):
+        inputs = [
+            {'scale': None, 'batchsize': 2, 'ndim': 2},
+            {'scale': 2, 'batchsize': 2, 'ndim': 2},
+            {'scale': [2, 3], 'batchsize': 3, 'ndim': 2},
+            {'scale': [2, 3, 4], 'batchsize': 3, 'ndim': 2},
+            {'scale': [[2, 3], [4, 5]], 'batchsize': 3, 'ndim': 2},
+        ]
+
+        expectations = [
+            torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                         [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]],
+                          [[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
+                          [[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
+                          [[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]],
+                          [[3., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
+                          [[4., 0., 0.], [0., 4., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2, 3, 0], [4, 5, 0], [0, 0, 1]],
+                          [[2, 3, 0], [4, 5, 0], [0, 0, 1]],
+                          [[2, 3, 0], [4, 5, 0], [0, 0, 1]]])
+
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = _format_scale(**inp).to(exp.dtype)
+                self.assertTrue((res == exp).all())
+
+        with self.assertRaises(ValueError):
+            _format_scale([4, 5, 6, 7], batchsize=3, ndim=2)
+
 
 if __name__ == '__main__':
     unittest.main()
