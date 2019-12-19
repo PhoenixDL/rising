@@ -151,7 +151,7 @@ def get_batched_eye(batchsize: int, ndim: int,
 
     """
     return torch.eye(ndim, device=device, dtype=dtype).view(
-        1, ndim, ndim).expand(batchsize, -1, -1)
+        1, ndim, ndim).expand(batchsize, -1, -1).clone()
 
 
 def _format_scale(scale: AffineParamType,
@@ -302,7 +302,7 @@ def _format_translation(offset: AffineParamType,
     # directly build homogeneous form -> use dim+1
     whole_translation_matrix = get_batched_eye(batchsize=batchsize,
                                                ndim=ndim + 1, device=device,
-                                               dtype=dtype).clone()
+                                               dtype=dtype)
 
     whole_translation_matrix[:, :-1, -1] = offset.clone()
     return whole_translation_matrix
@@ -339,7 +339,7 @@ def _format_rotation(rotation: AffineParamType,
     ----------
     rotation : torch.Tensor, int, float
         the rotation factor(s). Supported are:
-            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
+            * a full transformation matrix of shape (BATCHSIZE x NDIM(+1) x NDIM(+1))
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
             * a single parameter per sample (as a 1d tensor), which will be
@@ -384,23 +384,27 @@ def _format_rotation(rotation: AffineParamType,
     rotation = rotation.to(device=device, dtype=dtype)
 
     # already complete
-    if rotation.size() == (batchsize, ndim, ndim):
+    if rotation.size() == (batchsize, ndim, ndim) or rotation.size() == (batchsize, ndim, ndim+1):
         return matrix_to_homogeneous(rotation)
+    elif rotation.size() == (batchsize, ndim+1, ndim+1):
+        return rotation
 
     if degree:
         rotation = deg_to_rad(rotation)
 
     # repeat along batch dimension
-    if rotation.size() == (ndim, ndim):
-        return matrix_to_homogeneous(
-            rotation.view(1, -1, -1).expand(batchsize, -1, -1))
+    if rotation.size() == (ndim, ndim) or rotation.size() == (ndim+1, ndim+1):
+        rotation = rotation[None].expand(batchsize, -1, -1)
+        if rotation.size(-1) == ndim:
+            rotation = matrix_to_homogeneous(rotation)
 
+        return rotation
     # bring it to default size of (batchsize, num_rot_params)
     elif rotation.size() == (batchsize,):
         rotation = rotation.view(batchsize, 1).expand(-1, num_rot_params)
     elif rotation.size() == (num_rot_params,):
         rotation = rotation.view(1, num_rot_params).expand(batchsize, -1)
-    elif not rotation.size() == (batchsize, num_rot_params):
+    elif rotation.size() != (batchsize, num_rot_params):
         raise ValueError("Invalid shape for rotation parameters: %s"
                          % (str(tuple(rotation.size()))))
 
@@ -411,10 +415,10 @@ def _format_rotation(rotation: AffineParamType,
 
     # assemble the actual matrix
     if num_rot_params == 1:
-        whole_rot_matrix[:, 0, 0] = cos.clone()
-        whole_rot_matrix[:, 1, 1] = cos.clone()
-        whole_rot_matrix[:, 0, 1] = (-sin).clone()
-        whole_rot_matrix[:, 1, 0] = sin.clone()
+        whole_rot_matrix[:, 0, 0] = cos[0].clone()
+        whole_rot_matrix[:, 1, 1] = cos[0].clone()
+        whole_rot_matrix[:, 0, 1] = (-sin[0]).clone()
+        whole_rot_matrix[:, 1, 0] = sin[0].clone()
 
     else:
         whole_rot_matrix[:, 0, 0] = (cos[:, 0] * cos[:, 1] * cos[:, 2]
@@ -424,7 +428,7 @@ def _format_rotation(rotation: AffineParamType,
         whole_rot_matrix[:, 0, 2] = (cos[:, 0] * sin[:, 1]).clone()
         whole_rot_matrix[:, 1, 0] = (sin[:, 0] * cos[:, 1] * cos[:, 2]
                                      + cos[:, 0] * sin[:, 2]).clone()
-        whole_rot_matrix[: 1, 1] = (-sin[:, 0] * cos[:, 1] * sin[:, 2]
+        whole_rot_matrix[:, 1, 1] = (-sin[:, 0] * cos[:, 1] * sin[:, 2]
                                     + cos[:, 0] * cos[:, 2]).clone()
         whole_rot_matrix[:, 2, 0] = (-sin[:, 1] * cos[:, 2]).clone()
         whole_rot_matrix[:, 2, 1] = (-sin[:, 1] * sin[:, 2]).clone()
