@@ -33,7 +33,7 @@ class AffineHelperTests(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue((points_to_homogeneous(inp) == exp).all())
+                self.assertTrue(torch.allclose(points_to_homogeneous(inp), exp))
 
     def test_points_to_cartesian(self):
         expectations = [
@@ -60,7 +60,7 @@ class AffineHelperTests(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue((points_to_cartesian(inp) == exp).all())
+                self.assertTrue(torch.allclose(points_to_cartesian(inp), exp))
 
     def test_matrix_to_homogeneous(self):
         inputs = [
@@ -92,7 +92,7 @@ class AffineHelperTests(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue((matrix_to_homogeneous(inp) == exp).all())
+                self.assertTrue(torch.allclose(matrix_to_homogeneous(inp), exp))
 
     def test_matrix_to_cartesian(self):
         expectations = [
@@ -125,7 +125,7 @@ class AffineHelperTests(unittest.TestCase):
         keep_square = True
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue((matrix_to_cartesian(inp, keep_square=keep_square) == exp).all())
+                self.assertTrue(torch.allclose(matrix_to_cartesian(inp, keep_square=keep_square), exp))
                 keep_square = not keep_square
 
     def test_matrix_coordinate_order(self):
@@ -143,11 +143,11 @@ class AffineHelperTests(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue((matrix_revert_coordinate_order(inp) == exp).all())
-                self.assertTrue((inp == matrix_revert_coordinate_order(exp)).all())
+                self.assertTrue(torch.allclose(matrix_revert_coordinate_order(inp), exp))
+                self.assertTrue(torch.allclose(inp, matrix_revert_coordinate_order(exp)))
 
     def test_batched_eye(self):
-        for dtype in [torch.float, torch.long, torch.bool]:
+        for dtype in [torch.float, torch.long]:
             for ndim in range(10):
                 for batchsize in range(10):
                     with self.subTest(batchsize=batchsize, ndim=ndim, dtype=dtype):
@@ -157,7 +157,7 @@ class AffineHelperTests(unittest.TestCase):
 
                         non_batched_eye = torch.eye(ndim, dtype=dtype)
                         for _eye in batched_eye:
-                            self.assertTrue((_eye == non_batched_eye).all())
+                            self.assertTrue(torch.allclose(_eye, non_batched_eye, atol=1e-6))
 
     def test_format_scale(self):
         inputs = [
@@ -170,7 +170,7 @@ class AffineHelperTests(unittest.TestCase):
 
         expectations = [
             torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
-                         [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+                          [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
             torch.tensor([[[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]],
                           [[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]]]),
             torch.tensor([[[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
@@ -188,7 +188,7 @@ class AffineHelperTests(unittest.TestCase):
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
                 res = _format_scale(**inp).to(exp.dtype)
-                self.assertTrue((res == exp).all())
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
 
         with self.assertRaises(ValueError):
             _format_scale([4, 5, 6, 7], batchsize=3, ndim=2)
@@ -222,8 +222,8 @@ class AffineHelperTests(unittest.TestCase):
                           [[1, 0, 3], [0, 1, 3], [0, 0, 1]],
                           [[1, 0, 4], [0, 1, 4], [0, 0, 1]]]),
             torch.tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
-                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]),
+                          [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                          [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]),
             torch.tensor([[[1, 2, 3], [4, 5, 6], [0, 0, 1]],
                           [[10, 11, 12], [13, 14, 15], [0, 0, 1]],
                           [[19, 20, 21], [22, 23, 24], [0, 0, 1]]])
@@ -233,7 +233,7 @@ class AffineHelperTests(unittest.TestCase):
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
                 res = _format_translation(**inp).to(exp.dtype)
-                self.assertTrue((res == exp).all())
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
 
         with self.assertRaises(ValueError):
             _format_translation([4, 5, 6, 7], batchsize=3, ndim=2)
@@ -244,12 +244,58 @@ class AffineHelperTests(unittest.TestCase):
         ]
 
         expectations = [
-            torch.tensor([tmp * math.pi/4 for tmp in range(9)])
+            torch.tensor([tmp * math.pi / 4 for tmp in range(9)])
         ]
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue((deg_to_rad(inp) == exp).all())
+                self.assertTrue(torch.allclose(deg_to_rad(inp), exp, atol=1e-6))
+
+    def test_format_rotation(self):
+        inputs = [
+            {'rotation': None, 'batchsize': 2, 'ndim': 3},
+            {'rotation': 0, 'degree': True, 'batchsize': 2, 'ndim': 2},
+            {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 2, 'ndim': 3},
+            {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3, 'ndim': 2},
+            {'rotation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                          [[10, 11, 12], [13, 14, 15], [16, 17, 18]]],
+             'batchsize': 2, 'ndim': 2},
+            {'rotation': [[[1, 2, 3], [4, 5, 6]],
+                          [[10, 11, 12], [13, 14, 15]]],
+             'batchsize': 2, 'ndim': 2},
+            {'rotation': [[1, 2], [3, 4]], 'batchsize': 3, 'ndim': 2, 'degree': False}
+
+        ]
+        expectations = [
+            torch.tensor([[[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]],
+                          [[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
+            torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                          [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]],
+                          [[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
+            torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+                          [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+                          [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]]),
+            torch.tensor([[[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
+                          [[10., 11., 12.], [13., 14., 15.], [16., 17., 18.]]]),
+            torch.tensor([[[1., 2., 3.], [4., 5., 6.], [0., 0., 1.]],
+                          [[10., 11., 12.], [13., 14., 15.], [0., 0., 1.]]]),
+            torch.tensor([[[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
+                          [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
+                          [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]]])
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = _format_rotation(**inp).to(exp.dtype)
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
+
+        with self.assertRaises(ValueError):
+            _format_rotation([4, 5, 6, 7], batchsize=1, ndim=2)
 
 
 if __name__ == '__main__':
