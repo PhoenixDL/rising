@@ -287,7 +287,7 @@ def _format_translation(offset: AffineParamType,
     # translation matrix already built
     if offset.size() == (batchsize, ndim + 1, ndim + 1):
         return offset
-    elif offset.size() == (batchsize, ndim, ndim+1):
+    elif offset.size() == (batchsize, ndim, ndim + 1):
         return matrix_to_homogeneous(offset)
 
     # not completely built so far -> bring in shape (batchsize, ndim)
@@ -384,16 +384,16 @@ def _format_rotation(rotation: AffineParamType,
     rotation = rotation.to(device=device, dtype=dtype)
 
     # already complete
-    if rotation.size() == (batchsize, ndim, ndim) or rotation.size() == (batchsize, ndim, ndim+1):
+    if rotation.size() == (batchsize, ndim, ndim) or rotation.size() == (batchsize, ndim, ndim + 1):
         return matrix_to_homogeneous(rotation)
-    elif rotation.size() == (batchsize, ndim+1, ndim+1):
+    elif rotation.size() == (batchsize, ndim + 1, ndim + 1):
         return rotation
 
     if degree:
         rotation = deg_to_rad(rotation)
 
     # repeat along batch dimension
-    if rotation.size() == (ndim, ndim) or rotation.size() == (ndim+1, ndim+1):
+    if rotation.size() == (ndim, ndim) or rotation.size() == (ndim + 1, ndim + 1):
         rotation = rotation[None].expand(batchsize, -1, -1)
         if rotation.size(-1) == ndim:
             rotation = matrix_to_homogeneous(rotation)
@@ -429,7 +429,7 @@ def _format_rotation(rotation: AffineParamType,
         whole_rot_matrix[:, 1, 0] = (sin[:, 0] * cos[:, 1] * cos[:, 2]
                                      + cos[:, 0] * sin[:, 2]).clone()
         whole_rot_matrix[:, 1, 1] = (-sin[:, 0] * cos[:, 1] * sin[:, 2]
-                                    + cos[:, 0] * cos[:, 2]).clone()
+                                     + cos[:, 0] * cos[:, 2]).clone()
         whole_rot_matrix[:, 2, 0] = (-sin[:, 1] * cos[:, 2]).clone()
         whole_rot_matrix[:, 2, 1] = (-sin[:, 1] * sin[:, 2]).clone()
         whole_rot_matrix[:, 2, 2] = (cos[:, 1]).clone()
