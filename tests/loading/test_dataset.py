@@ -77,8 +77,8 @@ class TestBaseDataset(unittest.TestCase):
     def test_cache_verbose_multiprocessing(self):
         # TODO: add tqdm mock to f progress bar is invoked correctly (do this when dataset tests are reworked)
         dataset = CacheDataset(self.paths, LoadDummySample(),
-                                num_workers=4, verbose=True,
-                                label_load_fct=None)
+                               num_workers=4, verbose=True,
+                               label_load_fct=None)
         self.assertEqual(len(dataset), 10)
         self.check_dataset_access(dataset, [0, 5, 9])
         self.check_dataset_outside_access(dataset, [10, 20])

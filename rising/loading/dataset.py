@@ -24,12 +24,12 @@ __all__ = ["Dataset", "CacheDataset", "LazyDataset", "CacheDatasetID", "LazyData
 def dill_helper(payload: Any) -> Any:
     """
     Load single sample from data serialized by dill
-    
+
     Parameters
     ----------
     payload : Any
         data which is loaded with dill
-    
+
     Returns
     -------
     Any
@@ -42,7 +42,7 @@ def dill_helper(payload: Any) -> Any:
 def load_async(pool: MPPool, fn: Callable, *args, callback: Callable = None, **kwargs) -> Any:
     """
     Load data asynchronously and serialize data via dill
-    
+
     Parameters
     ----------
     pool : multiprocessing.Pool
@@ -51,7 +51,7 @@ def load_async(pool: MPPool, fn: Callable, *args, callback: Callable = None, **k
         function to load a single sample
     callback : Callable, optional
         optional callback, by default None
-    
+
     Returns
     -------
     Any
@@ -188,14 +188,14 @@ class CacheDataset(Dataset):
     def load_single_process(self, load_fn: Callable, path: Sequence) -> Iterator:
         """
         Helper function to load dataset with single process
-        
+
         Parameters
         ----------
         load_fn : Callable
             function to load a linge sample
         path : Sequence
             a sequence of paths whih should be loaded
-        
+
         Returns
         -------
         Iterator
@@ -209,21 +209,21 @@ class CacheDataset(Dataset):
     def load_multi_process(self, load_fn: Callable, path: Sequence) -> List:
         """
         Helper function to load dataset with multiple processes
-        
+
         Parameters
         ----------
         load_fn : Callable
             function to load a linge sample
         path : Sequence
             a sequence of paths whih should be loaded
-        
+
         Returns
         -------
         List
             list of loaded data
         """
         _processes = cpu_count() if self._num_workers is None else self._num_workers
-        
+
         if self._verbosity:
             pbar = tqdm(total=len(path), unit='samples', desc="Loading Samples")
 
