@@ -287,6 +287,8 @@ def _format_translation(offset: AffineParamType,
     # translation matrix already built
     if offset.size() == (batchsize, ndim + 1, ndim + 1):
         return offset
+    elif offset.size() == (batchsize, ndim, ndim+1):
+        return matrix_to_homogeneous(offset)
 
     # not completely built so far -> bring in shape (batchsize, ndim)
     if offset.size() == (batchsize,):
@@ -300,7 +302,7 @@ def _format_translation(offset: AffineParamType,
     # directly build homogeneous form -> use dim+1
     whole_translation_matrix = get_batched_eye(batchsize=batchsize,
                                                ndim=ndim + 1, device=device,
-                                               dtype=dtype)
+                                               dtype=dtype).clone()
 
     whole_translation_matrix[:, :-1, -1] = offset.clone()
     return whole_translation_matrix
