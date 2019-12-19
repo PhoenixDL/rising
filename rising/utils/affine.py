@@ -206,7 +206,7 @@ def _format_scale(scale: AffineParamType,
     scale = scale.to(device=device, dtype=dtype)
 
     # scale is already batched matrix
-    if scale.size() == (batchsize, ndim, ndim) or scale.size() == (batchsize, ndim, ndim+1):
+    if scale.size() == (batchsize, ndim, ndim) or scale.size() == (batchsize, ndim, ndim + 1):
         return matrix_to_homogeneous(scale)
 
     # scale is batched matrix with same element for each dimension or just

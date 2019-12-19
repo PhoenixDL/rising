@@ -19,7 +19,7 @@ class TypeCheckTestCase(unittest.TestCase):
                   [1, 1],
                   torch.tensor(1),
                   torch.tensor([1, 2])
-        ]
+                  ]
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expectation=exp):
