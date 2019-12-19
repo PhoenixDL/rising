@@ -192,6 +192,52 @@ class AffineHelperTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _format_scale([4, 5, 6, 7], batchsize=3, ndim=2)
 
+    def test_format_translation(self):
+        inputs = [
+            {'offset': None, 'batchsize': 2, 'ndim': 2},
+            {'offset': 2, 'batchsize': 2, 'ndim': 2},
+            {'offset': [2, 3], 'batchsize': 3, 'ndim': 2},
+            {'offset': [2, 3, 4], 'batchsize': 3, 'ndim': 2},
+            {'offset': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             'batchsize': 3, 'ndim': 2},
+            {'offset': [[[1, 2, 3], [4, 5, 6]],
+                        [[10, 11, 12], [13, 14, 15]],
+                        [[19, 20, 21], [22, 23, 24]]],
+             'batchsize': 3, 'ndim': 2}
+
+        ]
+
+        expectations = [
+            torch.tensor([[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                          [[1, 0, 0], [0, 1, 0], [0, 0, 1]]]),
+            torch.tensor([[[1, 0, 2], [0, 1, 2], [0, 0, 1]],
+                          [[1, 0, 2], [0, 1, 2], [0, 0, 1]]]),
+            torch.tensor([[[1, 0, 2], [0, 1, 3], [0, 0, 1]],
+                          [[1, 0, 2], [0, 1, 3], [0, 0, 1]],
+                          [[1, 0, 2], [0, 1, 3], [0, 0, 1]]]),
+            torch.tensor([[[1, 0, 2], [0, 1, 2], [0, 0, 1]],
+                          [[1, 0, 3], [0, 1, 3], [0, 0, 1]],
+                          [[1, 0, 4], [0, 1, 4], [0, 0, 1]]]),
+            torch.tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]),
+            torch.tensor([[[1, 2, 3], [4, 5, 6], [0, 0, 1]],
+                          [[10, 11, 12], [13, 14, 15], [0, 0, 1]],
+                          [[19, 20, 21], [22, 23, 24], [0, 0, 1]]])
+
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = _format_translation(**inp).to(exp.dtype)
+                self.assertTrue((res == exp).all())
+
+        with self.assertRaises(ValueError):
+            _format_translation([4, 5, 6, 7], batchsize=3, ndim=2)
+
+
 
 if __name__ == '__main__':
     unittest.main()
