@@ -1,12 +1,15 @@
 import unittest
+from unittest.mock import Mock
 import os
 import tempfile
 import shutil
 import pickle
+import dill
+from torch.multiprocessing import Pool
 
 import numpy as np
 from rising.loading.dataset import CacheDataset, LazyDataset, CacheDatasetID, \
-    LazyDatasetID, LazyDatasetMulReturn, IDManager
+    LazyDatasetID, LazyDatasetMulReturn, IDManager, load_async, dill_helper
 from rising.loading import get_debug_mode, set_debug_mode
 
 
@@ -56,7 +59,7 @@ class TestBaseDataset(unittest.TestCase):
         self.paths = list(range(10))
 
     def test_cache_dataset(self):
-        dataset = CacheDataset(self.paths, LoadDummySample(),
+        dataset = CacheDataset(self.paths, LoadDummySample(), verbose=True,
                                label_load_fct=None)
         self.assertEqual(len(dataset), 10)
         self.check_dataset_access(dataset, [0, 5, 9])
@@ -71,19 +74,22 @@ class TestBaseDataset(unittest.TestCase):
                                    label_load_fct=None)
         set_debug_mode(False)
 
-    def test_cache_verbose_warn(self):
-
-        with self.assertWarns(UserWarning):
-            dataset = CacheDataset(self.paths, LoadDummySample(),
-                                   num_workers=4, verbose=True,
-                                   label_load_fct=None)
+    def test_cache_verbose_multiprocessing(self):
+        # TODO: add tqdm mock to f progress bar is invoked correctly (do this when dataset tests are reworked)
+        dataset = CacheDataset(self.paths, LoadDummySample(),
+                               num_workers=4, verbose=True,
+                               label_load_fct=None)
+        self.assertEqual(len(dataset), 10)
+        self.check_dataset_access(dataset, [0, 5, 9])
+        self.check_dataset_outside_access(dataset, [10, 20])
+        self.check_dataset_iter(dataset)
 
     def test_cache_dataset_extend(self):
         def load_mul_sample(path) -> list:
             return [LoadDummySample()(path, None)] * 4
 
         dataset = CacheDataset(self.paths, load_mul_sample,
-                               num_workers=0, verbose=True,
+                               num_workers=4, verbose=False,
                                mode='extend')
         self.assertEqual(len(dataset), 40)
         self.check_dataset_access(dataset, [0, 20, 39])
@@ -245,6 +251,22 @@ class TestIDManager(unittest.TestCase):
         manager = IDManager("id", cache_ids=False)
         with self.assertWarns(UserWarning):
             manager.get_subset([0])
+
+
+class TestHelperFunctions(unittest.TestCase):
+    def test_load_async(self):
+        callback = Mock()
+
+        with Pool(processes=1) as p:
+            ref = load_async(p, lambda x: x, 0, callback=callback)
+            self.assertEqual(ref.get(), 0)
+
+        callback.assert_called_once()
+
+    def test_dill_helper(self):
+        payload = dill.dumps((lambda x: x, (1, ), {}))
+        res = dill_helper(payload)
+        self.assertEqual(res, 1)
 
 
 if __name__ == "__main__":

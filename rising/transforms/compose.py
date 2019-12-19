@@ -1,7 +1,6 @@
 from typing import Sequence, Union, Callable, Any
 from rising.utils import check_scalar
 from rising.transforms import AbstractTransform, RandomProcess
-from rising.loading import default_transform_call
 
 
 __all__ = ["Compose", "DropoutCompose"]
