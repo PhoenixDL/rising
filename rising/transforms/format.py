@@ -52,9 +52,11 @@ class SeqToMap(AbstractTransform):
             additional keyword arguments passed to superclass
         """
         super().__init__(grad=grad, **kwargs)
+        if isinstance(keys[0], (list, tuple)):
+            keys = keys[0]
         self.keys = keys
 
-    def forward(self, *data) -> dict:
+    def forward(self, *data, **kwargs) -> dict:
         """
         Convert input
 
