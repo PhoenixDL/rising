@@ -7,3 +7,4 @@ from rising.transforms.intensity import *
 from rising.transforms.kernel import *
 from rising.transforms.spatial import *
 from rising.transforms.utility import *
+from rising.transforms.device import *

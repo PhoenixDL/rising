@@ -8,13 +8,13 @@ from rising.utils import check_scalar
 from rising.transforms.functional.intensity import norm_range, norm_min_max, norm_mean_std, \
     norm_zero_mean_unit_std, add_noise, gamma_correction, add_value, scale_by_value
 
-__all__ = ["ClampTransform", "NormRangeTransform", "NormMinMaxTransform",
-           "NormZeroMeanUnitStdTransform", "NormMeanStdTransform", "NoiseTransform",
-           "GaussianNoiseTransform", "ExponentialNoiseTransform", "GammaCorrectionTransform",
-           "RandomValuePerChannelTransform", "RandomAddValue", "RandomScaleValue"]
+__all__ = ["Clamp", "NormRange", "NormMinMax",
+           "NormZeroMeanUnitStd", "NormMeanStd", "Noise",
+           "GaussianNoise", "ExponentialNoise", "GammaCorrection",
+           "RandomValuePerChannel", "RandomAddValue", "RandomScaleValue"]
 
 
-class ClampTransform(BaseTransform):
+class Clamp(BaseTransform):
     def __init__(self, min: float, max: float, keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Apply augment_fn to keys
@@ -33,7 +33,7 @@ class ClampTransform(BaseTransform):
         super().__init__(augment_fn=torch.clamp, keys=keys, grad=grad, min=min, max=max, **kwargs)
 
 
-class NormRangeTransform(PerSampleTransform):
+class NormRange(PerSampleTransform):
     def __init__(self, min: float, max: float, keys: Sequence = ('data',), per_channel: bool = True,
                  grad: bool = False, **kwargs):
         """
@@ -58,7 +58,7 @@ class NormRangeTransform(PerSampleTransform):
                          min=min, max=max, per_channel=per_channel, **kwargs)
 
 
-class NormMinMaxTransform(PerSampleTransform):
+class NormMinMax(PerSampleTransform):
     def __init__(self, keys: Sequence = ('data',), per_channel: bool = True, grad: bool = False, **kwargs):
         """
         Scale data to [0, 1]
@@ -78,7 +78,7 @@ class NormMinMaxTransform(PerSampleTransform):
                          per_channel=per_channel, **kwargs)
 
 
-class NormZeroMeanUnitStdTransform(PerSampleTransform):
+class NormZeroMeanUnitStd(PerSampleTransform):
     def __init__(self, keys: Sequence = ('data',), per_channel: bool = True, grad: bool = False, **kwargs):
         """
         Normalize mean to zero and std to one
@@ -98,7 +98,7 @@ class NormZeroMeanUnitStdTransform(PerSampleTransform):
                          per_channel=per_channel, **kwargs)
 
 
-class NormMeanStdTransform(PerSampleTransform):
+class NormMeanStd(PerSampleTransform):
     def __init__(self, mean: Union[float, Sequence], std: Union[float, Sequence],
                  keys: Sequence = ('data',), per_channel: bool = True, grad: bool = False, **kwargs):
         """
@@ -123,7 +123,7 @@ class NormMeanStdTransform(PerSampleTransform):
                          mean=mean, std=std, per_channel=per_channel, **kwargs)
 
 
-class NoiseTransform(PerChannelTransform):
+class Noise(PerChannelTransform):
     def __init__(self, noise_type: str, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
@@ -150,7 +150,7 @@ class NoiseTransform(PerChannelTransform):
                          grad=grad, noise_type=noise_type, **kwargs)
 
 
-class ExponentialNoiseTransform(NoiseTransform):
+class ExponentialNoise(Noise):
     def __init__(self, lambd: float, keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Add exponential noise to data
@@ -169,7 +169,7 @@ class ExponentialNoiseTransform(NoiseTransform):
         super().__init__(noise_type='exponential_', lambd=lambd, keys=keys, grad=grad, **kwargs)
 
 
-class GaussianNoiseTransform(NoiseTransform):
+class GaussianNoise(Noise):
     def __init__(self, mean: float, std: float, keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Add noise to data
@@ -190,7 +190,7 @@ class GaussianNoiseTransform(NoiseTransform):
         super().__init__(noise_type='normal_', mean=mean, std=std, keys=keys, grad=grad, **kwargs)
 
 
-class GammaCorrectionTransform(AbstractTransform):
+class GammaCorrection(AbstractTransform):
     def __init__(self, gamma: Union[float, Sequence] = (0.5, 2),
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
@@ -246,7 +246,7 @@ class GammaCorrectionTransform(AbstractTransform):
         return data
 
 
-class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
+class RandomValuePerChannel(RandomProcess, PerChannelTransform):
     def __init__(self, augment_fn: callable, random_mode: str, random_args: Sequence = (),
                  per_channel: bool = False, keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
@@ -307,7 +307,7 @@ class RandomValuePerChannelTransform(RandomProcess, PerChannelTransform):
             return super().forward(**data)
 
 
-class RandomAddValue(RandomValuePerChannelTransform):
+class RandomAddValue(RandomValuePerChannel):
     def __init__(self, random_mode: str, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
@@ -331,7 +331,7 @@ class RandomAddValue(RandomValuePerChannelTransform):
                          per_channel=per_channel, keys=keys, grad=grad, **kwargs)
 
 
-class RandomScaleValue(RandomValuePerChannelTransform):
+class RandomScaleValue(RandomValuePerChannel):
     def __init__(self, random_mode, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """

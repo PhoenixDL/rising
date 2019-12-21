@@ -1,0 +1,18 @@
+# Changelog
+
+| Date | PR-Commit | Short Description | Breaking Changes? |
+| ---- | --------- | ----------------- | ----------------- |
+| 2019-12-12 | 7bb56181f10f7ad853f20238c559260da4a60df6 | First Complete Readme | No |
+| 2019-12-09 | 8100def3afec30a6981bb1435010834ba95746a0 | Make transform call changeable by user | No |
+| 2019-12-08 | 1d650858a39a50915ba76ccd4a7505b5b535dc7d | Move from delira dataset functions to native torch functions | No |
+| 2019-12-05 | f0b9a434929d424de54fd166d707c1a247dff6b8 | First PR and Issue Template | No |
+| 2019-12-04 | 5880178a1b3d18c1e9e71e8bde342bc28b64b937 | Introduce Custom Dataloader | No |
+| 2019-12-02 | 79583d5eb078b0996fcb66b588c3289ba99535bf | Introduce Spatial Transforms | No |
+| 2019-11-30 | f825221d9c3c5983987f6457f032bf6099a97ea7 | Compose Transforms | No |
+| 2019-11-24 | ---------------------------------------- | Release v.0.0.1 | -- |
+| 2019-11-23 | 33056e2fddc7ec3a396059a11b1b47061bb0bffa | Noise Transforms | No |
+| 2019-11-22 | 28135467cd05ddda7bf0a8af682d8edfd2cb081a | Intensity Transforms | No |
+| 2019-11-22 | 66a85a9f67cf712deb3294f6bacf176097cc95fb | Mirror and Rot90 | No |
+| 2019-11-22 | d9b98c8732785c1559a42def31d97b9e152f534d | Abstract Transform and Format Transforms | No |
+| 2019-11-22 | 8438ebd0cefcb279bbf813aaa7688dcfa9a64914 | OneHot Transforms | No |
+| 2019-12-22 | f1ae81325af436c949269788b0d4956f9c856bad | Rot Transform | No |

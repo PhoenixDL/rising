@@ -1,0 +1,36 @@
+import torch
+import unittest
+
+from rising.transforms.functional.device import *
+
+
+class TestSpatialFunctional(unittest.TestCase):
+    def setUp(self) -> None:
+        self.device = "cuda:0"
+        self.batch_2d = torch.arange(1, 10).reshape(3, 3)[None, None]
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_to_device_tensor(self):
+        outp = to_device(self.batch_2d, self.device)
+        self.assertEqual(outp.device, torch.device(self.device))
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_to_device_mapping(self):
+        outp = to_device({"a": self.batch_2d}, self.device)
+        self.assertEqual(outp["a"].device, torch.device(self.device))
+        self.assertIsInstance(outp, dict)
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_to_device_iterable(self):
+        outp = to_device((self.batch_2d, ), self.device)
+        self.assertEqual(outp[0].device, torch.device(self.device))
+        self.assertIsInstance(outp, tuple)
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_to_device_str(self):
+        outp = to_device("test", self.device)
+        self.assertIsInstance(outp, str)
+
+
+if __name__ == '__main__':
+    unittest.main()

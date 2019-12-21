@@ -3,17 +3,62 @@ from __future__ import annotations
 import os
 import pathlib
 import logging
+import dill
 from warnings import warn
 from functools import partial
 from tqdm import tqdm
-from typing import Any, Sequence, Callable, Union, List, Hashable, Dict
+from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator
 
 from torch.utils.data import Dataset as TorchDset, Subset
+from multiprocessing import cpu_count, Pool as MPPool
 from torch.multiprocessing import Pool
 from rising.loading.debug_mode import get_debug_mode
 from rising import AbstractMixin
 
 logger = logging.getLogger(__file__)
+
+
+__all__ = ["Dataset", "CacheDataset", "LazyDataset", "CacheDatasetID", "LazyDatasetID", "LazyDatasetMulReturn"]
+
+
+def dill_helper(payload: Any) -> Any:
+    """
+    Load single sample from data serialized by dill
+
+    Parameters
+    ----------
+    payload : Any
+        data which is loaded with dill
+
+    Returns
+    -------
+    Any
+        loaded data
+    """
+    fn, args, kwargs = dill.loads(payload)
+    return fn(*args, **kwargs)
+
+
+def load_async(pool: MPPool, fn: Callable, *args, callback: Callable = None, **kwargs) -> Any:
+    """
+    Load data asynchronously and serialize data via dill
+
+    Parameters
+    ----------
+    pool : multiprocessing.Pool
+        multiprocessing pool to use for :func:`apply_async`
+    fn : Callable
+        function to load a single sample
+    callback : Callable, optional
+        optional callback, by default None
+
+    Returns
+    -------
+    Any
+        reference to obtain data with :func:`get`
+    """
+    payload = dill.dumps((fn, args, kwargs))
+    return pool.apply_async(dill_helper, (payload,), callback=callback)
 
 
 class Dataset(TorchDset):
@@ -79,15 +124,14 @@ class CacheDataset(Dataset):
             the number of processes will default to the number of logical
             cores.
         verbose : bool
-            whether to show the loading progress. Mutually exclusive with
-            ``num_workers is not None and num_workers > 0``
+            whether to show the loading progress.
         **load_kwargs :
             additional keyword arguments. Passed directly to :param:`load_fn`
 
         Warnings
         --------
-        When using :param:`num_workers` > 0 there might be some problems
-        in combination with :param:`mode` == "extend" and some loading functions.
+        if using multiprocessing to load data, there are some restrictions to which
+        :func:`load_fn` are supported, please refer to the dill or pickle documentation
         """
         super().__init__()
 
@@ -95,11 +139,6 @@ class CacheDataset(Dataset):
             warn("The debug mode has been activated. "
                  "Falling back to num_workers = 0", UserWarning)
             num_workers = 0
-
-        if (num_workers is None or num_workers > 0) and verbose:
-            warn("Verbosity is mutually exclusive with "
-                 "num_workers > 0. Setting it to False instead.", UserWarning)
-            verbose = False
 
         self._num_workers = num_workers
         self._verbosity = verbose
@@ -137,18 +176,67 @@ class CacheDataset(Dataset):
         # add loading kwargs
         load_fn = partial(self._load_fn, **self._load_kwargs)
 
-        # multiprocessing dispatch
         if self._num_workers is None or self._num_workers > 0:
-            with Pool() as p:
-                _data = p.map(load_fn, path)
+            _data = self.load_multi_process(load_fn, path)
         else:
-            if self._verbosity:
-                path = tqdm(path, unit='samples', desc="Loading Samples")
-            _data = map(load_fn, path)
+            _data = self.load_single_process(load_fn, path)
 
         for sample in _data:
             self._add_item(data, sample, mode)
         return data
+
+    def load_single_process(self, load_fn: Callable, path: Sequence) -> Iterator:
+        """
+        Helper function to load dataset with single process
+
+        Parameters
+        ----------
+        load_fn : Callable
+            function to load a linge sample
+        path : Sequence
+            a sequence of paths whih should be loaded
+
+        Returns
+        -------
+        Iterator
+            iterator of loaded data
+        """
+        if self._verbosity:
+            path = tqdm(path, unit='samples', desc="Loading Samples")
+
+        return map(load_fn, path)
+
+    def load_multi_process(self, load_fn: Callable, path: Sequence) -> List:
+        """
+        Helper function to load dataset with multiple processes
+
+        Parameters
+        ----------
+        load_fn : Callable
+            function to load a linge sample
+        path : Sequence
+            a sequence of paths whih should be loaded
+
+        Returns
+        -------
+        List
+            list of loaded data
+        """
+        _processes = cpu_count() if self._num_workers is None else self._num_workers
+
+        if self._verbosity:
+            pbar = tqdm(total=len(path), unit='samples', desc="Loading Samples")
+
+            def update(*a):
+                pbar.update(1)
+            callback = update
+        else:
+            callback = None
+
+        with Pool(processes=_processes) as pool:
+            jobs = [load_async(pool, load_fn, p, callback=callback) for p in path]
+            _data = [j.get() for j in jobs]
+        return _data
 
     @staticmethod
     def _add_item(data: list, item: Any, mode: str) -> None:

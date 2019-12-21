@@ -5,7 +5,7 @@ from typing import Sequence, Union, Callable
 from .abstract import AbstractTransform
 from rising.utils import check_scalar
 
-__all__ = ["KernelTransform", "GaussianSmoothingTransform"]
+__all__ = ["KernelTransform", "GaussianSmoothing"]
 
 
 class KernelTransform(AbstractTransform):
@@ -110,7 +110,7 @@ class KernelTransform(AbstractTransform):
         return data
 
 
-class GaussianSmoothingTransform(KernelTransform):
+class GaussianSmoothing(KernelTransform):
     def __init__(self, in_channels: int, kernel_size: Union[int, Sequence],
                  std: Union[int, Sequence], dim: int = 2,
                  stride: Union[int, Sequence] = 1, padding: Union[int, Sequence] = 0,
