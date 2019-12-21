@@ -1,3 +1,4 @@
 treon
 matplotlib
 torchvision
+batchgenerators
