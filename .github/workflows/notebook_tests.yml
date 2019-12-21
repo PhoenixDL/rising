@@ -20,9 +20,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -U pip wheel;
-        pip install -r requirements.txt;
-        pip install matplotlib;
-        pip install treon;
+        pip install -r requirements/install.txt;
+        pip install -r requirements/unittests.txt;
+        pip install -r requirements/notebooks.txt;
         pip install --no-deps .
     - name: Run Notebooks
       run: |
