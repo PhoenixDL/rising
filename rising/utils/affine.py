@@ -601,7 +601,7 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
 
     # batch dimension missing -> Replicate for each sample in batch
     if len(matrix.shape) == 2:
-        matrix = matrix[None].expand(batchsize, -1, -1)
+        matrix = matrix[None].expand(batchsize, -1, -1).clone()
 
     if matrix.shape == (batchsize, ndim, ndim + 1):
         return matrix
