@@ -48,7 +48,7 @@ class TestLoader(unittest.TestCase):
         loader = DataLoader([0, 1, 2], num_workers=2)
         iterator = iter(loader)
         self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
-    
+
     def test_dataloader_gpu_transforms(self):
         device = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
         data = torch.rand(1, 3, 3)

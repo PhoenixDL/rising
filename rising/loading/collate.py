@@ -49,15 +49,16 @@ def numpy_collate(batch: Any) -> Any:
 
     raise TypeError(default_collate_err_msg_format.format(type(elem)))
 
+
 def do_nothing_collate(batch: Any) -> Any:
     """
     Return batch
-    
+
     Parameters
     ----------
     batch : Any
         input
-    
+
     Returns
     -------
     Any

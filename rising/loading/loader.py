@@ -192,7 +192,7 @@ class DataLoader(_DataLoader):
                                 _MultiProcessingDataLoaderIter]:
         """
         Geneator iterator
-        
+
         Returns
         -------
         Union[_SingleProcessDataLoaderIter,_MultiProcessingDataLoaderIter]
@@ -240,7 +240,7 @@ class BatchTransformer(object):
     def __call__(self, *args, **kwargs) -> Any:
         """
         Apply batch workflow: collate -> augmentation -> default_convert
-        
+
         Returns
         -------
         Any
@@ -307,7 +307,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
     def __next__(self) -> Any:
         """
         Get next item from iterator
-        
+
         Returns
         -------
         Any
@@ -333,7 +333,7 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
     def __next__(self) -> Any:
         """
         Get next item from iterator
-        
+
         Returns
         -------
         Any
