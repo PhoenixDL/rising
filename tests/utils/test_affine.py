@@ -302,8 +302,8 @@ class AffineHelperTests(unittest.TestCase):
             {'scale': None, 'translation': None, 'rotation': None, 'batchsize': 2, 'ndim': 2,
              'dtype': torch.float},
             {'scale': [[2, 3], [4, 5]], 'translation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                                                   [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
-                                                   [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+                                                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                                                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
              'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3,
              'ndim': 2, 'dtype':torch.float}
         ]
