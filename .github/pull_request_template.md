@@ -4,9 +4,12 @@ Please give a short summary of the main points of this PR
 ## PR Checklist
 ### PR Implementer
 This is a small checklist for the implementation details of this PR.
-If you submit a PR, please look of these points (don't worry about the `RisingTeam`
+If you submit a PR, please look at these points (don't worry about the `RisingTeam`
 and `Reviewer` workflows, the only purpose of those is to have a compact view of
 the steps)
+
+If there are any questions regarding code style or other conventions check out our 
+[summary](https://github.com/PhoenixDL/rising/blob/master/CONTRIBUTING.md).
 
 - [ ] Implementation
 - [ ] Docstrings & Typing

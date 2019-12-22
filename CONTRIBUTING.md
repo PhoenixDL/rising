@@ -87,6 +87,15 @@ from the `rising` root directory or run individual test files, like `python test
 ### Better local unit tests with unittest
 Testing is done with a `unittest` suite
 
+You can run your tests with coverage by installing ´coverage´ and executing
+
+```bash
+coverage run -m unittest; coverage report -m;
+```
+
+inside the terminal. Pycharm Professional supports `Run with coverage` directly. 
+Furthermore, the coverage is always computed and uploaded when you execute `git push` and can be seen on github.
+
 ## Writing documentation
 
 `rising` uses [numpy style](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html)
