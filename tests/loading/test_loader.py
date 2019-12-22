@@ -7,6 +7,7 @@ from torch.utils.data.dataloader import _SingleProcessDataLoaderIter
 
 from rising.loading.loader import _seed_npy_before_worker_init, DataLoader, \
     BatchTransformer, _MultiProcessingDataLoaderIter, default_transform_call
+from rising.transforms import Mirror
 
 
 class TestLoader(unittest.TestCase):
@@ -47,6 +48,17 @@ class TestLoader(unittest.TestCase):
         loader = DataLoader([0, 1, 2], num_workers=2)
         iterator = iter(loader)
         self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
+    
+    def test_dataloader_gpu_transforms(self):
+        device = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
+        data = torch.rand(1, 3, 3)
+        dset = [{"data": data}] * 5
+        gpu_transforms = Mirror((0, ), prob=1)
+        loader = DataLoader(dset, num_workers=0, gpu_transforms=gpu_transforms)
+        iterator = iter(loader)
+        outp = next(iterator)
+        expected = data[None].flip([2]).to(device=device)
+        self.assertTrue((outp["data"] == expected).all())
 
 
 class BatchTransformerTest(unittest.TestCase):
