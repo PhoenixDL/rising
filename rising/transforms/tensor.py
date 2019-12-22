@@ -6,7 +6,7 @@ from rising.transforms import AbstractTransform, BaseTransform
 from rising.transforms.functional import tensor_op, to_device
 
 
-__all__ = ["ToTensor", "ToDevice", "Permute"]
+__all__ = ["ToTensor", "ToDevice", "TensorOp", "Permute"]
 
 
 class ToTensor(BaseTransform):
