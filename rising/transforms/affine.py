@@ -1,8 +1,17 @@
 from rising.transforms.abstract import BaseTransform
 from rising.transforms.functional.affine import affine_image_transform
-from rising.utils.affine import AffineParamType, assemble_matrix_if_necessary
+from rising.utils.affine import AffineParamType, \
+    assemble_matrix_if_necessary, matrix_to_homogeneous, matrix_to_cartesian
 import torch
 from typing import Sequence, Union
+
+__all__ = [
+    'Affine',
+    'StackedAffine',
+    'Rotate',
+    'Scale',
+    'Translate'
+]
 
 
 class Affine(BaseTransform):
@@ -164,8 +173,15 @@ class Affine(BaseTransform):
         matrix = self.assemble_matrix(**data)
 
         for key in self.keys:
-            data[key] = self.augment_fn(data[key], matrix_batch=matrix,
-                                        **self.kwargs)
+            data[key] = self.augment_fn(
+                data[key], matrix_batch=matrix,
+                output_size=self.output_size,
+                adjust_size=self.adjust_size,
+                interpolation_mode=self.interpolation_mode,
+                padding_mode=self.padding_mode,
+                align_corners=self.align_corners,
+                **self.kwargs
+            )
 
         return data
 
@@ -186,10 +202,16 @@ class Affine(BaseTransform):
 
         """
         if not isinstance(other, Affine):
-            other = Affine(matrix=other)
+            other = Affine(matrix=other, keys=self.keys, grad=self.grad,
+                           output_size=self.output_size,
+                           adjust_size=self.adjust_size,
+                           interpolation_mode=self.interpolation_mode,
+                           padding_mode=self.padding_mode,
+                           align_corners=self.align_corners,
+                           **self.kwargs)
 
         return StackedAffine(self, other, keys=self.keys, grad=self.grad,
-                             degree=self.degree, output_size=self.output_size,
+                             output_size=self.output_size,
                              adjust_size=self.adjust_size,
                              interpolation_mode=self.interpolation_mode,
                              padding_mode=self.padding_mode,
@@ -213,14 +235,13 @@ class Affine(BaseTransform):
         """
         if not isinstance(other, Affine):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
-                           degree=self.degree, output_size=self.output_size,
+                           output_size=self.output_size,
                            adjust_size=self.adjust_size,
                            interpolation_mode=self.interpolation_mode,
                            padding_mode=self.padding_mode,
                            align_corners=self.align_corners, **self.kwargs)
 
         return StackedAffine(other, self, grad=other.grad,
-                             degree=other.degree,
                              output_size=other.output_size,
                              adjust_size=other.adjust_size,
                              interpolation_mode=other.interpolation_mode,
@@ -289,6 +310,10 @@ class Rotate(Affine):
             making the sampling more resolution agnostic.
         **kwargs :
                     additional keyword arguments passed to the affine transform
+
+        Warnings
+        --------
+        This transform is not applied around the image center
 
         """
         super().__init__(scale=None,
@@ -362,7 +387,7 @@ class Translate(Affine):
         **kwargs :
             additional keyword arguments passed to the affine transform
 
-                """
+        """
         super().__init__(scale=None,
                          rotation=None,
                          translation=translation,
@@ -437,6 +462,10 @@ class Scale(Affine):
             making the sampling more resolution agnostic.
         **kwargs :
             additional keyword arguments passed to the affine transform
+
+        Warnings
+        --------
+        This transform is not applied around the image center
         """
         super().__init__(scale=scale,
                          rotation=None,
@@ -510,15 +539,12 @@ class StackedAffine(Affine):
             if isinstance(transforms[0], (tuple, list)):
                 transforms = transforms[0]
 
-        else:
-            transforms = (transforms,)
-
         # ensure trafos are Affines and not raw matrices
         transforms = tuple(
             [trafo if isinstance(trafo, Affine) else Affine(matrix=trafo)
              for trafo in transforms])
 
-        super().__init__(transforms=transforms,
+        super().__init__(matrix=None,
                          scale=None, rotation=None, translation=None,
                          keys=keys, grad=grad, degree=False,
                          output_size=output_size, adjust_size=adjust_size,
@@ -526,6 +552,8 @@ class StackedAffine(Affine):
                          padding_mode=padding_mode,
                          align_corners=align_corners,
                          **kwargs)
+
+        self.transforms = transforms
 
     def assemble_matrix(self, **data) -> torch.Tensor:
         """
@@ -546,13 +574,14 @@ class StackedAffine(Affine):
         whole_trafo = None
 
         for trafo in self.transforms:
-            matrix = trafo.assemble_matrix(**data)
+            matrix = matrix_to_homogeneous(trafo.assemble_matrix(**data))
 
             if whole_trafo is None:
                 whole_trafo = matrix
             else:
                 whole_trafo = torch.bmm(whole_trafo, matrix)
 
-        return whole_trafo
+        return matrix_to_cartesian(whole_trafo)
 
 # TODO: Add transforms around image center
+# TODO: Add Resize Transform
