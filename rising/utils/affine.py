@@ -123,7 +123,9 @@ def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
         reversed coordinate order
 
     """
-    return batch.flip((1, 2))
+    batch[:, :-1, :] = batch[:, :-1, :].flip(1).clone()
+    batch[:, :-1, :-1] = batch[:, :-1, :-1].flip(2).clone()
+    return batch
 
 
 def get_batched_eye(batchsize: int, ndim: int,
@@ -221,13 +223,14 @@ def _format_scale(scale: AffineParamType,
     # item)
     elif scale.size() == (ndim,):
         return matrix_to_homogeneous(
-            torch.diag(scale).view(1, ndim, ndim).expand(batchsize, -1, -1))
+            torch.diag(scale).view(1, ndim, ndim).expand(batchsize,
+                                                         -1, -1).clone())
 
     # scale contains a diagonalized but not batched matrix
     # (will be repeated for each batch item)
     elif scale.size() == (ndim, ndim):
         return matrix_to_homogeneous(
-            scale.view(1, ndim, ndim).expand(batchsize, -1, -1))
+            scale.view(1, ndim, ndim).expand(batchsize, -1, -1).clone())
 
     raise ValueError("Unknown shape for scale matrix: %s"
                      % str(tuple(scale.size())))
@@ -292,9 +295,9 @@ def _format_translation(offset: AffineParamType,
 
     # not completely built so far -> bring in shape (batchsize, ndim)
     if offset.size() == (batchsize,):
-        offset = offset.view(-1, 1).expand(-1, ndim)
+        offset = offset.view(-1, 1).expand(-1, ndim).clone()
     elif offset.size() == (ndim,):
-        offset = offset.view(1, -1).expand(batchsize, -1)
+        offset = offset.view(1, -1).expand(batchsize, -1).clone()
     elif not offset.size() == (batchsize, ndim):
         raise ValueError("Unknown shape for offsets: %s"
                          % str(tuple(offset.shape)))
@@ -394,16 +397,18 @@ def _format_rotation(rotation: AffineParamType,
 
     # repeat along batch dimension
     if rotation.size() == (ndim, ndim) or rotation.size() == (ndim + 1, ndim + 1):
-        rotation = rotation[None].expand(batchsize, -1, -1)
+        rotation = rotation[None].expand(batchsize, -1, -1).clone()
         if rotation.size(-1) == ndim:
             rotation = matrix_to_homogeneous(rotation)
 
         return rotation
     # bring it to default size of (batchsize, num_rot_params)
     elif rotation.size() == (batchsize,):
-        rotation = rotation.view(batchsize, 1).expand(-1, num_rot_params)
+        rotation = rotation.view(batchsize, 1).expand(-1,
+                                                      num_rot_params).clone()
     elif rotation.size() == (num_rot_params,):
-        rotation = rotation.view(1, num_rot_params).expand(batchsize, -1)
+        rotation = rotation.view(1, num_rot_params).expand(batchsize,
+                                                           -1).clone()
     elif rotation.size() != (batchsize, num_rot_params):
         raise ValueError("Invalid shape for rotation parameters: %s"
                          % (str(tuple(rotation.size()))))
