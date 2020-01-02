@@ -153,7 +153,7 @@ class AffineHelperTests(unittest.TestCase):
                     with self.subTest(batchsize=batchsize, ndim=ndim, dtype=dtype):
                         batched_eye = get_batched_eye(batchsize=batchsize, ndim=ndim, dtype=dtype)
                         self.assertTupleEqual(batched_eye.size(), (batchsize, ndim, ndim))
-                        self.assertEquals(dtype, batched_eye.dtype)
+                        self.assertEqual(dtype, batched_eye.dtype)
 
                         non_batched_eye = torch.eye(ndim, dtype=dtype)
                         for _eye in batched_eye:

@@ -26,7 +26,7 @@ class Affine(BaseTransform):
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
-                 align_corners: bool = None,
+                 align_corners: bool = False,
                  **kwargs):
         """
         Class Performing an Affine Transformation on a given sample dict.
@@ -260,7 +260,7 @@ class Rotate(Affine):
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
-                 align_corners: bool = None,
+                 align_corners: bool = False,
                  **kwargs):
         """
         Class Performing a Rotation-OnlyAffine Transformation on a given
@@ -340,7 +340,7 @@ class Translate(Affine):
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
-                 align_corners: bool = None,
+                 align_corners: bool = False,
                  **kwargs):
         """
         Class Performing an Translation-Only
@@ -412,7 +412,7 @@ class Scale(Affine):
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
-                 align_corners: bool = None,
+                 align_corners: bool = False,
                  **kwargs):
         """
         Class Performing a Scale-Only Affine Transformation on a given
@@ -493,7 +493,7 @@ class StackedAffine(Affine):
             adjust_size: bool = False,
             interpolation_mode: str = 'bilinear',
             padding_mode: str = 'zeros',
-            align_corners: bool = None,
+            align_corners: bool = False,
             **kwargs):
         """
         Class Performing an Affine Transformation on a given sample dict.
