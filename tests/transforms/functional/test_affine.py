@@ -90,7 +90,8 @@ class AffineTestCase(unittest.TestCase):
 
         for input_pt, matrix, expected_pt in zip(points, matrices, expected):
             input_pt = torch.tensor(input_pt, device='cpu', dtype=torch.float)
-            matrix = torch.tensor(matrix, device='cpu', dtype=torch.float)
+            if not torch.is_tensor(matrix):
+                matrix = torch.tensor(matrix, device='cpu', dtype=torch.float)
 
             expected_pt = torch.tensor(expected_pt, device='cpu',
                                        dtype=torch.float)

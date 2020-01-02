@@ -45,7 +45,7 @@ def affine_image_transform(image_batch: torch.Tensor,
                            adjust_size: bool = False,
                            interpolation_mode: str = 'bilinear',
                            padding_mode: str = 'zeros',
-                           align_corners: bool = None) -> torch.Tensor:
+                           align_corners: bool = False) -> torch.Tensor:
     """
     Performs an affine transformation on a batch of images
 
@@ -103,9 +103,9 @@ def affine_image_transform(image_batch: torch.Tensor,
         if check_scalar(output_size):
             output_size = tuple([output_size] * matrix_batch.size(-2))
 
-            if adjust_size:
-                warnings.warn("Adjust size is mutually exclusive with a "
-                              "given output size.", UserWarning)
+        if adjust_size:
+            warnings.warn("Adjust size is mutually exclusive with a "
+                          "given output size.", UserWarning)
 
         new_size = output_size
 
@@ -123,7 +123,8 @@ def affine_image_transform(image_batch: torch.Tensor,
     matrix_batch = matrix_batch.to(device=image_batch.device,
                                    dtype=image_batch.dtype)
 
-    grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size)
+    grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size,
+                                           align_corners=align_corners)
 
     return torch.nn.functional.grid_sample(image_batch, grid,
                                            mode=interpolation_mode,

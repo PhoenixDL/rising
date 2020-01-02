@@ -109,7 +109,7 @@ class Rot90Transform(AbstractTransform):
 
 class ResizeTransform(BaseTransform):
     def __init__(self, size: Union[int, Sequence[int]], mode: str = 'nearest',
-                 align_corners: bool = False, preserve_range: bool = False,
+                 align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Resize data to given size
@@ -141,7 +141,7 @@ class ResizeTransform(BaseTransform):
 class ZoomTransform(RandomProcess, BaseTransform):
     def __init__(self, random_args: Union[Sequence, Sequence[Sequence]] = (0.75, 1.25),
                  random_mode: str = "uniform", mode: str = 'nearest',
-                 align_corners: bool = False, preserve_range: bool = False,
+                 align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Apply augment_fn to keys. By default the scaling factor is sampled from a uniform
@@ -202,7 +202,7 @@ class ProgressiveResize(ResizeTransform):
     step = 0
 
     def __init__(self, scheduler: schduler_type, mode: str = 'nearest',
-                 align_corners: bool = False, preserve_range: bool = False,
+                 align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Resize data to sizes specified by scheduler
