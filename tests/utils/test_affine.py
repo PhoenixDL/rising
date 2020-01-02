@@ -136,9 +136,9 @@ class AffineHelperTests(unittest.TestCase):
         ]
 
         expectations = [
-            torch.tensor([[[9, 8, 7],
-                           [6, 5, 4],
-                           [3, 2, 1]]])
+            torch.tensor([[[5, 4, 6],
+                           [2, 1, 3],
+                           [7, 8, 9]]])
         ]
 
         for inp, exp in zip(inputs, expectations):
