@@ -1,9 +1,13 @@
 import torch
 from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
     points_to_homogeneous, matrix_revert_coordinate_order
-from itertools import product, combinations
 from rising.utils.checktype import check_scalar
 import warnings
+
+__all__ = [
+    'affine_image_transform',
+    'affine_point_transform'
+]
 
 
 def affine_point_transform(point_batch: torch.Tensor,
@@ -90,7 +94,8 @@ def affine_image_transform(image_batch: torch.Tensor,
 
     # add batch dimension if necessary
     if len(matrix_batch.shape) < 3:
-        matrix_batch = matrix_batch[None, ...]
+        matrix_batch = matrix_batch[None, ...].expand(image_batch.size(0),
+                                                      -1, -1).clone()
 
     image_size = image_batch.shape[2:]
 
@@ -105,7 +110,7 @@ def affine_image_transform(image_batch: torch.Tensor,
         new_size = output_size
 
     elif adjust_size:
-        new_size = tuple([tmp.item()
+        new_size = tuple([int(tmp.item())
                           for tmp in _check_new_img_size(image_size,
                                                          matrix_batch)])
     else:
@@ -138,7 +143,7 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
         the size of the current image. If int, it will be used as size for
         all image dimensions
     matrix : torch.Tensor
-        a batch of affine matrices with shape N x NDIM-1 x NDIM
+        a batch of affine matrices with shape N x NDIM x NDIM + 1
 
     Returns
     -------
@@ -147,19 +152,40 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
 
     """
 
-    n_dim = matrix.size(-2)
+    n_dim = matrix.size(-1) - 1
 
     if check_scalar(curr_img_size):
         curr_img_size = [curr_img_size] * n_dim
 
     curr_img_size = [tmp - 1 for tmp in curr_img_size]
 
-    possible_points = torch.tensor(
-        list(set(combinations(curr_img_size + [0] * n_dim, n_dim))),
-        device=matrix.device, dtype=matrix.dtype)
+    if n_dim == 2:
+        possible_points = torch.tensor([[0., 0.], [0., curr_img_size[1]],
+                                        [curr_img_size[0], 0], curr_img_size],
+                                       dtype=matrix.dtype,
+                                       device=matrix.device)
+    elif n_dim == 3:
+        possible_points = torch.tensor(
+            [
+                [0., 0., 0.],
+                [0., 0., curr_img_size[2]],
+                [0., curr_img_size[1], 0],
+                [0., curr_img_size[1], curr_img_size[2]],
+                [curr_img_size[0], 0., 0.],
+                [curr_img_size[0], 0., curr_img_size[2]],
+                [curr_img_size[0], curr_img_size[1], 0.],
+                curr_img_size
+            ], device=matrix.device, dtype=matrix.dtype
+        )
+
+    else:
+        raise ValueError('Invalid number of dimensions! Expected One of '
+                         '{2, 3}, but got %s' % str(n_dim))
 
     transformed_edges = affine_point_transform(
-        possible_points[None].expand(matrix.size(0), *possible_points.shape),
+        possible_points[None].expand(
+            matrix.size(0),
+            *[-1 for _ in possible_points.shape]).clone(),
         matrix)
 
     return (transformed_edges.max(1)[0]
