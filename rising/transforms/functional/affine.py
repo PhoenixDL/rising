@@ -132,7 +132,8 @@ def affine_image_transform(image_batch: torch.Tensor,
                                            align_corners=align_corners)
 
 
-def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
+def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
+                        zero_border: bool = True) -> torch.Tensor:
     """
     Calculates the image size so that the whole image content fits the image.
     The resulting size will be the maximum size of the batch, so that the
@@ -145,6 +146,8 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
         all image dimensions
     matrix : torch.Tensor
         a batch of affine matrices with shape N x NDIM x NDIM + 1
+    zero_border : bool
+        whether or not to have a fixed image border at zero
 
     Returns
     -------
@@ -189,5 +192,10 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
             *[-1 for _ in possible_points.shape]).clone(),
         matrix)
 
+    if zero_border:
+        substr = 0
+    else:
+        substr = transformed_edges.min(1)[0]
+
     return (transformed_edges.max(1)[0]
-            - transformed_edges.min(1)[0]).max(0)[0] + 1
+            - substr).max(0)[0] + 1

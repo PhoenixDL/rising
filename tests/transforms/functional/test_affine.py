@@ -57,14 +57,27 @@ class AffineTestCase(unittest.TestCase):
                 new_edges = torch.bmm(edge_pts.unsqueeze(0),
                                       matrix_revert_coordinate_order(affine.clone()).permute(0, 2, 1))
 
-                img_size = (new_edges.max(dim=1)[0] - new_edges.min(dim=1)[0])[0]
+                img_size_zero_border = new_edges.max(dim=1)[0][0]
+                img_size_non_zero_border = (new_edges.max(dim=1)[0]
+                                            - new_edges.min(dim=1)[0])[0]
 
-                fn_result = _check_new_img_size(size,
-                                                matrix_to_cartesian(
-                                                    affine.expand(img.size(0), -1, -1).clone()))
+                fn_result_zero_border = _check_new_img_size(
+                    size,
+                    matrix_to_cartesian(
+                        affine.expand(img.size(0), -1, -1).clone()),
+                    zero_border=True
+                )
+                fn_result_non_zero_border = _check_new_img_size(
+                    size,
+                    matrix_to_cartesian(
+                        affine.expand(img.size(0), -1, -1).clone()),
+                    zero_border=False
+                )
 
-                self.assertTrue(torch.allclose(img_size[:-1] + 1,
-                                               fn_result))
+                self.assertTrue(torch.allclose(img_size_zero_border[:-1] + 1,
+                                               fn_result_zero_border))
+                self.assertTrue(torch.allclose(img_size_non_zero_border[:-1] + 1,
+                                               fn_result_non_zero_border))
 
         with self.assertRaises(ValueError):
             _check_new_img_size([2, 3, 4, 5], torch.rand(11, 2, 2, 3, 4, 5))
