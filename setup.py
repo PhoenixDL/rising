@@ -22,8 +22,8 @@ def read_file(file):
     return content
 
 
-requirements = resolve_requirements(os.path.join(os.path.dirname(__file__),
-                                                 'requirements.txt'))
+requirements = resolve_requirements(
+    os.path.join(os.path.dirname(__file__), "requirements", 'install.txt'))
 
 readme = read_file(os.path.join(os.path.dirname(__file__), "README.md"))
 

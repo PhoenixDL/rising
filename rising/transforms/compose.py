@@ -1,4 +1,4 @@
-from typing import Sequence, Union, Callable, Any
+from typing import Sequence, Union, Callable, Any, Mapping
 from rising.utils import check_scalar
 from rising.transforms import AbstractTransform, RandomProcess
 
@@ -45,20 +45,26 @@ class Compose(AbstractTransform):
         self.transforms = transforms
         self.transform_call = transform_call
 
-    def forward(self, **data) -> dict:
+    def forward(self, *seq_like, **map_like) -> Union[Sequence, Mapping]:
         """
-        Apply transforms in a consecutive order
+        Apply transforms in a consecutive order. Can either handle
+        Sequence like or Mapping like data.
 
         Parameters
         ----------
-        data: dict
-            dict with data
+        seq_like: tuple
+            data which is unpacked like a Sequence
+        map_like: dict
+            data which is unpacked like a dict
 
         Returns
         -------
         dict
             dict with transformed data
         """
+        assert not (seq_like and map_like)
+        data = seq_like if seq_like else map_like
+
         for trafo in self.transforms:
             data = self.transform_call(data, trafo)
         return data
@@ -106,20 +112,26 @@ class DropoutCompose(RandomProcess, Compose):
                             f"and {len(self.transforms)} transforms.")
         self.dropout = dropout
 
-    def forward(self, **data) -> dict:
+    def forward(self, *seq_like, **map_like) -> Union[Sequence, Mapping]:
         """
-        Apply transforms in a consecutive order
+        Apply transforms in a consecutive order. Can either handle
+        Sequence like or Mapping like data.
 
         Parameters
         ----------
-        data: dict
-            dict with data
+        seq_like: tuple
+            data which is unpacked like a Sequence
+        map_like: dict
+            data which is unpacked like a dict
 
         Returns
         -------
         dict
             dict with transformed data
         """
+        assert not (seq_like and map_like)
+        data = seq_like if seq_like else map_like
+
         for trafo, drop in zip(self.transforms, self.dropout):
             if self.rand() > drop:
                 data = self.transform_call(data, trafo)
