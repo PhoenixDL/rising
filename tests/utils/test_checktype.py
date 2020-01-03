@@ -23,7 +23,7 @@ class TypeCheckTestCase(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expectation=exp):
-                self.assertEquals(check_scalar(inp), exp)
+                self.assertEqual(check_scalar(inp), exp)
 
 
 if __name__ == '__main__':

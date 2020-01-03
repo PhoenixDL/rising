@@ -5,6 +5,7 @@ import unittest
 from tests.transforms import chech_data_preservation
 from rising.transforms.spatial import *
 from rising.transforms.functional.spatial import resize
+from rising.loading import DataLoader
 
 
 class TestSpatialTransforms(unittest.TestCase):
@@ -82,6 +83,20 @@ class TestSpatialTransforms(unittest.TestCase):
     def test_size_step_scheduler_error(self):
         with self.assertRaises(TypeError):
             scheduler = SizeStepScheduler([10, 20], [32, 64])
+
+    def test_progressive_resize_integration(self):
+        sizes = [1, 3, 6]
+        scheduler = SizeStepScheduler([1, 2], [1, 3, 6])
+        trafo = ProgressiveResize(scheduler)
+
+        dset = [self.batch_dict] * 10
+        loader = DataLoader(dset, num_workers=4, batch_transforms=trafo)
+
+        data_shape = [tuple(i["data"].shape) for i in loader]
+
+        self.assertIn((1, 1, 1, 1, 1), data_shape)
+        # self.assertIn((1, 1, 3, 3, 3), data_shape)
+        self.assertIn((1, 1, 6, 6, 6), data_shape)
 
 
 if __name__ == '__main__':
