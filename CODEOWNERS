@@ -27,6 +27,7 @@
 
 # Transforms
 /rising/transforms/abstract.py @justusschock @mibaumgartner
+/rising/transforms/affine.py @justusschock
 /rising/transforms/channel.py @justusschock @mibaumgartner
 /rising/transforms/compose.py @mibaumgartner
 /rising/transforms/crop.py @mibaumgartner
@@ -36,8 +37,11 @@
 /rising/transforms/spatial.py @justusschock @mibaumgartner
 /rising/transforms/utility.py @justusschock @mibaumgartner
 # Functional Transforms
+/rising/transforms/functional/affine.py @justusschock
 /rising/transforms/functional/crop.py @mibaumgartner
-/rising/transforms/intensity.py @justusschock @mibaumgartner
-/rising/transforms/spatial.py @justusschock @mibaumgartner
+/rising/transforms/functional/intensity.py @justusschock @mibaumgartner
+/rising/transforms/functional/spatial.py @justusschock @mibaumgartner
 
+# Utils
 /rising/utils/checktype.py @mibaumgartner
+/rising/utils/affine.py @justusschock
