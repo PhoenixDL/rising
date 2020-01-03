@@ -17,6 +17,7 @@ If there are any questions regarding code style or other conventions check out o
 - [ ] Unittests (look at the line coverage of your tests, the goal is 100%!)
 - [ ] Update notebooks & documentation if necessary
 - [ ] Pass all tests
+- [ ] Add the checksum of the last implementation commit to the Changelog
 
 ### RisingTeam
 <details>
