@@ -3,6 +3,9 @@
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
 | 2020-01-03 | 6b9a7b2fdc7d0b894c0dfcfd94237845fe8b8672 | Affine Trafos | No|
+| 2019-12-24 | 6b90197e89dedd7659073bf72037390231a1c278 | Use shared memory for progressive resizing | No |
+| 2019-12-17 | 0b881f8e0ce85f380ecf458080c2a3f5cb8c3080 | User-Controllable call dispatch within the compose class | No |
+| 2019-12-15 | 0b6702033070c5143e51390ace89a82e417398f8 | Utility Transforms | No |
 | 2019-12-12 | 7bb56181f10f7ad853f20238c559260da4a60df6 | First Complete Readme | No |
 | 2019-12-09 | 8100def3afec30a6981bb1435010834ba95746a0 | Make transform call changeable by user | No |
 | 2019-12-08 | 1d650858a39a50915ba76ccd4a7505b5b535dc7d | Move from delira dataset functions to native torch functions | No |
