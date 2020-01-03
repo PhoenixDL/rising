@@ -4,9 +4,10 @@ from rising.transforms.functional.affine import affine_image_transform, \
     _check_new_img_size
 from rising.utils.affine import AffineParamType, \
     assemble_matrix_if_necessary, matrix_to_homogeneous, matrix_to_cartesian
+from rising.utils.checktype import check_scalar
 from rising.interface import AbstractMixin
 import torch
-from typing import Sequence, Union
+from typing import Sequence, Union, Iterable
 
 __all__ = [
     'Affine',
@@ -741,10 +742,6 @@ class ScaleAroundCenter(CenterShiftMixin, Scale):
             keys which should be augmented
         grad: bool
             enable gradient computation inside transformation
-        degree : bool
-            whether the given rotation(s) are in degrees.
-            Only valid for rotation parameters, which aren't passed as full
-            transformation matrix.
         output_size : Iterable
             if given, this will be the resulting image size.
             Defaults to ``None``
@@ -780,3 +777,82 @@ class ScaleAroundCenter(CenterShiftMixin, Scale):
                          padding_mode=padding_mode,
                          align_corners=align_corners,
                          **kwargs)
+
+
+class Resize(ScaleAroundCenter):
+    def __init__(self,
+                 size: Union[int, Iterable],
+                 keys: Sequence = ('data',),
+                 grad: bool = False,
+                 interpolation_mode: str = 'bilinear',
+                 padding_mode: str = 'zeros',
+                 align_corners: bool = False,
+                 **kwargs):
+        """
+        Class Performing a Resizing Affine Transformation on a given
+        sample dict.
+        The transformation will be applied to all the dict-entries specified
+        in :attr:`keys`.
+
+        Parameters
+        ----------
+        size : int, Iterable
+            the target size. If int, this will be repeated for all the
+            dimensions
+        keys: Sequence
+            keys which should be augmented
+        grad: bool
+            enable gradient computation inside transformation
+        interpolation_mode : str
+            interpolation mode to calculate output values
+            'bilinear' | 'nearest'. Default: 'bilinear'
+        padding_mode :
+            padding mode for outside grid values
+            'zeros' | 'border' | 'reflection'. Default: 'zeros'
+        align_corners : Geometrically, we consider the pixels of the input as
+            squares rather than points. If set to True, the extrema (-1 and 1)
+            are considered as referring to the center points of the input’s
+            corner pixels. If set to False, they are instead considered as
+            referring to the corner points of the input’s corner pixels,
+            making the sampling more resolution agnostic.
+        **kwargs :
+            additional keyword arguments passed to the affine transform
+
+        Note
+        ----
+        The offsets for shifting back and to origin are calculated on the
+        entry matching the first item iin :attr:`keys` for each batch
+
+        Note
+        ----
+        The target size must be specified in x, y (,z) order and will be
+        converted to (D,) H, W order internally
+
+        """
+        super().__init__(output_size=size,
+                         scale=None,
+                         keys=keys,
+                         grad=grad,
+                         adjust_size=False,
+                         interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode,
+                         align_corners=align_corners,
+                         **kwargs)
+
+    def assemble_matrix(self, **data) -> torch.Tensor:
+        curr_img_size = data[self.keys[0]].shape[2:]
+
+        was_scalar = check_scalar(self.output_size)
+
+        if was_scalar:
+            self.output_size = [self.output_size] * len(curr_img_size)
+
+        self.scale = (self.output_size[i] / curr_img_size[-i]
+                      for i in range(len(curr_img_size)))
+
+        matrix = super().assemble_matrix(**data)
+
+        if was_scalar:
+            self.output_size = self.output_size[0]
+
+        return matrix
