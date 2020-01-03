@@ -9,7 +9,6 @@ from rising.loading.debug_mode import get_debug_mode
 from functools import partial
 from rising.loading.dataset import Dataset
 from threadpoolctl import threadpool_limits
-from rising.transforms import AbstractTransform
 
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:

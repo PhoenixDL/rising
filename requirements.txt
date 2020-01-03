@@ -4,3 +4,4 @@ threadpoolctl
 pandas
 sklearn
 tqdm
+dill
