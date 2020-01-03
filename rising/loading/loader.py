@@ -86,6 +86,15 @@ class DataLoader(_DataLoader):
         cannot be an unpicklable object, e.g., a lambda function. See
         :ref:`multiprocessing-best-practices` on more details related
         to multiprocessing in PyTorch.
+        
+        Note
+        -------
+        The GPU-Transforms for a batch are always executed in the main 
+        process after the batch was gathered from subprocesses which apply 
+        the CPU-Transformations. The desired workflow is as follows:
+        
+        Disk -> CPU-Transforms -> GPU-Memory -> GPU-Transforms -> Further 
+        GPU Processing (e.g. training a neural network)
 
         Parameters
         ----------
