@@ -19,18 +19,6 @@ class TestChannel(unittest.TestCase):
         self.assertEqual(tuple(outp["seg"].shape), (3, 1, 3, 1))
         self.assertEqual(tuple(outp["label"].shape), (3, 3))
 
-    def test_one_hot(self):
-        inp = torch.zeros(1, 1, 3, 3).long()
-        inp[0, 0, 0, 0] = 1
-        batch = {"seg": inp}
-        trafo = OneHot(num_classes=2)
-        outp = trafo(**batch)
-        exp = torch.zeros(1, 2, 3, 3).long()
-        exp[0, 0] = 1
-        exp[0, 0, 0, 0] = 0
-        exp[0, 1, 0, 0] = 1
-        self.assertTrue((outp["seg"] == exp).all())
-
 
 if __name__ == '__main__':
     unittest.main()
