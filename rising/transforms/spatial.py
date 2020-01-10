@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import torch
 import random
+from torch.multiprocessing import Value
 from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform, RandomProcess
 from typing import Union, Sequence, Callable
 from itertools import permutations
@@ -199,8 +202,6 @@ class Zoom(RandomProcess, BaseTransform):
 
 
 class ProgressiveResize(Resize):
-    step = 0
-
     def __init__(self, scheduler: schduler_type, mode: str = 'nearest',
                  align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -226,18 +227,57 @@ class ProgressiveResize(Resize):
             enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to augment_fn
+
+        Warnings
+        --------
+        When this transformations is used in combination with multiprocessing
+        the step counter is not perfectly synchronized between multiple
+        processes. As a result the step count my jump between values
+        in a range of the number of processes used.
         """
         super().__init__(size=0, mode=mode, align_corners=align_corners,
                          preserve_range=preserve_range,
                          keys=keys, grad=grad, **kwargs)
         self.scheduler = scheduler
+        self._step = Value('i', 0)
 
-    def reset_step(self):
+    def reset_step(self) -> ProgressiveResize:
         """
         Reset step to 0
+
+        Returns
+        -------
+        ProgressiveResize
+            returns self to allow chaining
         """
-        self.step = 0
-        type(self).step = 0
+        with self._step.get_lock():
+            self._step.value = 0
+        return self
+
+    def increment(self) -> ProgressiveResize:
+        """
+        Increment step by 1
+
+        Returns
+        -------
+        ProgressiveResize
+            returns self to allow chaining
+        """
+        with self._step.get_lock():
+            self._step.value += 1
+        return self
+
+    @property
+    def step(self) -> int:
+        """
+        Current step
+
+        Returns
+        -------
+        int
+            number of steps
+        """
+        return self._step.value
 
     def forward(self, **data) -> dict:
         """
@@ -254,7 +294,7 @@ class ProgressiveResize(Resize):
             augmented batch
         """
         self.kwargs["size"] = self.scheduler(self.step)
-        self.step += 1
+        self.increment()
         return super().forward(**data)
 
 
