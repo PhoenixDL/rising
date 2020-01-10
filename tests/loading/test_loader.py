@@ -49,8 +49,16 @@ class TestLoader(unittest.TestCase):
         iterator = iter(loader)
         self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
 
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
     def test_dataloader_gpu_transforms(self):
-        device = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
+        device = torch.cuda.current_device()
+        self.check_output_device(device=device)
+
+    @patch('torch.cuda.is_available', side_effect=lambda : False)
+    def test_dataloader_gpu_transforms_no_cuda(self, fn):
+        self.check_output_device(device='cpu')
+
+    def check_output_device(self, device):
         data = torch.rand(1, 3, 3)
         dset = [{"data": data}] * 5
         gpu_transforms = Mirror((0, ), prob=1)
@@ -58,7 +66,7 @@ class TestLoader(unittest.TestCase):
         iterator = iter(loader)
         outp = next(iterator)
         expected = data[None].flip([2]).to(device=device)
-        self.assertTrue((outp["data"] == expected).all())
+        self.assertTrue(outp["data"].allclose(expected))
 
 
 class BatchTransformerTest(unittest.TestCase):
