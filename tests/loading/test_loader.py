@@ -54,7 +54,7 @@ class TestLoader(unittest.TestCase):
         device = torch.cuda.current_device()
         self.check_output_device(device=device)
 
-    @patch('torch.cuda.is_available', side_effect=lambda : False)
+    @patch('torch.cuda.is_available', side_effect=lambda: False)
     def test_dataloader_gpu_transforms_no_cuda(self, fn):
         self.check_output_device(device='cpu')
 
