@@ -1,14 +1,21 @@
 from __future__ import annotations
+
+import torch
+import warnings
+
 from typing import Callable, Mapping, Sequence, Union, Any
 from torch.utils.data._utils.collate import default_convert
 from torch.utils.data import DataLoader as _DataLoader, Sampler
 from torch.utils.data.dataloader import \
-    _SingleProcessDataLoaderIter, _MultiProcessingDataLoaderIter as \
-    __MultiProcessingDataLoaderIter
-from rising.loading.debug_mode import get_debug_mode
+    _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter, \
+    _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
 from functools import partial
-from rising.loading.dataset import Dataset
 from threadpoolctl import threadpool_limits
+
+from rising.loading.collate import do_nothing_collate
+from rising.transforms import ToDevice, Compose
+from rising.loading.debug_mode import get_debug_mode
+from rising.loading.dataset import Dataset
 
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:
@@ -40,7 +47,10 @@ def default_transform_call(batch: Any, transform: Callable) -> Any:
 class DataLoader(_DataLoader):
     def __init__(self, dataset: Union[Sequence, Dataset],
                  batch_size: int = 1, shuffle: bool = False,
-                 batch_transforms: Callable = None, sampler: Sampler = None,
+                 batch_transforms: Callable = None,
+                 gpu_transforms: Callable = None,
+                 device: Union[str, torch.device] = None,
+                 sampler: Sampler = None,
                  batch_sampler: Sampler = None, num_workers: int = 0,
                  collate_fn: Callable = None,
                  pin_memory: bool = False, drop_last: bool = False,
@@ -77,6 +87,15 @@ class DataLoader(_DataLoader):
         :ref:`multiprocessing-best-practices` on more details related
         to multiprocessing in PyTorch.
 
+        Note
+        -------
+        The GPU-Transforms for a batch are always executed in the main
+        process after the batch was gathered from subprocesses which apply
+        the CPU-Transformations. The desired workflow is as follows:
+
+        Disk -> CPU-Transforms -> GPU-Memory -> GPU-Transforms -> Further
+        GPU Processing (e.g. training a neural network)
+
         Parameters
         ----------
         dataset : Dataset
@@ -90,6 +109,17 @@ class DataLoader(_DataLoader):
             transforms which can be applied to a whole batch.
             Usually this accepts either mappings or sequences and returns the
             same type containing transformed elements
+        gpu_transforms : callable, optional
+            transforms which can be applied to a whole batch (on the GPU).
+            Unlike :param:`batch_transforms` this is not done in multiple
+            processes, but in the main process on the GPU, because GPUs are
+            capable of non-blocking and asynchronous working.
+            Before executing these transforms all data will be moved to
+            :param:`device`. This copy is done in a non-blocking way if
+            :param:`pin_memory` is set to True.
+        device : str, torch.device
+            the device to move the data to for gpu_transforms.
+            If None: the device will be the current device.
         sampler : torch.utils.data.Sampler, optional
             defines the strategy to draw samples from
             the dataset. If specified, :attr:`shuffle` must be ``False``.
@@ -138,11 +168,45 @@ class DataLoader(_DataLoader):
                          worker_init_fn=worker_init_fn,
                          multiprocessing_context=multiprocessing_context)
 
-        self.collate_fn = BatchTransformer(self.collate_fn, transforms=batch_transforms,
-                                           auto_convert=auto_convert, transform_call=transform_call)
+        if gpu_transforms is not None and not torch.cuda.is_available():
+            if hasattr(gpu_transforms, 'to'):
+                gpu_transforms = gpu_transforms.to('cpu')
+            transforms = (batch_transforms, gpu_transforms) if batch_transforms is not None else gpu_transforms
+            batch_transforms = Compose(transforms)
+            warnings.warn("No CUDA-capable device was found. "
+                          "Applying GPU-Transforms on CPU instead.",
+                          RuntimeWarning)
+            gpu_transforms = None
+
+        self.collate_fn = BatchTransformer(self.collate_fn,
+                                           transforms=batch_transforms,
+                                           auto_convert=auto_convert,
+                                           transform_call=transform_call)
+        if gpu_transforms is not None:
+            if device is None:
+                device = torch.cuda.current_device()
+
+            to_gpu_trafo = ToDevice(device=device, non_blocking=pin_memory)
+
+            gpu_transforms = Compose(to_gpu_trafo, gpu_transforms)
+            gpu_transforms = gpu_transforms.to(device)
+
+        self.gpu_transforms = BatchTransformer(do_nothing_collate,
+                                               transforms=gpu_transforms,
+                                               auto_convert=auto_convert,
+                                               transform_call=transform_call
+                                               )
 
     def __iter__(self) -> Union[_SingleProcessDataLoaderIter,
                                 _MultiProcessingDataLoaderIter]:
+        """
+        Geneator iterator
+
+        Returns
+        -------
+        Union[_SingleProcessDataLoaderIter,_MultiProcessingDataLoaderIter]
+            iterator to load and augment data (can be either single or multiprocessing based)
+        """
         if self.num_workers == 0 or get_debug_mode():
             return _SingleProcessDataLoaderIter(self)
         else:
@@ -161,7 +225,7 @@ class BatchTransformer(object):
         """
         Parameters
         ----------
-        collate_fn : callable, optional
+        collate_fn : callable
             merges a list of samples to form a
             mini-batch of Tensor(s).  Used when using batched loading from a
             map-style dataset.
@@ -183,6 +247,14 @@ class BatchTransformer(object):
         self._transform_call = transform_call
 
     def __call__(self, *args, **kwargs) -> Any:
+        """
+        Apply batch workflow: collate -> augmentation -> default_convert
+
+        Returns
+        -------
+        Any
+            batched and augmented data
+        """
         batch = self._collate_fn(*args, **kwargs)
 
         if self._transforms is not None:
@@ -202,7 +274,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
     # each worker. These seeds are based on a base seed, which itself get's
     # generated by numpy. So to ensure reproducibility, numpy must be seeded
     # in the main process.
-    def __init__(self, loader):
+    def __init__(self, loader: DataLoader):
         """
         Iterator over Dataloader. Handles the complete multiprocessing
 
@@ -211,7 +283,6 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
         loader : DataLoader
             the dataloader instance to iterate over
         """
-
         try:
             import numpy as np
             # generate numpy seed. The range comes so that the seed in each
@@ -240,6 +311,46 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
         # reset worker_init_fn once the workers have been startet to reset
         # to original state for next epoch
         loader.worker_init_fn = old_worker_init
+        self._gpu_transforms = loader.gpu_transforms
+
+    def __next__(self) -> Any:
+        """
+        Get next item from iterator
+
+        Returns
+        -------
+        Any
+            batched and augmented data
+        """
+        sample = super().__next__()
+        return self._gpu_transforms(sample)
+
+
+class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
+    def __init__(self, loader: DataLoader):
+        """
+        Iterator over Dataloader
+
+        Parameters
+        ----------
+        loader : DataLoader
+            the dataloader instance to iterate over
+        """
+        super().__init__(loader)
+        self._gpu_transforms = loader.gpu_transforms
+
+    def __next__(self) -> Any:
+        """
+        Get next item from iterator
+
+        Returns
+        -------
+        Any
+            batched and augmented data
+        """
+        sample = super().__next__()
+        sample = self._gpu_transforms(sample)
+        return sample
 
 
 def _seed_npy_before_worker_init(worker_id: int, seed: int,

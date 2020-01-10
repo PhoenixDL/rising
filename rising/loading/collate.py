@@ -4,6 +4,9 @@ import collections.abc
 from typing import Any
 
 
+__all__ = ["numpy_collate", "do_nothing_collate"]
+
+
 default_collate_err_msg_format = (
     "default_collate: batch must contain tensors, numpy arrays, numbers, "
     "dicts or lists; found {}")
@@ -45,3 +48,20 @@ def numpy_collate(batch: Any) -> Any:
         return [numpy_collate(samples) for samples in transposed]
 
     raise TypeError(default_collate_err_msg_format.format(type(elem)))
+
+
+def do_nothing_collate(batch: Any) -> Any:
+    """
+    Return batch
+
+    Parameters
+    ----------
+    batch : Any
+        input
+
+    Returns
+    -------
+    Any
+        input
+    """
+    return batch
