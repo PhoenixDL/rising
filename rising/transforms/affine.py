@@ -12,8 +12,8 @@ from typing import Sequence, Union, Iterable
 __all__ = [
     'Affine',
     'StackedAffine',
-    'Rotate',
-    'Scale',
+    'RotateAroundOrigin',
+    'ScaleAroundOrigin',
     'Translate'
 ]
 
@@ -254,7 +254,7 @@ class Affine(BaseTransform):
                              **other.kwargs)
 
 
-class Rotate(Affine):
+class RotateAroundOrigin(Affine):
     def __init__(self,
                  rotation: AffineParamType,
                  keys: Sequence = ('data',),
@@ -407,7 +407,7 @@ class Translate(Affine):
                          **kwargs)
 
 
-class Scale(Affine):
+class ScaleAroundOrigin(Affine):
     def __init__(self,
                  scale: AffineParamType,
                  keys: Sequence = ('data',),
@@ -589,7 +589,27 @@ class StackedAffine(Affine):
 
 
 class CenterShiftMixin(AbstractMixin):
-    def include_shifts(self, matrix, **data) -> torch.Tensor:
+    """
+    Mixin to Add Center Shifts to Transforms for transformations around image
+    centers
+    """
+    def include_shifts(self, matrix: torch.Tensor, **data) -> torch.Tensor:
+        """
+        adds the actual shifts to a transformation matrix
+
+        Parameters
+        ----------
+        matrix : torch.Tensor
+            the original transformation matrix
+        data :
+            the data to calculate the center offsets from
+
+        Returns
+        -------
+        torch.Tensor
+            the matrix including the center shifts
+
+        """
         batchsize = data[self.keys[0]].shape[0]
         ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
         device = data[self.keys[0]].device
@@ -622,13 +642,28 @@ class CenterShiftMixin(AbstractMixin):
         )
 
     def assemble_matrix(self, **data) -> torch.Tensor:
+        """
+        Handles the matrix assembly and stacks it with the center shifts
+
+        Parameters
+        ----------
+        **data :
+            the data to be transformed. Will be used to determine batchsize,
+            dimensionality, dtype and device
+
+        Returns
+        -------
+        torch.Tensor
+            the (batched) transformation matrix
+
+        """
         matrix = super().assemble_matrix(**data)
         whole_matrix = self.include_shifts(matrix, **data)
 
         return whole_matrix
 
 
-class RotateAroundCenter(CenterShiftMixin, Rotate):
+class Rotate(CenterShiftMixin, RotateAroundOrigin):
     def __init__(self,
                  rotation: AffineParamType,
                  keys: Sequence = ('data',),
@@ -641,7 +676,7 @@ class RotateAroundCenter(CenterShiftMixin, Rotate):
                  align_corners: bool = False,
                  **kwargs):
         """
-        Class Performing a Rotation-OnlyAffine Transformation on a given
+        Class Performing a Rotation-Only Affine Transformation on a given
         sample dict.
         The transformation will be applied to all the dict-entries specified
         in :attr:`keys`.
@@ -707,7 +742,7 @@ class RotateAroundCenter(CenterShiftMixin, Rotate):
                          **kwargs)
 
 
-class ScaleAroundCenter(CenterShiftMixin, Scale):
+class Scale(CenterShiftMixin, ScaleAroundOrigin):
     def __init__(self,
                  scale: AffineParamType,
                  keys: Sequence = ('data',),
@@ -779,7 +814,7 @@ class ScaleAroundCenter(CenterShiftMixin, Scale):
                          **kwargs)
 
 
-class Resize(ScaleAroundCenter):
+class Resize(Scale):
     def __init__(self,
                  size: Union[int, Iterable],
                  keys: Sequence = ('data',),
@@ -840,6 +875,22 @@ class Resize(ScaleAroundCenter):
                          **kwargs)
 
     def assemble_matrix(self, **data) -> torch.Tensor:
+        """
+        Handles the matrix assembly and calculates the scale factors for
+        resizing
+
+        Parameters
+        ----------
+        **data :
+            the data to be transformed. Will be used to determine batchsize,
+            dimensionality, dtype and device
+
+        Returns
+        -------
+        torch.Tensor
+            the (batched) transformation matrix
+
+        """
         curr_img_size = data[self.keys[0]].shape[2:]
 
         was_scalar = check_scalar(self.output_size)

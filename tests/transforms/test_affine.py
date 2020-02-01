@@ -1,6 +1,6 @@
 import unittest
-from rising.transforms.affine import Affine, StackedAffine, Translate, Rotate, \
-    Scale
+from rising.transforms.affine import Affine, StackedAffine, Translate, RotateAroundOrigin, \
+    ScaleAroundOrigin
 import torch
 from copy import deepcopy
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
@@ -81,8 +81,8 @@ class AffineTestCase(unittest.TestCase):
 
         sample = {'data': torch.rand(10, 3, 25, 25)}
         trafos = [
-            Scale(5),
-            Rotate(45),
+            ScaleAroundOrigin(5),
+            RotateAroundOrigin(45),
             Translate(10)
         ]
 
