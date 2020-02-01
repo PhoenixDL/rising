@@ -593,6 +593,7 @@ class CenterShiftMixin(AbstractMixin):
     Mixin to Add Center Shifts to Transforms for transformations around image
     centers
     """
+
     def include_shifts(self, matrix: torch.Tensor, **data) -> torch.Tensor:
         """
         adds the actual shifts to a transformation matrix
