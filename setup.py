@@ -42,6 +42,6 @@ setup(
     python_requires=">=3.7",
     author="PhoenixDL",
     maintainer='Michael Baumgartner, Justus Schock',
-    maintainer_email='{michael.baumgartner, justus.schock}@rwth-aachen.de',
+    maintainer_email='justus.schock@rwth-aachen.de',
     license='MIT',
 )
