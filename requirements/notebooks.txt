@@ -1,5 +1,5 @@
 treon
 matplotlib
-torchvision
-pillow<=6.2.2
+torchvision>=0.5.0
+pillow
 batchgenerators
