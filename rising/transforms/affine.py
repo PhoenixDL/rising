@@ -14,7 +14,10 @@ __all__ = [
     'StackedAffine',
     'RotateAroundOrigin',
     'ScaleAroundOrigin',
-    'Translate'
+    'Translate',
+    'Rotate',
+    'Scale',
+    'Resize',
 ]
 
 
