@@ -31,11 +31,9 @@ def affine_point_transform(point_batch: torch.Tensor,
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
 
-    matrix_batch = matrix_revert_coordinate_order(matrix_batch)
+    # matrix_batch = matrix_revert_coordinate_order(matrix_batch)
 
-    transformed_points = torch.bmm(point_batch,
-                                   matrix_batch.permute(0, 2, 1))
-
+    transformed_points = torch.bmm(point_batch, matrix_batch.permute(0, 2, 1))
     return points_to_cartesian(transformed_points)
 
 
@@ -120,9 +118,7 @@ def affine_image_transform(image_batch: torch.Tensor,
         missing_dims = len(image_batch.shape) - len(image_size)
         new_size = (*image_batch.shape[:missing_dims], *new_size)
 
-    matrix_batch = matrix_batch.to(device=image_batch.device,
-                                   dtype=image_batch.dtype)
-
+    matrix_batch = matrix_batch.to(image_batch)
     grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size,
                                            align_corners=align_corners)
 
@@ -153,15 +149,13 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
     -------
     torch.Tensor
         the new image size
-
     """
-
     n_dim = matrix.size(-1) - 1
 
     if check_scalar(curr_img_size):
         curr_img_size = [curr_img_size] * n_dim
 
-    curr_img_size = [tmp - 1 for tmp in curr_img_size]
+    # curr_img_size = [tmp - 1 for tmp in curr_img_size]
 
     if n_dim == 2:
         possible_points = torch.tensor([[0., 0.], [0., curr_img_size[1]],
@@ -188,8 +182,7 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
 
     transformed_edges = affine_point_transform(
         possible_points[None].expand(
-            matrix.size(0),
-            *[-1 for _ in possible_points.shape]).clone(),
+            matrix.size(0), *[-1 for _ in possible_points.shape]).clone(),
         matrix)
 
     if zero_border:
@@ -197,5 +190,4 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
     else:
         substr = transformed_edges.min(1)[0]
 
-    return (transformed_edges.max(1)[0]
-            - substr).max(0)[0] + 1
+    return (transformed_edges.max(1)[0] - substr).max(0)[0]  # + 1

@@ -619,7 +619,7 @@ class CenterShiftMixin(AbstractMixin):
 
         shift_to_origin = assemble_matrix_if_necessary(
             batchsize, ndim, scale=None, rotation=None,
-            translation=tuple([-tmp / 2 for tmp in reversed(curr_img_size)]),
+            translation=tuple([-tmp / 2 for tmp in curr_img_size]),
             matrix=None, degree=False, device=device, dtype=dtype
         )
 
@@ -632,7 +632,7 @@ class CenterShiftMixin(AbstractMixin):
         shift_back_to_center = assemble_matrix_if_necessary(
             batchsize, ndim,
             scale=None, rotation=None,
-            translation=tuple([tmp / 2 for tmp in reversed(new_img_size)]),
+            translation=tuple([tmp / 2 for tmp in new_img_size]),
             matrix=None, degree=False, device=device, dtype=dtype)
 
         return matrix_to_cartesian(
@@ -899,8 +899,8 @@ class Resize(Scale):
         if was_scalar:
             self.output_size = [self.output_size] * len(curr_img_size)
 
-        self.scale = (self.output_size[i] / curr_img_size[-i]
-                      for i in range(len(curr_img_size)))
+        self.scale = [self.output_size[i] / curr_img_size[-i]
+                      for i in range(len(curr_img_size))]
 
         matrix = super().assemble_matrix(**data)
 

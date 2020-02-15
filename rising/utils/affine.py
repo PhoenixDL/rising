@@ -197,7 +197,6 @@ def _format_scale(scale: AffineParamType,
         scale = 1
 
     if check_scalar(scale):
-
         scale = get_batched_eye(batchsize=batchsize, ndim=ndim, device=device,
                                 dtype=dtype) * scale
 

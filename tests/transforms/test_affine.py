@@ -13,7 +13,7 @@ class AffineTestCase(unittest.TestCase):
                                   device='cpu')
         matrix = matrix.expand(image_batch.size(0), -1, -1).clone()
 
-        target_sizes = [(121, 97), image_batch.shape[2:], (50, 50), (50, 50),
+        target_sizes = [(100, 125), image_batch.shape[2:], (50, 50), (50, 50),
                         (45, 50), (45, 50)]
 
         for output_size in [None, 50, (45, 50)]:
@@ -79,24 +79,25 @@ class AffineTestCase(unittest.TestCase):
 
     def test_affine_subtypes(self):
 
-        sample = {'data': torch.rand(10, 3, 25, 25)}
+        sample = {'data': torch.rand(10, 3, 50, 25)}
         trafos = [
             ScaleAroundOrigin(5),
-            RotateAroundOrigin(45),
+            RotateAroundOrigin(90),
             Translate(10)
         ]
 
         for trafo in trafos:
             with self.subTest(trafo=trafo):
-                self.assertIsInstance(trafo(**sample)['data'], torch.Tensor)
+                res = trafo(**sample)['data']
+                self.assertIsInstance(res, torch.Tensor)
 
     def test_center_affines(self):
-        sample = {'data': torch.rand(10, 3, 25, 30)}
+        sample = {'data': torch.rand(1, 3, 25, 30)}
 
         trafos = [
-            Scale([2, 3]),
+            ScaleAroundOrigin([2, 3], adjust_size=True),
             Resize([50, 90]),
-            Rotate([90]),
+            Rotate([90], adjust_size=True, degree=True),
         ]
 
         expected_sizes = [
