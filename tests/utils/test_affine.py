@@ -349,7 +349,7 @@ class AffineHelperTests(unittest.TestCase):
     def test_unit_box_2d(self):
         curr_img_size = torch.tensor([2, 3])
         box = torch.tensor([[0., 0.], [0., curr_img_size[1]],
-                           [curr_img_size[0], 0], curr_img_size])
+                            [curr_img_size[0], 0], curr_img_size])
         created_box = unit_box(2, curr_img_size).to(box)
         self.compare_points_unordered(box, created_box)
 
@@ -363,16 +363,16 @@ class AffineHelperTests(unittest.TestCase):
     def test_unit_box_3d(self):
         curr_img_size = torch.tensor([2, 3, 4])
         box = torch.tensor(
-                        [
-                            [0., 0., 0.],
-                            [0., 0., curr_img_size[2]],
-                            [0., curr_img_size[1], 0],
-                            [0., curr_img_size[1], curr_img_size[2]],
-                            [curr_img_size[0], 0., 0.],
-                            [curr_img_size[0], 0., curr_img_size[2]],
-                            [curr_img_size[0], curr_img_size[1], 0.],
-                            curr_img_size
-                        ])
+            [
+                [0., 0., 0.],
+                [0., 0., curr_img_size[2]],
+                [0., curr_img_size[1], 0],
+                [0., curr_img_size[1], curr_img_size[2]],
+                [curr_img_size[0], 0., 0.],
+                [curr_img_size[0], 0., curr_img_size[2]],
+                [curr_img_size[0], curr_img_size[1], 0.],
+                curr_img_size
+            ])
         created_box = unit_box(3, curr_img_size).to(box)
         self.compare_points_unordered(box, created_box)
 
