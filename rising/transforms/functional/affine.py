@@ -1,6 +1,6 @@
 import torch
 from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
-    points_to_homogeneous, matrix_revert_coordinate_order
+    points_to_homogeneous, unit_box
 from rising.utils.checktype import check_scalar
 import warnings
 
@@ -30,12 +30,8 @@ def affine_point_transform(point_batch: torch.Tensor,
     """
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
-
-    matrix_batch = matrix_revert_coordinate_order(matrix_batch)
-
     transformed_points = torch.bmm(point_batch,
                                    matrix_batch.permute(0, 2, 1))
-
     return points_to_cartesian(transformed_points)
 
 
@@ -120,8 +116,7 @@ def affine_image_transform(image_batch: torch.Tensor,
         missing_dims = len(image_batch.shape) - len(image_size)
         new_size = (*image_batch.shape[:missing_dims], *new_size)
 
-    matrix_batch = matrix_batch.to(device=image_batch.device,
-                                   dtype=image_batch.dtype)
+    matrix_batch = matrix_batch.to(image_batch)
 
     grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size,
                                            align_corners=align_corners)
@@ -132,7 +127,8 @@ def affine_image_transform(image_batch: torch.Tensor,
                                            align_corners=align_corners)
 
 
-def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
+def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
+                        zero_border: bool = False) -> torch.Tensor:
     """
     Calculates the image size so that the whole image content fits the image.
     The resulting size will be the maximum size of the batch, so that the
@@ -145,49 +141,27 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor) -> torch.Tensor:
         all image dimensions
     matrix : torch.Tensor
         a batch of affine matrices with shape N x NDIM x NDIM + 1
+    zero_border : bool
+        whether or not to have a fixed image border at zero
 
     Returns
     -------
     torch.Tensor
         the new image size
-
     """
-
     n_dim = matrix.size(-1) - 1
-
     if check_scalar(curr_img_size):
         curr_img_size = [curr_img_size] * n_dim
-
-    curr_img_size = [tmp - 1 for tmp in curr_img_size]
-
-    if n_dim == 2:
-        possible_points = torch.tensor([[0., 0.], [0., curr_img_size[1]],
-                                        [curr_img_size[0], 0], curr_img_size],
-                                       dtype=matrix.dtype,
-                                       device=matrix.device)
-    elif n_dim == 3:
-        possible_points = torch.tensor(
-            [
-                [0., 0., 0.],
-                [0., 0., curr_img_size[2]],
-                [0., curr_img_size[1], 0],
-                [0., curr_img_size[1], curr_img_size[2]],
-                [curr_img_size[0], 0., 0.],
-                [curr_img_size[0], 0., curr_img_size[2]],
-                [curr_img_size[0], curr_img_size[1], 0.],
-                curr_img_size
-            ], device=matrix.device, dtype=matrix.dtype
-        )
-
-    else:
-        raise ValueError('Invalid number of dimensions! Expected One of '
-                         '{2, 3}, but got %s' % str(n_dim))
+    possible_points = unit_box(n_dim, torch.tensor(curr_img_size)).to(matrix)
 
     transformed_edges = affine_point_transform(
         possible_points[None].expand(
-            matrix.size(0),
-            *[-1 for _ in possible_points.shape]).clone(),
+            matrix.size(0), *[-1 for _ in possible_points.shape]).clone(),
         matrix)
 
-    return (transformed_edges.max(1)[0]
-            - transformed_edges.min(1)[0]).max(0)[0] + 1
+    if zero_border:
+        substr = 0
+    else:
+        substr = transformed_edges.min(1)[0]
+
+    return (transformed_edges.max(1)[0] - substr).max(0)[0]

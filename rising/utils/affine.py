@@ -1,7 +1,10 @@
 import torch
-from rising.utils.checktype import check_scalar
+import itertools
+
 from math import pi
 from typing import Union, Sequence
+
+from rising.utils.checktype import check_scalar
 
 AffineParamType = Union[int, float, Sequence, torch.Tensor]
 
@@ -104,28 +107,6 @@ def points_to_cartesian(batch: torch.Tensor) -> torch.Tensor:
     """
 
     return batch[..., :-1] / batch[..., -1, None]
-
-
-def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
-    """
-    Reverts the coordinate order of a matrix (e.g. from xyz to zyx).
-
-    Parameters
-    ----------
-    batch : torch.Tensor
-        the batched transformation matrices; Should be of shape
-        BATCHSIZE x NDIM x NDIM
-
-    Returns
-    -------
-    torch.Tensor
-        the matrix performing the same transformation on vectors with a
-        reversed coordinate order
-
-    """
-    batch[:, :-1, :] = batch[:, :-1, :].flip(1).clone()
-    batch[:, :-1, :-1] = batch[:, :-1, :-1].flip(2).clone()
-    return batch
 
 
 def get_batched_eye(batchsize: int, ndim: int,
@@ -379,7 +360,6 @@ def _format_rotation(rotation: AffineParamType,
     if check_scalar(rotation):
         rotation = torch.ones(batchsize, num_rot_params,
                               device=device, dtype=dtype) * rotation
-
     elif not torch.is_tensor(rotation):
         rotation = torch.tensor(rotation, device=device, dtype=dtype)
 
@@ -404,8 +384,7 @@ def _format_rotation(rotation: AffineParamType,
         return rotation
     # bring it to default size of (batchsize, num_rot_params)
     elif rotation.size() == (batchsize,):
-        rotation = rotation.view(batchsize, 1).expand(-1,
-                                                      num_rot_params).clone()
+        rotation = rotation.view(batchsize, 1).expand(-1, num_rot_params).clone()
     elif rotation.size() == (num_rot_params,):
         rotation = rotation.view(1, num_rot_params).expand(batchsize,
                                                            -1).clone()
@@ -424,7 +403,6 @@ def _format_rotation(rotation: AffineParamType,
         whole_rot_matrix[:, 1, 1] = cos[0].clone()
         whole_rot_matrix[:, 0, 1] = (-sin[0]).clone()
         whole_rot_matrix[:, 1, 0] = sin[0].clone()
-
     else:
         whole_rot_matrix[:, 0, 0] = (cos[:, 0] * cos[:, 1] * cos[:, 2]
                                      - sin[:, 0] * sin[:, 2]).clone()
@@ -618,3 +596,26 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
         "Got %s but expected %s" % (
             str(tuple(matrix.shape)),
             str((batchsize, ndim, ndim + 1))))
+
+
+def unit_box(n: int, scale: torch.Tensor = None) -> torch.Tensor:
+    """
+    Create a sclaed version of a unit box
+
+    Parameters
+    ----------
+    n: int
+        number of dimensions
+    scale: Tensor
+        scaling of each dimension
+
+    Returns
+    -------
+    Tensor
+        scaled unit box
+    """
+    box = torch.tensor(
+        [list(i) for i in itertools.product([0, 1], repeat=n)])
+    if scale is not None:
+        box = box.to(scale) * scale[None]
+    return box

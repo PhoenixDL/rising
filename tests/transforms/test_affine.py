@@ -1,6 +1,7 @@
 import unittest
-from rising.transforms.affine import Affine, StackedAffine, Translate, Rotate, \
-    Scale
+from rising.transforms.affine import (
+    Affine, StackedAffine, Translate, Scale, Rotate)
+# TODO: add resize transform
 import torch
 from copy import deepcopy
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
@@ -13,7 +14,7 @@ class AffineTestCase(unittest.TestCase):
                                   device='cpu')
         matrix = matrix.expand(image_batch.size(0), -1, -1).clone()
 
-        target_sizes = [(121, 97), image_batch.shape[2:], (50, 50), (50, 50),
+        target_sizes = [(100, 125), image_batch.shape[2:], (50, 50), (50, 50),
                         (45, 50), (45, 50)]
 
         for output_size in [None, 50, (45, 50)]:
@@ -78,17 +79,25 @@ class AffineTestCase(unittest.TestCase):
         self.assertTrue(torch.allclose(matrix, target_matrix))
 
     def test_affine_subtypes(self):
+        sample = {'data': torch.rand(1, 3, 25, 30)}
 
-        sample = {'data': torch.rand(10, 3, 25, 25)}
         trafos = [
-            Scale(5),
-            Rotate(45),
-            Translate(10)
+            Scale([2, 3], adjust_size=True),
+            # Resize([50, 90]),
+            Rotate([90], adjust_size=True, degree=True),
         ]
 
-        for trafo in trafos:
-            with self.subTest(trafo=trafo):
-                self.assertIsInstance(trafo(**sample)['data'], torch.Tensor)
+        expected_sizes = [
+            (50, 90),
+            # (50, 90),
+            (30, 25),
+        ]
+
+        for trafo, expected_size in zip(trafos, expected_sizes):
+            with self.subTest(trafo=trafo, exp_size=expected_size):
+                result = trafo(**sample)['data']
+                self.assertIsInstance(result, torch.Tensor)
+                self.assertTupleEqual(expected_size, result.shape[-2:])
 
 
 if __name__ == '__main__':

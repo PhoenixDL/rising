@@ -2,13 +2,11 @@ import unittest
 import torch
 from rising.transforms.functional.affine import _check_new_img_size, \
     affine_point_transform, affine_image_transform
-from rising.utils.affine import parametrize_matrix, matrix_to_homogeneous, matrix_to_cartesian, \
-    matrix_revert_coordinate_order
+from rising.utils.affine import parametrize_matrix, matrix_to_homogeneous, matrix_to_cartesian
 from rising.utils.checktype import check_scalar
 
 
 class AffineTestCase(unittest.TestCase):
-
     def test_check_image_size(self):
         images = [torch.rand(11, 2, 3, 4, 5), torch.rand(11, 2, 3, 4), torch.rand(11, 2, 3, 3)]
 
@@ -51,28 +49,35 @@ class AffineTestCase(unittest.TestCase):
                                        batchsize=1, ndim=ndim, dtype=torch.float))
 
                 edge_pts = torch.tensor(edge_pts, dtype=torch.float)
-                edge_pts[edge_pts > 1] = edge_pts[edge_pts > 1] - 1
                 img = img.to(torch.float)
+                new_edges = torch.bmm(edge_pts.unsqueeze(0), affine.clone().permute(0, 2, 1))
 
-                new_edges = torch.bmm(edge_pts.unsqueeze(0),
-                                      matrix_revert_coordinate_order(affine.clone()).permute(0, 2, 1))
+                img_size_zero_border = new_edges.max(dim=1)[0][0]
+                img_size_non_zero_border = (new_edges.max(dim=1)[0]
+                                            - new_edges.min(dim=1)[0])[0]
 
-                img_size = (new_edges.max(dim=1)[0] - new_edges.min(dim=1)[0])[0]
+                fn_result_zero_border = _check_new_img_size(
+                    size,
+                    matrix_to_cartesian(
+                        affine.expand(img.size(0), -1, -1).clone()),
+                    zero_border=True,
+                )
+                fn_result_non_zero_border = _check_new_img_size(
+                    size,
+                    matrix_to_cartesian(
+                        affine.expand(img.size(0), -1, -1).clone()),
+                    zero_border=False,
+                )
 
-                fn_result = _check_new_img_size(size,
-                                                matrix_to_cartesian(
-                                                    affine.expand(img.size(0), -1, -1).clone()))
-
-                self.assertTrue(torch.allclose(img_size[:-1] + 1,
-                                               fn_result))
-
-        with self.assertRaises(ValueError):
-            _check_new_img_size([2, 3, 4, 5], torch.rand(11, 2, 2, 3, 4, 5))
+                self.assertTrue(torch.allclose(img_size_zero_border[:-1],
+                                               fn_result_zero_border))
+                self.assertTrue(torch.allclose(img_size_non_zero_border[:-1],
+                                               fn_result_non_zero_border))
 
     def test_affine_point_transform(self):
         points = [
             [[[0, 1], [1, 0]]],
-            [[[0, 0, 1]]]
+            [[[1, 1, 1]]],
         ]
         matrices = [
             torch.tensor([[[1., 0.], [0., 5.]]]),
@@ -84,8 +89,8 @@ class AffineTestCase(unittest.TestCase):
                                device='cpu')
         ]
         expected = [
-            [[0, 1], [5, 0]],
-            [[0, 1, 0]]
+            [[0, 5], [1, 0]],
+            [[-1, 1, 1]]
         ]
 
         for input_pt, matrix, expected_pt in zip(points, matrices, expected):
@@ -111,7 +116,7 @@ class AffineTestCase(unittest.TestCase):
         image_batch = torch.zeros(10, 3, 25, 25, dtype=torch.float,
                                   device='cpu')
 
-        target_sizes = [(121, 97), image_batch.shape[2:], (50, 50), (50, 50),
+        target_sizes = [(100, 125), image_batch.shape[2:], (50, 50), (50, 50),
                         (45, 50), (45, 50)]
 
         for output_size in [None, 50, (45, 50)]:
