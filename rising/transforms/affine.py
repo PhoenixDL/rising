@@ -11,7 +11,8 @@ __all__ = [
     'StackedAffine',
     'Rotate',
     'Scale',
-    'Translate'
+    'Translate',
+    'Resize',
 ]
 
 
