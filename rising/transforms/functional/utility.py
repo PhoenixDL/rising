@@ -140,26 +140,26 @@ def pop_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -
 
 def filter_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
     """
-        Filters keys from a given data dict
+    Filters keys from a given data dict
 
-        Parameters
-        ----------
-        data : dict
-            the dictionary to pop the keys from
-        keys : Callable or Sequence of Strings
-            if callable it must return a boolean for each key indicating whether it should be retained in the dict.
-            if sequence of strings, the strings shall be the keys to be retained
-        return_popped : bool
-            whether to also return the popped values (default: False)
+    Parameters
+    ----------
+    data : dict
+        the dictionary to pop the keys from
+    keys : Callable or Sequence of Strings
+        if callable it must return a boolean for each key indicating whether it should be retained in the dict.
+        if sequence of strings, the strings shall be the keys to be retained
+    return_popped : bool
+        whether to also return the popped values (default: False)
 
-        Returns
-        -------
-        dict
-            the data without the popped values
-        dict, optional
-            the popped values; only if ``return_popped`` is True
+    Returns
+    -------
+    dict
+        the data without the popped values
+    dict, optional
+        the popped values; only if ``return_popped`` is True
 
-        """
+    """
     if callable(keys):
         keys = [k for k in data.keys() if keys(k)]
 
