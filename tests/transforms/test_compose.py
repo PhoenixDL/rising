@@ -2,7 +2,8 @@ import unittest
 import torch
 
 from rising.transforms.spatial import Mirror
-from rising.transforms.compose import Compose, DropoutCompose, AbstractTransform
+from rising.transforms.compose import Compose, DropoutCompose, \
+    AbstractTransform, _TransformWrapper
 
 
 class TestCompose(unittest.TestCase):
@@ -67,6 +68,20 @@ class TestCompose(unittest.TestCase):
 
         self.assertEquals(compose.transforms[0].tmp.dtype, torch.float64)
 
+    def test_wrapping_non_module_trafos(self):
+        class DummyTrafo:
+            def __init__(self):
+                self.a = 5
+
+            def __call__(self, *args, **kwargs):
+                return 5
+
+        dummy_trafo = DummyTrafo()
+
+        compose = Compose([dummy_trafo])
+        self.assertIsInstance(compose.transforms[0], _TransformWrapper)
+        self.assertIsInstance(compose.transforms[0].trafo, DummyTrafo)
+        
 
 if __name__ == '__main__':
     unittest.main()
