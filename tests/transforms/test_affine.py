@@ -1,6 +1,6 @@
 import unittest
 from rising.transforms.affine import Affine, StackedAffine, Translate, Rotate, \
-    Scale
+    Scale, Resize
 import torch
 from copy import deepcopy
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
@@ -83,12 +83,15 @@ class AffineTestCase(unittest.TestCase):
         trafos = [
             Scale(5),
             Rotate(45),
-            Translate(10)
+            Translate(10),
+            Resize((5, 4))
         ]
 
         for trafo in trafos:
             with self.subTest(trafo=trafo):
                 self.assertIsInstance(trafo(**sample)['data'], torch.Tensor)
+
+        self.assertTupleEqual((5, 4), trafos[-1](**sample)['data'].shape[2:])
 
 
 if __name__ == '__main__':
