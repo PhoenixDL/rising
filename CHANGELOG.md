@@ -2,6 +2,7 @@
 
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
+| 2020-02-17 | 5053ca76f7fc43ff813748d040c69d490ba0210c | Use ModuleList in Compose | No |
 | 2020-02-17 | 26d7c9432b90247f8b9e0ab3e6881e88fb7749d4 | Add Resizing Transform | No |
 | 2020-01-03 | 6b9a7b2fdc7d0b894c0dfcfd94237845fe8b8672 | Affine Trafos | No|
 | 2019-12-24 | 6b90197e89dedd7659073bf72037390231a1c278 | Use shared memory for progressive resizing | No |
