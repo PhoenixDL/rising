@@ -163,14 +163,5 @@ def filter_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False
     if callable(keys):
         keys = [k for k in data.keys() if keys(k)]
 
-    popped = {}
-    for k in data.keys():
-        if k in keys:
-            keys.pop(k)
-        else:
-            popped[k] = data.pop(k)
-
-    if return_popped:
-        return data, popped
-    else:
-        return data
+    keys_to_pop = [k for k in data.keys() if k not in keys]
+    return pop_keys(data=data, keys=keys_to_pop, return_popped=return_popped)
