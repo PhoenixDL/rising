@@ -2,7 +2,7 @@ from typing import Sequence, List, Tuple, Union, Callable
 from torch import Tensor
 import torch
 
-__all__ = ["box_to_seg", "seg_to_box", "instance_to_semantic"]
+__all__ = ["box_to_seg", "seg_to_box", "instance_to_semantic", "pop_keys", "filter_keys"]
 
 
 def box_to_seg(boxes: Sequence[Sequence[int]], shape: Sequence[int] = None,

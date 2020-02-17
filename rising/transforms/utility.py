@@ -4,7 +4,7 @@ import torch
 from rising.transforms.abstract import AbstractTransform
 from rising.transforms.functional.utility import seg_to_box, box_to_seg, instance_to_semantic, pop_keys, filter_keys
 
-__all__ = ["DoNothing", "SegToBox", "BoxToSeg", "InstanceToSemantic"]
+__all__ = ["DoNothing", "SegToBox", "BoxToSeg", "InstanceToSemantic", "PopKeys", "FilterKeys"]
 
 
 class DoNothing(AbstractTransform):
