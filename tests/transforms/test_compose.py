@@ -81,7 +81,7 @@ class TestCompose(unittest.TestCase):
         compose = Compose([dummy_trafo])
         self.assertIsInstance(compose.transforms[0], _TransformWrapper)
         self.assertIsInstance(compose.transforms[0].trafo, DummyTrafo)
-        
+
 
 if __name__ == '__main__':
     unittest.main()
