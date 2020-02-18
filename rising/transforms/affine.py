@@ -1,8 +1,7 @@
 from rising.transforms.abstract import BaseTransform
-from rising.transforms.functional.affine import affine_image_transform
-from rising.utils import check_scalar
-from rising.utils.affine import AffineParamType, \
-    assemble_matrix_if_necessary, matrix_to_homogeneous, matrix_to_cartesian
+from rising.transforms.functional.affine import affine_image_transform, \
+    AffineParamType, assemble_matrix_if_necessary
+from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 from rising.utils.checktype import check_scalar
 import torch
 from typing import Sequence, Union, Iterable

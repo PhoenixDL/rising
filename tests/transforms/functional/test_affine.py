@@ -1,9 +1,9 @@
 import unittest
 import torch
 from rising.transforms.functional.affine import _check_new_img_size, \
-    affine_point_transform, affine_image_transform
-from rising.utils.affine import parametrize_matrix, matrix_to_homogeneous, matrix_to_cartesian
-from rising.utils.checktype import check_scalar
+    affine_point_transform, affine_image_transform, parametrize_matrix, \
+    create_rotation, create_translation, create_scale, assemble_matrix_if_necessary
+from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 
 
 class AffineTestCase(unittest.TestCase):
@@ -141,6 +141,198 @@ class AffineTestCase(unittest.TestCase):
                             adjust_size=adjust_size)
 
                     self.assertTupleEqual(result.shape[2:], target_size)
+
+    def test_create_scale(self):
+        inputs = [
+            {'scale': None, 'batchsize': 2, 'ndim': 2},
+            {'scale': 2, 'batchsize': 2, 'ndim': 2},
+            {'scale': [2, 3], 'batchsize': 3, 'ndim': 2},
+            {'scale': [2, 3, 4], 'batchsize': 3, 'ndim': 2},
+            {'scale': [[2, 3], [4, 5]], 'batchsize': 3, 'ndim': 2},
+        ]
+
+        expectations = [
+            torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                          [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]],
+                          [[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
+                          [[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
+                          [[2., 0., 0.], [0., 3., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]],
+                          [[3., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
+                          [[4., 0., 0.], [0., 4., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[2, 3, 0], [4, 5, 0], [0, 0, 1]],
+                          [[2, 3, 0], [4, 5, 0], [0, 0, 1]],
+                          [[2, 3, 0], [4, 5, 0], [0, 0, 1]]])
+
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = create_scale(**inp).to(exp.dtype)
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
+
+        with self.assertRaises(ValueError):
+            create_scale([4, 5, 6, 7], batchsize=3, ndim=2)
+
+    def test_create_translation(self):
+        inputs = [
+            {'offset': None, 'batchsize': 2, 'ndim': 2},
+            {'offset': 2, 'batchsize': 2, 'ndim': 2},
+            {'offset': [2, 3], 'batchsize': 3, 'ndim': 2},
+            {'offset': [2, 3, 4], 'batchsize': 3, 'ndim': 2},
+            {'offset': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             'batchsize': 3, 'ndim': 2},
+            {'offset': [[[1, 2, 3], [4, 5, 6]],
+                        [[10, 11, 12], [13, 14, 15]],
+                        [[19, 20, 21], [22, 23, 24]]],
+             'batchsize': 3, 'ndim': 2}
+
+        ]
+
+        expectations = [
+            torch.tensor([[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                          [[1, 0, 0], [0, 1, 0], [0, 0, 1]]]),
+            torch.tensor([[[1, 0, 2], [0, 1, 2], [0, 0, 1]],
+                          [[1, 0, 2], [0, 1, 2], [0, 0, 1]]]),
+            torch.tensor([[[1, 0, 2], [0, 1, 3], [0, 0, 1]],
+                          [[1, 0, 2], [0, 1, 3], [0, 0, 1]],
+                          [[1, 0, 2], [0, 1, 3], [0, 0, 1]]]),
+            torch.tensor([[[1, 0, 2], [0, 1, 2], [0, 0, 1]],
+                          [[1, 0, 3], [0, 1, 3], [0, 0, 1]],
+                          [[1, 0, 4], [0, 1, 4], [0, 0, 1]]]),
+            torch.tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                          [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                          [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]),
+            torch.tensor([[[1, 2, 3], [4, 5, 6], [0, 0, 1]],
+                          [[10, 11, 12], [13, 14, 15], [0, 0, 1]],
+                          [[19, 20, 21], [22, 23, 24], [0, 0, 1]]])
+
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = create_translation(**inp).to(exp.dtype)
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
+
+        with self.assertRaises(ValueError):
+            create_translation([4, 5, 6, 7], batchsize=3, ndim=2)
+
+
+    def test_format_rotation(self):
+        inputs = [
+            {'rotation': None, 'batchsize': 2, 'ndim': 3},
+            {'rotation': 0, 'degree': True, 'batchsize': 2, 'ndim': 2},
+            {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 2, 'ndim': 3},
+            {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3, 'ndim': 2},
+            {'rotation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                          [[10, 11, 12], [13, 14, 15], [16, 17, 18]]],
+             'batchsize': 2, 'ndim': 2},
+            {'rotation': [[[1, 2, 3], [4, 5, 6]],
+                          [[10, 11, 12], [13, 14, 15]]],
+             'batchsize': 2, 'ndim': 2},
+            {'rotation': [[1, 2], [3, 4]], 'batchsize': 3, 'ndim': 2, 'degree': False}
+
+        ]
+        expectations = [
+            torch.tensor([[[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]],
+                          [[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
+            torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                          [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+            torch.tensor([[[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]],
+                          [[1., 0., 0., 0.], [0., 1., 0., 0.],
+                           [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
+            torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+                          [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+                          [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]]),
+            torch.tensor([[[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
+                          [[10., 11., 12.], [13., 14., 15.], [16., 17., 18.]]]),
+            torch.tensor([[[1., 2., 3.], [4., 5., 6.], [0., 0., 1.]],
+                          [[10., 11., 12.], [13., 14., 15.], [0., 0., 1.]]]),
+            torch.tensor([[[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
+                          [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
+                          [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]]])
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = create_rotation(**inp).to(exp.dtype)
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
+
+        with self.assertRaises(ValueError):
+            create_rotation([4, 5, 6, 7], batchsize=1, ndim=2)
+
+    def test_matrix_parametrization(self):
+        inputs = [
+            {'scale': None, 'translation': None, 'rotation': None, 'batchsize': 2, 'ndim': 2,
+             'dtype': torch.float},
+            {'scale': [[2, 3], [4, 5]], 'translation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                                                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+                                                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+             'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3,
+             'ndim': 2, 'dtype':torch.float}
+        ]
+
+        expectations = [
+            torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                          [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+
+            torch.bmm(torch.bmm(torch.tensor([[[2., 3., 0], [4., 5., 0.], [0., 0., 1.]],
+                                              [[2., 3., 0.], [4., 5., 0.], [0., 0., 1.]],
+                                              [[2., 3., 0.], [4., 5., 0.], [0., 0., 1.]]]),
+                                torch.tensor([[[-1., 0., 0.], [0., -1., 0.], [0., 0., 1.]],
+                                              [[-1., 0., 0.], [0., -1., 0.], [0., 0., 1.]],
+                                              [[-1., 0., 0.], [0., -1., 0.], [0., 0., 1.]]])),
+                      torch.tensor([[[1., 2., 3.], [4., 5., 6.], [0., 0., 1.]],
+                                    [[10., 11., 12.], [13., 14., 15.], [0., 0., 1.]],
+                                    [[19., 20., 21.], [22., 23., 24.], [0., 0., 1.]]]))
+
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = parametrize_matrix(**inp).to(exp.dtype)
+                self.assertTrue(torch.allclose(res, matrix_to_cartesian(exp), atol=1e-6))
+
+    def test_necessary_assembly(self):
+        inputs = [
+            {'matrix': None, 'translation': [2, 3], 'ndim':2, 'batchsize': 3,
+             'dtype': torch.float},
+            {'matrix': [[1., 0., 4.], [0., 1., 5.], [0., 0., 1.]], 'translation': [2, 3], 'ndim': 2, 'batchsize': 3,
+             'dtype': torch.float},
+            {'matrix': [[1., 0., 4.], [0., 1., 5.]], 'translation': [2, 3], 'ndim': 2, 'batchsize': 3,
+             'dtype': torch.float}
+
+        ]
+        expectations = [
+            torch.tensor([[[1., 0., 2.], [0., 1., 3.]],
+                          [[1., 0., 2.], [0., 1., 3.]],
+                          [[1., 0., 2.], [0., 1., 3.]]]),
+            torch.tensor([[[1., 0., 4.], [0., 1., 5.]],
+                          [[1., 0., 4.], [0., 1., 5.]],
+                          [[1., 0., 4.], [0., 1., 5.]]]),
+            torch.tensor([[[1., 0., 4.], [0., 1., 5.]],
+                          [[1., 0., 4.], [0., 1., 5.]],
+                          [[1., 0., 4.], [0., 1., 5.]]])
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                res = assemble_matrix_if_necessary(**inp, degree=False,
+                                                   device='cpu', scale=None, rotation=None).to(exp.dtype)
+                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
+
+        with self.assertRaises(ValueError):
+            assemble_matrix_if_necessary(matrix=[1, 2, 3, 4, 5], scale=None,
+                                         rotation=None, translation=None,
+                                         degree=False, dtype=torch.float,
+                                         device='cpu', batchsize=1, ndim=2)
 
 
 if __name__ == '__main__':

@@ -98,10 +98,6 @@ class AffineTestCase(unittest.TestCase):
                 self.assertIsInstance(result, torch.Tensor)
                 self.assertTupleEqual(expected_size, result.shape[-2:])
 
-        self.assertTupleEqual((5, 4), trafos[-1](**sample)['data'].shape[2:])
-
-        self.assertTupleEqual((5, 4), trafos[-1](**sample)['data'].shape[2:])
-
 
 if __name__ == '__main__':
     unittest.main()
