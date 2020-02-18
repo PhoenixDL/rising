@@ -1,10 +1,10 @@
-from typing import Sequence, Mapping, Hashable, Union
+from typing import Sequence, Mapping, Hashable, Union, Callable, Tuple
 
 import torch
 from rising.transforms.abstract import AbstractTransform
-from rising.transforms.functional.utility import seg_to_box, box_to_seg, instance_to_semantic
+from rising.transforms.functional.utility import seg_to_box, box_to_seg, instance_to_semantic, pop_keys, filter_keys
 
-__all__ = ["DoNothing", "SegToBox", "BoxToSeg", "InstanceToSemantic"]
+__all__ = ["DoNothing", "SegToBox", "BoxToSeg", "InstanceToSemantic", "PopKeys", "FilterKeys"]
 
 
 class DoNothing(AbstractTransform):
@@ -122,3 +122,47 @@ class InstanceToSemantic(AbstractTransform):
             data[target] = torch.cat([instance_to_semantic(data, mapping)
                                       for data, mapping in zip(data[source].split(1), data[self.cls_key])])
         return data
+
+
+class PopKeys(AbstractTransform):
+    def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
+        """
+        Pops keys from a given data dict
+
+        Parameters
+        ----------
+        keys : Callable or Sequence of Strings
+            if callable it must return a boolean for each key indicating whether it should be popped from the dict.
+            if sequence of strings, the strings shall be the keys to be popped
+        return_popped : bool
+            whether to also return the popped values (default: False)
+
+        """
+        super().__init__(grad=False)
+        self.keys = keys
+        self.return_popped = return_popped
+
+    def forward(self, **data) -> Union[dict, Tuple[dict, dict]]:
+        return pop_keys(data=data, keys=self.keys, return_popped=self.return_popped)
+
+
+class FilterKeys(AbstractTransform):
+    def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
+        """
+        Filters keys from a given data dict
+
+        Parameters
+        ----------
+        keys : Callable or Sequence of Strings
+            if callable it must return a boolean for each key indicating whether it should be retained in the dict.
+            if sequence of strings, the strings shall be the keys to be retained
+        return_popped : bool
+            whether to also return the popped values (default: False)
+
+        """
+        super().__init__(grad=False)
+        self.keys = keys
+        self.return_popped = return_popped
+
+    def forward(self, **data) -> Union[dict, Tuple[dict, dict]]:
+        return filter_keys(data=data, keys=self.keys, return_popped=self.return_popped)
