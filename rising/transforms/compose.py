@@ -1,6 +1,7 @@
 from typing import Sequence, Union, Callable, Any, Mapping
 from rising.utils import check_scalar
 from rising.transforms import AbstractTransform, RandomProcess
+import torch
 
 
 __all__ = ["Compose", "DropoutCompose"]
@@ -25,6 +26,31 @@ def dict_call(batch: dict, transform: Callable) -> Any:
     return transform(**batch)
 
 
+class _TransformWrapper(torch.nn.Module):
+    def __init__(self, trafo: Callable):
+        """
+        Helper Class to wrap all non-module transforms into modules to use the
+        torch.nn.ModuleList as container for the transforms. This enables
+        forwarding of all model specific calls as ``.to()`` to all transforms
+
+        Parameters
+        ----------
+        trafo : Callable
+            the actual transform, which will be wrapped by this class.
+            Since this transform is no subclass of ``torch.nn.Module``,
+            its internal state won't be affected by module specific calls
+        """
+        super().__init__()
+
+        self.trafo = trafo
+
+    def forward(self, *args, **kwargs) -> Any:
+        """
+        Forwards calls to this wrapper to the internal transform
+        """
+        return self.trafo(*args, **kwargs)
+
+
 class Compose(AbstractTransform):
     def __init__(self, *transforms,
                  transform_call: Callable[[Any, Callable], Any] = dict_call):
@@ -42,7 +68,12 @@ class Compose(AbstractTransform):
         super().__init__(grad=True)
         if isinstance(transforms[0], Sequence):
             transforms = transforms[0]
-        self.transforms = transforms
+
+        for idx, trafo in enumerate(transforms):
+            if not isinstance(trafo, torch.nn.Module):
+                transforms[idx] = _TransformWrapper(trafo)
+
+        self.transforms = torch.nn.ModuleList(transforms)
         self.transform_call = transform_call
 
     def forward(self, *seq_like, **map_like) -> Union[Sequence, Mapping]:

@@ -1,5 +1,6 @@
 import unittest
 import torch
+from copy import deepcopy
 from rising.transforms.utility import *
 
 
@@ -42,6 +43,56 @@ class TestSegBoxTransforms(unittest.TestCase):
         expected[1:3, 1:3, 1:3] = 2
         expected[5:8, 5:8, 1:3] = 1
         self.assertTrue((semantic == expected).all())
+
+    def test_pop_keys(self):
+        data = {str(idx): idx for idx in range(10)}
+        keys_to_pop_list = [str(idx) for idx in range(0, 10, 2)]
+
+        def keys_to_pop_fn(key):
+            return key in [str(idx) for idx in range(0, 10, 2)]
+
+        for return_pop in [True, False]:
+            for _pop_keys in [keys_to_pop_list, keys_to_pop_fn]:
+                with self.subTest(return_pop=return_pop, pop_keys=_pop_keys):
+                    if isinstance(_pop_keys, list):
+                        __pop_keys = deepcopy(_pop_keys)
+                    else:
+                        __pop_keys = _pop_keys
+                    result = PopKeys(keys=__pop_keys,
+                                     return_popped=return_pop)(**deepcopy(data))
+
+                    if return_pop:
+                        result, popped = result
+                        for k in popped.keys():
+                            self.assertIn(k, keys_to_pop_list)
+
+                        for k in result.keys():
+                            self.assertNotIn(k, keys_to_pop_list)
+
+    def test_filter_keys(self):
+        data = {str(idx): idx for idx in range(10)}
+        keys_to_filter_list = [str(idx) for idx in range(0, 10, 2)]
+
+        def keys_to_filter_fn(key):
+            return key in [str(idx) for idx in range(0, 10, 2)]
+
+        for return_pop in [True, False]:
+            for _filter_keys in [keys_to_filter_list, keys_to_filter_fn]:
+                with self.subTest(return_pop=return_pop, filter_keys=_filter_keys):
+                    if isinstance(_filter_keys, list):
+                        __filter_keys = deepcopy(_filter_keys)
+                    else:
+                        __filter_keys = _filter_keys
+                    result = FilterKeys(keys=__filter_keys,
+                                        return_popped=return_pop)(**deepcopy(data))
+
+                    if return_pop:
+                        result, popped = result
+                        for k in popped.keys():
+                            self.assertNotIn(k, keys_to_filter_list)
+
+                        for k in result.keys():
+                            self.assertIn(k, keys_to_filter_list)
 
 
 if __name__ == '__main__':

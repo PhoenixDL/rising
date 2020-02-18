@@ -1,8 +1,8 @@
-from typing import Sequence, List, Tuple
+from typing import Sequence, List, Tuple, Union, Callable
 from torch import Tensor
 import torch
 
-__all__ = ["box_to_seg", "seg_to_box", "instance_to_semantic"]
+__all__ = ["box_to_seg", "seg_to_box", "instance_to_semantic", "pop_keys", "filter_keys"]
 
 
 def box_to_seg(boxes: Sequence[Sequence[int]], shape: Sequence[int] = None,
@@ -100,3 +100,68 @@ def instance_to_semantic(instance: Tensor, cls: Sequence[int]) -> Tensor:
     for idx, c in enumerate(cls, 1):
         seg[instance == idx] = c
     return seg
+
+
+def pop_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
+    """
+    Pops keys from a given data dict
+
+    Parameters
+    ----------
+    data : dict
+        the dictionary to pop the keys from
+    keys : Callable or Sequence of Strings
+        if callable it must return a boolean for each key indicating whether it should be popped from the dict.
+        if sequence of strings, the strings shall be the keys to be popped
+    return_popped : bool
+        whether to also return the popped values (default: False)
+
+    Returns
+    -------
+    dict
+        the data without the popped values
+    dict, optional
+        the popped values; only if ``return_popped`` is True
+
+    """
+    if callable(keys):
+        keys = [k for k in data.keys() if keys(k)]
+
+    popped = {}
+
+    for k in keys:
+        popped[k] = data.pop(k)
+
+    if return_popped:
+        return data, popped
+    else:
+        return data
+
+
+def filter_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
+    """
+    Filters keys from a given data dict
+
+    Parameters
+    ----------
+    data : dict
+        the dictionary to pop the keys from
+    keys : Callable or Sequence of Strings
+        if callable it must return a boolean for each key indicating whether it should be retained in the dict.
+        if sequence of strings, the strings shall be the keys to be retained
+    return_popped : bool
+        whether to also return the popped values (default: False)
+
+    Returns
+    -------
+    dict
+        the data without the popped values
+    dict, optional
+        the popped values; only if ``return_popped`` is True
+
+    """
+    if callable(keys):
+        keys = [k for k in data.keys() if keys(k)]
+
+    keys_to_pop = [k for k in data.keys() if k not in keys]
+    return pop_keys(data=data, keys=keys_to_pop, return_popped=return_popped)
