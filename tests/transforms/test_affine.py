@@ -82,13 +82,13 @@ class AffineTestCase(unittest.TestCase):
 
         trafos = [
             Scale([2, 3], adjust_size=True),
-            # Resize([50, 90]),
+            Resize([50, 90]),
             Rotate([90], adjust_size=True, degree=True),
         ]
 
         expected_sizes = [
             (50, 90),
-            # (50, 90),
+            (50, 90),
             (30, 25),
         ]
 
@@ -97,6 +97,8 @@ class AffineTestCase(unittest.TestCase):
                 result = trafo(**sample)['data']
                 self.assertIsInstance(result, torch.Tensor)
                 self.assertTupleEqual(expected_size, result.shape[-2:])
+
+        self.assertTupleEqual((5, 4), trafos[-1](**sample)['data'].shape[2:])
 
         self.assertTupleEqual((5, 4), trafos[-1](**sample)['data'].shape[2:])
 
