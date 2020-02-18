@@ -221,7 +221,6 @@ class AffineTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             create_translation([4, 5, 6, 7], batchsize=3, ndim=2)
 
-
     def test_format_rotation(self):
         inputs = [
             {'rotation': None, 'batchsize': 2, 'ndim': 3},
