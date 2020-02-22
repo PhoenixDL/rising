@@ -8,21 +8,19 @@ from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 
 class AffineTestCase(unittest.TestCase):
     def test_check_image_size(self):
-        images = [torch.rand(11, 2, 3, 4, 5), torch.rand(11, 2, 3, 4), torch.rand(11, 2, 3, 3)]
-
-        img_sizes = [
-            [3, 4, 5], [3, 4], 3
+        images = [
+            torch.rand(11, 2, 3, 4, 5),
+            torch.rand(11, 2, 3, 4),
+            torch.rand(11, 2, 3, 3),
         ]
+        img_sizes = [[3, 4, 5], [3, 4], 3]
+
         scales = [
-            torch.tensor([[2., 0., 0.],
-                          [0., 3., 0.],
-                          [0., 0., 4.]]),
-            torch.tensor([[2., 0.], [0., 3.]]),
-            torch.tensor([[2., 0.], [0., 3.]])
+            torch.tensor([2., 3., 4.]),
+            torch.tensor([2., 3.]),
+            torch.tensor([2., 3.])
         ]
-
         rots = [[45., 90., 135.], [45.], [45.]]
-
         trans = [[0., 10., 20.], [10., 20.], [10., 20.]]
 
         edges = [
@@ -38,9 +36,8 @@ class AffineTestCase(unittest.TestCase):
             ]
         ]
 
-        for img, size, scale, rot, tran, edge_pts in zip(images, img_sizes,
-                                                         scales, rots, trans,
-                                                         edges):
+        for img, size, scale, rot, tran, edge_pts in zip(
+                images, img_sizes, scales, rots, trans, edges):
             ndim = scale.size(-1)
             with self.subTest(ndim=ndim):
                 affine = matrix_to_homogeneous(
@@ -53,26 +50,21 @@ class AffineTestCase(unittest.TestCase):
                 new_edges = torch.bmm(edge_pts.unsqueeze(0), affine.clone().permute(0, 2, 1))
 
                 img_size_zero_border = new_edges.max(dim=1)[0][0]
-                img_size_non_zero_border = (new_edges.max(dim=1)[0]
-                                            - new_edges.min(dim=1)[0])[0]
+                img_size_non_zero_border = (new_edges.max(dim=1)[0] - new_edges.min(dim=1)[0])[0]
 
                 fn_result_zero_border = _check_new_img_size(
-                    size,
-                    matrix_to_cartesian(
-                        affine.expand(img.size(0), -1, -1).clone()),
+                    size, matrix_to_cartesian(affine.expand(img.size(0), -1, -1).clone()),
                     zero_border=True,
                 )
                 fn_result_non_zero_border = _check_new_img_size(
-                    size,
-                    matrix_to_cartesian(
-                        affine.expand(img.size(0), -1, -1).clone()),
+                    size, matrix_to_cartesian(affine.expand(img.size(0), -1, -1).clone()),
                     zero_border=False,
                 )
 
-                self.assertTrue(torch.allclose(img_size_zero_border[:-1],
-                                               fn_result_zero_border))
-                self.assertTrue(torch.allclose(img_size_non_zero_border[:-1],
-                                               fn_result_non_zero_border))
+                self.assertTrue(torch.allclose(
+                    img_size_zero_border[:-1], fn_result_zero_border))
+                self.assertTrue(torch.allclose(
+                    img_size_non_zero_border[:-1], fn_result_non_zero_border))
 
     def test_affine_point_transform(self):
         points = [
@@ -111,7 +103,6 @@ class AffineTestCase(unittest.TestCase):
                                                atol=1e-7))
 
     def test_affine_image_trafo(self):
-
         matrix = torch.tensor([[4., 0., 0.], [0., 5., 0.]])
         image_batch = torch.zeros(10, 3, 25, 25, dtype=torch.float,
                                   device='cpu')
@@ -148,7 +139,7 @@ class AffineTestCase(unittest.TestCase):
             {'scale': 2, 'batchsize': 2, 'ndim': 2},
             {'scale': [2, 3], 'batchsize': 3, 'ndim': 2},
             {'scale': [2, 3, 4], 'batchsize': 3, 'ndim': 2},
-            {'scale': [[2, 3], [4, 5]], 'batchsize': 3, 'ndim': 2},
+            # {'scale': [[2, 3], [4, 5]], 'batchsize': 3, 'ndim': 2},
         ]
 
         expectations = [
@@ -162,10 +153,9 @@ class AffineTestCase(unittest.TestCase):
             torch.tensor([[[2., 0., 0.], [0., 2., 0.], [0., 0., 1.]],
                           [[3., 0., 0.], [0., 3., 0.], [0., 0., 1.]],
                           [[4., 0., 0.], [0., 4., 0.], [0., 0., 1.]]]),
-            torch.tensor([[[2, 3, 0], [4, 5, 0], [0, 0, 1]],
-                          [[2, 3, 0], [4, 5, 0], [0, 0, 1]],
-                          [[2, 3, 0], [4, 5, 0], [0, 0, 1]]])
-
+            # torch.tensor([[[2, 3, 0], [4, 5, 0], [0, 0, 1]],
+            #               [[2, 3, 0], [4, 5, 0], [0, 0, 1]],
+            #               [[2, 3, 0], [4, 5, 0], [0, 0, 1]]])
         ]
 
         for inp, exp in zip(inputs, expectations):
@@ -182,14 +172,14 @@ class AffineTestCase(unittest.TestCase):
             {'offset': 2, 'batchsize': 2, 'ndim': 2},
             {'offset': [2, 3], 'batchsize': 3, 'ndim': 2},
             {'offset': [2, 3, 4], 'batchsize': 3, 'ndim': 2},
-            {'offset': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
-                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
-             'batchsize': 3, 'ndim': 2},
-            {'offset': [[[1, 2, 3], [4, 5, 6]],
-                        [[10, 11, 12], [13, 14, 15]],
-                        [[19, 20, 21], [22, 23, 24]]],
-             'batchsize': 3, 'ndim': 2}
+            # {'offset': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            #             [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+            #             [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+            #  'batchsize': 3, 'ndim': 2},
+            # {'offset': [[[1, 2, 3], [4, 5, 6]],
+            #             [[10, 11, 12], [13, 14, 15]],
+            #             [[19, 20, 21], [22, 23, 24]]],
+            #  'batchsize': 3, 'ndim': 2}
 
         ]
 
@@ -204,12 +194,12 @@ class AffineTestCase(unittest.TestCase):
             torch.tensor([[[1, 0, 2], [0, 1, 2], [0, 0, 1]],
                           [[1, 0, 3], [0, 1, 3], [0, 0, 1]],
                           [[1, 0, 4], [0, 1, 4], [0, 0, 1]]]),
-            torch.tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                          [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
-                          [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]),
-            torch.tensor([[[1, 2, 3], [4, 5, 6], [0, 0, 1]],
-                          [[10, 11, 12], [13, 14, 15], [0, 0, 1]],
-                          [[19, 20, 21], [22, 23, 24], [0, 0, 1]]])
+            # torch.tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            #               [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
+            #               [[19, 20, 21], [22, 23, 24], [25, 26, 27]]]),
+            # torch.tensor([[[1, 2, 3], [4, 5, 6], [0, 0, 1]],
+            #               [[10, 11, 12], [13, 14, 15], [0, 0, 1]],
+            #               [[19, 20, 21], [22, 23, 24], [0, 0, 1]]])
 
         ]
 
@@ -225,15 +215,18 @@ class AffineTestCase(unittest.TestCase):
         inputs = [
             {'rotation': None, 'batchsize': 2, 'ndim': 3},
             {'rotation': 0, 'degree': True, 'batchsize': 2, 'ndim': 2},
-            {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 2, 'ndim': 3},
-            {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3, 'ndim': 2},
-            {'rotation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                          [[10, 11, 12], [13, 14, 15], [16, 17, 18]]],
-             'batchsize': 2, 'ndim': 2},
-            {'rotation': [[[1, 2, 3], [4, 5, 6]],
-                          [[10, 11, 12], [13, 14, 15]]],
-             'batchsize': 2, 'ndim': 2},
-            {'rotation': [[1, 2], [3, 4]], 'batchsize': 3, 'ndim': 2, 'degree': False}
+
+            # TODO: update tests with multiple rotation
+            # {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 2, 'ndim': 3},
+            # {'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3, 'ndim': 2},
+
+            # {'rotation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            #               [[10, 11, 12], [13, 14, 15], [16, 17, 18]]],
+            #  'batchsize': 2, 'ndim': 2},
+            # {'rotation': [[[1, 2, 3], [4, 5, 6]],
+            #               [[10, 11, 12], [13, 14, 15]]],
+            #  'batchsize': 2, 'ndim': 2},
+            # {'rotation': [[1, 2], [3, 4]], 'batchsize': 3, 'ndim': 2, 'degree': False}
 
         ]
         expectations = [
@@ -243,20 +236,21 @@ class AffineTestCase(unittest.TestCase):
                            [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
             torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
                           [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
-            torch.tensor([[[1., 0., 0., 0.], [0., 1., 0., 0.],
-                           [0., 0., 1., 0.], [0., 0., 0., 1.]],
-                          [[1., 0., 0., 0.], [0., 1., 0., 0.],
-                           [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
-            torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-                          [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
-                          [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]]),
-            torch.tensor([[[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
-                          [[10., 11., 12.], [13., 14., 15.], [16., 17., 18.]]]),
-            torch.tensor([[[1., 2., 3.], [4., 5., 6.], [0., 0., 1.]],
-                          [[10., 11., 12.], [13., 14., 15.], [0., 0., 1.]]]),
-            torch.tensor([[[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
-                          [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
-                          [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]]])
+            # torch.tensor([[[1., 0., 0., 0.], [0., 1., 0., 0.],
+            #                [0., 0., 1., 0.], [0., 0., 0., 1.]],
+            #               [[1., 0., 0., 0.], [0., 1., 0., 0.],
+            #                [0., 0., 1., 0.], [0., 0., 0., 1.]]]),
+            # torch.tensor([[[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+            #               [[-1, 0, 0], [0, -1, 0], [0, 0, 1]],
+            #               [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]]),
+
+            # torch.tensor([[[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
+            #               [[10., 11., 12.], [13., 14., 15.], [16., 17., 18.]]]),
+            # torch.tensor([[[1., 2., 3.], [4., 5., 6.], [0., 0., 1.]],
+            #               [[10., 11., 12.], [13., 14., 15.], [0., 0., 1.]]]),
+            # torch.tensor([[[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
+            #               [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]],
+            #               [[1., 2., 0.], [3., 4., 0.], [0., 0., 1.]]])
         ]
 
         for inp, exp in zip(inputs, expectations):
@@ -271,9 +265,7 @@ class AffineTestCase(unittest.TestCase):
         inputs = [
             {'scale': None, 'translation': None, 'rotation': None, 'batchsize': 2, 'ndim': 2,
              'dtype': torch.float},
-            {'scale': [[2, 3], [4, 5]], 'translation': [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                                                        [[10, 11, 12], [13, 14, 15], [16, 17, 18]],
-                                                        [[19, 20, 21], [22, 23, 24], [25, 26, 27]]],
+            {'scale': [2, 5], 'translation': [9, 18, 27],
              'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3,
              'ndim': 2, 'dtype':torch.float}
         ]
@@ -282,16 +274,15 @@ class AffineTestCase(unittest.TestCase):
             torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
                           [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
 
-            torch.bmm(torch.bmm(torch.tensor([[[2., 3., 0], [4., 5., 0.], [0., 0., 1.]],
-                                              [[2., 3., 0.], [4., 5., 0.], [0., 0., 1.]],
-                                              [[2., 3., 0.], [4., 5., 0.], [0., 0., 1.]]]),
+            torch.bmm(torch.bmm(torch.tensor([[[2., 0., 0], [0., 5., 0.], [0., 0., 1.]],
+                                              [[2., 0., 0.], [0., 5., 0.], [0., 0., 1.]],
+                                              [[2., 0., 0.], [0., 5., 0.], [0., 0., 1.]]]),
                                 torch.tensor([[[-1., 0., 0.], [0., -1., 0.], [0., 0., 1.]],
-                                              [[-1., 0., 0.], [0., -1., 0.], [0., 0., 1.]],
-                                              [[-1., 0., 0.], [0., -1., 0.], [0., 0., 1.]]])),
-                      torch.tensor([[[1., 2., 3.], [4., 5., 6.], [0., 0., 1.]],
-                                    [[10., 11., 12.], [13., 14., 15.], [0., 0., 1.]],
-                                    [[19., 20., 21.], [22., 23., 24.], [0., 0., 1.]]]))
-
+                                              [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
+                                              [[-1., 0., 0.], [0., -1., 0.], [0., 0., -1.]]])),
+                      torch.tensor([[[1., 0., 9.], [0., 1., 9.], [0., 0., 1.]],
+                                    [[1., 0., 18.], [0., 1., 18.], [0., 0., 1.]],
+                                    [[1., 0., 27.], [0., 1., 27.], [0., 0., 1.]]]))
         ]
 
         for inp, exp in zip(inputs, expectations):

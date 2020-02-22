@@ -20,7 +20,7 @@ __all__ = [
 AffineParamType = Union[int, float, Sequence, torch.Tensor]
 
 
-def expand_affine_param(param: AffineParamType, batchsize: int, ndim: int) -> Tensor:
+def expand_scalar_param(param: AffineParamType, batchsize: int, ndim: int) -> Tensor:
     """
     Bring affine params to shape (batchsize, ndim)
 
@@ -39,19 +39,25 @@ def expand_affine_param(param: AffineParamType, batchsize: int, ndim: int) -> Te
         affine params in correct shape
     """
     if check_scalar(param):
-        return torch.tensor([[param] * ndim] * batchsize)
+        return torch.tensor([[param] * ndim] * batchsize).float()
 
     if not torch.is_tensor(param):
         param = torch.tensor(param)
+    else:
+        param = param.clone()
 
-    if not param.ndimension == 2:
+    if not param.ndimension() == 2:
         if param.shape[0] == ndim:  # scalar per dim
-            param = param.reshape(1, -1)
-        param = param.expand(batchsize, ndim)
+            param = param.reshape(1, -1).expand(batchsize, ndim)
+        elif param.shape[0] == batchsize:  # scalar per batch
+            param = param.reshape(-1, 1).expand(batchsize, ndim)
+        else:
+            raise ValueError("Unknown param for expanding. "
+                             f"Found {param} for batchsize {batchsize} and ndim {ndim}")
     assert all([i == j for i, j in zip(param.shape, (batchsize, ndim))]), \
         (f"Affine param need to have shape (batchsize, ndim)"
          f"({(batchsize, ndim)}) but found {param.shape}")
-    return param
+    return param.float()
 
 
 def create_scale(scale: AffineParamType,
@@ -91,10 +97,11 @@ def create_scale(scale: AffineParamType,
     if scale is None:
         scale = 1
 
-    scale = expand_affine_param(scale, batchsize, ndim).to(
+    scale = expand_scalar_param(scale, batchsize, ndim).to(
         device=device, dtype=dtype)
-    scale_matrix = torch.bmm(
-        get_batched_eye(batchsize=batchsize, ndim=ndim, device=device, dtype=dtype), scale)
+    scale_matrix = torch.stack(
+        [eye * s for eye, s in zip(get_batched_eye(
+            batchsize=batchsize, ndim=ndim, device=device, dtype=dtype), scale)])
     return matrix_to_homogeneous(scale_matrix)
 
 
@@ -137,10 +144,11 @@ def create_translation(offset: AffineParamType,
     """
     if offset is None:
         offset = 0
-    offset = expand_affine_param(offset, batchsize, ndim).to(
+    offset = expand_scalar_param(offset, batchsize, ndim).to(
         device=device, dtype=dtype)
-    eye = get_batched_eye(batchsize=batchsize, ndim=ndim, device=device, dtype=dtype)
-    translation_matrix = torch.cat([eye, offset], dim=1)
+    eye_batch = get_batched_eye(batchsize=batchsize, ndim=ndim, device=device, dtype=dtype)
+    translation_matrix = torch.stack([torch.cat([eye, o.view(-1, 1)], dim=1)
+                                      for eye, o in zip(eye_batch, offset)])
     return matrix_to_homogeneous(translation_matrix)
 
 
@@ -188,47 +196,120 @@ def create_rotation(rotation: AffineParamType,
         rotation = 0
     num_rot_params = 1 if ndim == 2 else ndim
 
-    rotation = expand_affine_param(rotation, batchsize, num_rot_params)
-    matrix_fn = create_rotation_2d if ndim == 2 else create_rotation_3d_zyx
-    rotation_matrix = torch.stack([matrix_fn(r) for r in rotation]).to(
+    rotation = expand_scalar_param(rotation, batchsize, num_rot_params)
+    if degree:
+        rotation = deg_to_rad(rotation)
+
+    matrix_fn = create_rotation_2d if ndim == 2 else create_rotation_3d
+    sin, cos = torch.sin(rotation), torch.cos(rotation)
+    rotation_matrix = torch.stack([matrix_fn(s, c) for s, c in zip(sin, cos)]).to(
         device=device, dtype=dtype)
     return matrix_to_homogeneous(rotation_matrix)
 
 
 def create_rotation_2d(sin: Tensor, cos: Tensor) -> Tensor:
+    """
+    Create a 2d rotation matrix
+
+    Parameters
+    ----------
+    sin: Tensor
+        sin value to use for rotation matrix, [1]
+    cos: Tensor
+        cos value to use for rotation matrix, [1]
+
+    Returns
+    -------
+    Tensor
+        rotation matrix, [2, 2]
+    """
     return torch.tensor([[cos.clone(), -sin.clone()], [sin.clone(), cos.clone()]])
 
 
-def create_rotation_3d_xzy(sin: Tensor, cos: Tensor) -> Tensor:
-    rot_0 = create_rotation_3d_x(sin[0], cos[0])
-    rot_1 = create_rotation_3d_y(sin[1], cos[1])
-    rot_2 = create_rotation_3d_z(sin[2], cos[2])
-    return (rot_0 @ rot_1) @ rot_2
+def create_rotation_3d(sin: Tensor, cos: Tensor) -> Tensor:
+    """
+    Create a 3d rotation matrix which sequentially applies the rotation
+    around axis (rot axis 0 -> rot axis 1 -> rot axis 2)
+
+    Parameters
+    ----------
+    sin: Tensor
+        sin values to use for the rotation, (axis 0, axis 1, axis 2)[3]
+    cos: Tensor
+        cos values to use for the rotation, (axis 0, axis 1, axis 2)[3]
+
+    Returns
+    -------
+    Tensor
+        rotation matrix, [3, 3]
+    """
+    rot_0 = create_rotation_3d_0(sin[0], cos[0])
+    rot_1 = create_rotation_3d_1(sin[1], cos[1])
+    rot_2 = create_rotation_3d_2(sin[2], cos[2])
+    return rot_2 @ (rot_1 @ rot_0)
 
 
-def create_rotation_3d_zyx(sin: Tensor, cos: Tensor) -> Tensor:
-    rot_0 = create_rotation_3d_x(sin[0], cos[0])
-    rot_1 = create_rotation_3d_y(sin[1], cos[1])
-    rot_2 = create_rotation_3d_z(sin[2], cos[2])
-    return (rot_2 @ rot_1) @ rot_0
+def create_rotation_3d_0(sin: Tensor, cos: Tensor) -> Tensor:
+    """
+    Create a rotation matrix around the zero-th axis
 
+    Parameters
+    ----------
+    sin: Tensor
+        sin value to use for rotation matrix, [1]
+    cos: Tensor
+        cos value to use for rotation matrix, [1]
 
-def create_rotation_3d_x(sin: Tensor, cos: Tensor) -> Tensor:
+    Returns
+    -------
+    Tensor:
+        rotation matrix, [3, 3]
+    """
     return torch.tensor([[1., 0., 0.],
                          [0., cos.clone(), -sin.clone()],
                          [0., sin.clone(), cos.clone()]])
 
 
-def create_rotation_3d_y(sin: Tensor, cos: Tensor) -> Tensor:
+def create_rotation_3d_1(sin: Tensor, cos: Tensor) -> Tensor:
+    """
+    Create a rotation matrix around the first axis
+
+    Parameters
+    ----------
+    sin: Tensor
+        sin value to use for rotation matrix, [1]
+    cos: Tensor
+        cos value to use for rotation matrix, [1]
+
+    Returns
+    -------
+    Tensor:
+        rotation matrix, [3, 3]
+    """
     return torch.tensor([[cos.clone(), 0., sin.clone()],
                          [0., 1., 0.],
                          [-sin.clone(), 0., cos.clone()]])
 
 
-def create_rotation_3d_z(sin: Tensor, cos: Tensor) -> Tensor:
-    return torch.tensor([[cos.clone(), -sin.clone(), 0.]
+def create_rotation_3d_2(sin: Tensor, cos: Tensor) -> Tensor:
+    """
+    Create a rotation matrix around the second axis
+
+    Parameters
+    ----------
+    sin: Tensor
+        sin value to use for rotation matrix, [1]
+    cos: Tensor
+        cos value to use for rotation matrix, [1]
+
+    Returns
+    -------
+    Tensor:
+        rotation matrix, [3, 3]
+    """
+    return torch.tensor([[cos.clone(), -sin.clone(), 0.],
                          [sin.clone(), cos.clone(), 0.],
-                         [1., 0., 0.]])
+                         [0., 0., 1.]])
 
 
 def parametrize_matrix(scale: AffineParamType,
@@ -245,37 +326,33 @@ def parametrize_matrix(scale: AffineParamType,
     ----------
     scale : torch.Tensor, int, float
         the scale factor(s). Supported are:
-            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
-            * a single parameter per sample (as a 1d tensor), which will be
+            * a parameter per sample, which will be
                 replicated for all dimensions
-            * a single parameter per dimension (either as 1d tensor or as
-                2d transformation matrix), which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
                 batch samples
+            * a parameter per sampler per dimension
         None will be treated as a scaling factor of 1
     rotation : torch.Tensor, int, float
         the rotation factor(s). Supported are:
-            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
-            * a single parameter per sample (as a 1d tensor), which will be
+            * a parameter per sample, which will be
                 replicated for all dimensions
-            * a single parameter per dimension (either as 1d tensor or as
-                2d transformation matrix), which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
                 batch samples
+            * a parameter per sampler per dimension
         None will be treated as a rotation factor of 1
     translation : torch.Tensor, int, float
         the translation offset(s). Supported are:
-            * a full homogeneous transformation matrix of shape
-                (BATCHSIZE x NDIM+1 x NDIM+1)
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
-            * a single parameter per sample (as a 1d tensor), which will be
+            * a parameter per sample, which will be
                 replicated for all dimensions
-            * a single parameter per dimension (either as 1d tensor or as
-                2d transformation matrix), which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
                 batch samples
+            * a parameter per sampler per dimension
         None will be treated as a translation offset of 0
     batchsize : int
         the number of samples per batch
@@ -294,8 +371,7 @@ def parametrize_matrix(scale: AffineParamType,
     Returns
     -------
     torch.Tensor
-        the transformation matrix (of shape (BATCHSIZE x NDIM x NDIM+1)
-
+        the transformation matrix [BATCHSIZE, NDIM, NDIM+1]
     """
     scale = create_scale(scale, batchsize=batchsize, ndim=ndim,
                          device=device, dtype=dtype)
@@ -304,7 +380,6 @@ def parametrize_matrix(scale: AffineParamType,
 
     translation = create_translation(translation, batchsize=batchsize,
                                      ndim=ndim, device=device, dtype=dtype)
-
     return torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
 
 
@@ -328,37 +403,33 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
         the image dimensionality
     scale : torch.Tensor, int, float
         the scale factor(s). Supported are:
-            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
-            * a single parameter per sample (as a 1d tensor), which will be
+            * a parameter per sample, which will be
                 replicated for all dimensions
-            * a single parameter per dimension (either as 1d tensor or as
-                2d transformation matrix), which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
                 batch samples
+            * a parameter per sampler per dimension
         None will be treated as a scaling factor of 1
     rotation : torch.Tensor, int, float
         the rotation factor(s). Supported are:
-            * a full transformation matrix of shape (BATCHSIZE x NDIM x NDIM)
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
-            * a single parameter per sample (as a 1d tensor), which will be
+            * a parameter per sample, which will be
                 replicated for all dimensions
-            * a single parameter per dimension (either as 1d tensor or as
-                2d transformation matrix), which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
                 batch samples
+            * a parameter per sampler per dimension
         None will be treated as a rotation factor of 1
     translation : torch.Tensor, int, float
         the translation offset(s). Supported are:
-            * a full homogeneous transformation matrix of shape
-                (BATCHSIZE x NDIM+1 x NDIM+1)
             * a single parameter (as float or int), which will be replicated
                 for all dimensions and batch samples
-            * a single parameter per sample (as a 1d tensor), which will be
+            * a parameter per sample, which will be
                 replicated for all dimensions
-            * a single parameter per dimension (either as 1d tensor or as
-                2d transformation matrix), which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
                 batch samples
+            * a parameter per sampler per dimension
         None will be treated as a translation offset of 0
     matrix : torch.Tensor
         the transformation matrix. If other than None: overwrites separate
@@ -379,24 +450,18 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
 
     """
     if matrix is None:
-        matrix = parametrize_matrix(scale=scale, rotation=rotation,
-                                    translation=translation,
-                                    batchsize=batchsize,
-                                    ndim=ndim,
-                                    degree=degree,
-                                    device=device,
-                                    dtype=dtype)
-
+        matrix = parametrize_matrix(
+            scale=scale, rotation=rotation, translation=translation,
+            batchsize=batchsize, ndim=ndim, degree=degree,
+            device=device, dtype=dtype)
     else:
         if not torch.is_tensor(matrix):
             matrix = torch.tensor(matrix)
-
         matrix = matrix.to(dtype=dtype, device=device)
 
     # batch dimension missing -> Replicate for each sample in batch
     if len(matrix.shape) == 2:
         matrix = matrix[None].expand(batchsize, -1, -1).clone()
-
     if matrix.shape == (batchsize, ndim, ndim + 1):
         return matrix
     elif matrix.shape == (batchsize, ndim + 1, ndim + 1):
@@ -425,7 +490,6 @@ def affine_point_transform(point_batch: torch.Tensor,
     -------
     torch.Tensor
         the batch of transformed points in cartesian coordinates)
-
     """
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
@@ -447,9 +511,9 @@ def affine_image_transform(image_batch: torch.Tensor,
     Parameters
     ----------
     image_batch : torch.Tensor
-        the batch to transform. Should have shape of N x C x (D x) H x W
+        the batch to transform. Should have shape of [N, C, dims]
     matrix_batch : torch.Tensor
-        a batch of affine matrices with shape N x NDIM-1 x NDIM
+        a batch of affine matrices with shape [N, NDIM, NDIM+1]
     output_size : Iterable
         if given, this will be the resulting image size. Defaults to ``None``
     adjust_size : bool
@@ -486,11 +550,10 @@ def affine_image_transform(image_batch: torch.Tensor,
     If None of them is set, the resulting image will have the same size as the
     input image
     """
-
     # add batch dimension if necessary
     if len(matrix_batch.shape) < 3:
-        matrix_batch = matrix_batch[None, ...].expand(image_batch.size(0),
-                                                      -1, -1).clone()
+        matrix_batch = matrix_batch[None, ...].expand(
+            image_batch.size(0), -1, -1).clone()
 
     image_size = image_batch.shape[2:]
 
@@ -501,9 +564,7 @@ def affine_image_transform(image_batch: torch.Tensor,
         if adjust_size:
             warnings.warn("Adjust size is mutually exclusive with a "
                           "given output size.", UserWarning)
-
         new_size = output_size
-
     elif adjust_size:
         new_size = tuple([int(tmp.item())
                           for tmp in _check_new_img_size(image_size,
@@ -539,7 +600,7 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
         the size of the current image. If int, it will be used as size for
         all image dimensions
     matrix : torch.Tensor
-        a batch of affine matrices with shape N x NDIM x NDIM + 1
+        a batch of affine matrices with shape [N, NDIM, NDIM+1]
     zero_border : bool
         whether or not to have a fixed image border at zero
 

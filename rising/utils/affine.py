@@ -34,7 +34,7 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
     Parameters
     ----------
     batch : torch.Tensor
-        the batch of matrices to convert
+        the batch of matrices to convert [N, dim, dim]
 
     Returns
     -------
@@ -46,10 +46,9 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
         missing = batch.new_zeros(size=(*batch.shape[:-1], 1))
         batch = torch.cat([batch, missing], dim=-1)
 
-    missing = torch.zeros((batch.size(0),
-                           *[1 for tmp in batch.shape[1:-1]],
-                           batch.size(-1)),
-                          device=batch.device, dtype=batch.dtype)
+    missing = torch.zeros(
+        (batch.size(0), *[1 for tmp in batch.shape[1:-1]], batch.size(-1)),
+        device=batch.device, dtype=batch.dtype)
 
     missing[..., -1] = 1
 

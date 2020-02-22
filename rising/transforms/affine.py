@@ -39,45 +39,39 @@ class Affine(BaseTransform):
         ----------
         scale : torch.Tensor, int, float, optional
             the scale factor(s). Supported are:
-                * a full transformation matrix of shape
-                    (BATCHSIZE x NDIM x NDIM)
-                * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
-                * a single parameter per sample (as a 1d tensor), which will
-                    be replicated for all dimensions
-                * a single parameter per dimension (either as 1d tensor or as
-                    2d transformation matrix), which will be replicated for
-                    all batch samples
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
             None will be treated as a scaling factor of 1
         rotation : torch.Tensor, int, float, optional
             the rotation factor(s). Supported are:
-                * a full transformation matrix of shape
-                    (BATCHSIZE x NDIM x NDIM)
-                * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
-                * a single parameter per sample (as a 1d tensor), which will
-                    be replicated for all dimensions
-                * a single parameter per dimension (either as 1d tensor or as
-                    2d transformation matrix), which will be replicated for
-                    all batch samples
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
             None will be treated as a rotation factor of 1
         translation : torch.Tensor, int, float
             the translation offset(s). Supported are:
-                * a full homogeneous transformation matrix of shape
-                    (BATCHSIZE x NDIM+1 x NDIM+1)
-                * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
-                * a single parameter per sample (as a 1d tensor), which will
-                    be replicated for all dimensions
-                * a single parameter per dimension (either as 1d tensor or as
-                    2d transformation matrix), which will be replicated for
-                    all batch samples
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
             None will be treated as a translation offset of 0
         matrix : torch.Tensor, optional
             if given, overwrites the parameters for :param:`scale`,
             :param:rotation` and :param:`translation`.
-            Should be a matrix o shape (BATCHSIZE,) NDIM, NDIM+1.
-            This matrix represents the whole homogeneous transformation matrix
+            Should be a matrix of shape [(BATCHSIZE,) NDIM, NDIM(+1)]
+            This matrix represents the whole transformation matrix
         keys: Sequence
             keys which should be augmented
         grad: bool
@@ -144,7 +138,6 @@ class Affine(BaseTransform):
             the (batched) transformation matrix
 
         """
-
         batchsize = data[self.keys[0]].shape[0]
         ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
         device = data[self.keys[0]].device
@@ -487,8 +480,8 @@ class Scale(Affine):
 class StackedAffine(Affine):
     def __init__(
             self,
-            *transforms: Union[Affine, Sequence[Union[Sequence[Affine],
-                                                      Affine]]],
+            *transforms: Union[Affine, Sequence[
+                Union[Sequence[Affine], Affine]]],
             keys: Sequence = ('data',),
             grad: bool = False,
             output_size: tuple = None,
