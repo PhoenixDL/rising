@@ -1,10 +1,12 @@
+import torch
+from typing import Sequence, Union, Iterable
+
 from rising.transforms.abstract import BaseTransform
 from rising.transforms.functional.affine import affine_image_transform, \
     AffineParamType, assemble_matrix_if_necessary
 from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 from rising.utils.checktype import check_scalar
-import torch
-from typing import Sequence, Union, Iterable
+
 
 __all__ = [
     'Affine',
@@ -48,7 +50,8 @@ class Affine(BaseTransform):
                 * a parameter per sampler per dimension
             None will be treated as a scaling factor of 1
         rotation : torch.Tensor, int, float, optional
-            the rotation factor(s). Supported are:
+            the rotation factor(s). The rotation is performed in
+             consecutive order axis0 -> axis1 (-> axis 2). Supported are:
                 * a single parameter (as float or int), which will be replicated
                     for all dimensions and batch samples
                 * a parameter per sample, which will be
@@ -58,7 +61,8 @@ class Affine(BaseTransform):
                 * a parameter per sampler per dimension
             None will be treated as a rotation factor of 1
         translation : torch.Tensor, int, float
-            the translation offset(s). Supported are:
+            the translation offset(s) relative to image (should be in the
+            range [0, 1]). Supported are:
                 * a single parameter (as float or int), which will be replicated
                     for all dimensions and batch samples
                 * a parameter per sample, which will be
@@ -136,7 +140,6 @@ class Affine(BaseTransform):
         -------
         torch.Tensor
             the (batched) transformation matrix
-
         """
         batchsize = data[self.keys[0]].shape[0]
         ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
@@ -163,7 +166,6 @@ class Affine(BaseTransform):
         -------
         dict
             dictionary containing the transformed data
-
         """
         matrix = self.assemble_matrix(**data)
 
@@ -194,7 +196,6 @@ class Affine(BaseTransform):
         -------
         StackedAffine
             a stacked affine transformation
-
         """
         if not isinstance(other, Affine):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
@@ -226,7 +227,6 @@ class Affine(BaseTransform):
         -------
         StackedAffine
             a stacked affine transformation
-
         """
         if not isinstance(other, Affine):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
@@ -267,15 +267,13 @@ class Rotate(Affine):
         ----------
         rotation : torch.Tensor, int, float, optional
             the rotation factor(s). Supported are:
-                * a full transformation matrix of shape
-                    (BATCHSIZE x NDIM x NDIM)
-                * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
-                * a single parameter per sample (as a 1d tensor), which will
-                    be replicated for all dimensions
-                * a single parameter per dimension (either as 1d tensor or as
-                    2d transformation matrix), which will be replicated for
-                    all batch samples
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
             None will be treated as a rotation factor of 1
         keys: Sequence
             keys which should be augmented
@@ -305,11 +303,6 @@ class Rotate(Affine):
             making the sampling more resolution agnostic.
         **kwargs :
                     additional keyword arguments passed to the affine transform
-
-        Warnings
-        --------
-        This transform is not applied around the image center
-
         """
         super().__init__(scale=None,
                          rotation=rotation,
@@ -336,6 +329,7 @@ class Translate(Affine):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
+                 unit: str = 'relative',
                  **kwargs):
         """
         Class Performing an Translation-Only
@@ -347,15 +341,13 @@ class Translate(Affine):
         ----------
         translation : torch.Tensor, int, float
             the translation offset(s). Supported are:
-                * a full homogeneous transformation matrix of shape
-                    (BATCHSIZE x NDIM+1 x NDIM+1)
-                * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
-                * a single parameter per sample (as a 1d tensor), which will
-                    be replicated for all dimensions
-                * a single parameter per dimension (either as 1d tensor or as
-                    2d transformation matrix), which will be replicated for
-                    all batch samples
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
             None will be treated as a translation offset of 0
         keys: Sequence
             keys which should be augmented
@@ -370,7 +362,7 @@ class Translate(Affine):
         interpolation_mode : str
             interpolation mode to calculate output values
             'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
+        padding_mode : str
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
         align_corners : Geometrically, we consider the pixels of the input as
@@ -379,9 +371,13 @@ class Translate(Affine):
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        unit: str
+            defines the unit of the translation parameter.
+            'pixel': define number of pixels to translate | 'relative':
+            translation should be in the range [0, 1] and is scaled
+            with the image size
         **kwargs :
             additional keyword arguments passed to the affine transform
-
         """
         super().__init__(scale=None,
                          rotation=None,
@@ -396,6 +392,29 @@ class Translate(Affine):
                          padding_mode=padding_mode,
                          align_corners=align_corners,
                          **kwargs)
+        self.unit = unit
+
+    def assemble_matrix(self, **data) -> torch.Tensor:
+        """
+        Assembles the matrix (and takes care of batching and having it on the
+        right device and in the correct dtype and dimensionality).
+
+        Parameters
+        ----------
+        **data :
+            the data to be transformed. Will be used to determine batchsize,
+            dimensionality, dtype and device
+
+        Returns
+        -------
+        torch.Tensor
+            the (batched) transformation matrix [N, NDIM, NDIM]
+        """
+        matrix = super().assemble_matrix(**data)
+        if self.unit.lower() == 'pixel':
+            img_size = torch.tensor(data[self.keys[0]].shape[2:]).to(matrix)
+            matrix[..., -1] = matrix[..., -1] / img_size
+        return matrix
 
 
 class Scale(Affine):
@@ -419,15 +438,13 @@ class Scale(Affine):
         ----------
         scale : torch.Tensor, int, float, optional
             the scale factor(s). Supported are:
-                * a full transformation matrix of shape
-                    (BATCHSIZE x NDIM x NDIM)
-                * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
-                * a single parameter per sample (as a 1d tensor), which will
-                    be replicated for all dimensions
-                * a single parameter per dimension (either as 1d tensor or as
-                    2d transformation matrix), which will be replicated for
-                    all batch samples
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
             None will be treated as a scaling factor of 1
         keys: Sequence
             keys which should be augmented

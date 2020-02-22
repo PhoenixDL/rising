@@ -482,9 +482,11 @@ def affine_point_transform(point_batch: torch.Tensor,
     Parameters
     ----------
     point_batch : torch.Tensor
-        a point batch of shape BATCHSIZE x NUM_POINTS x NDIM
+        a point batch of shape [N, NP, NDIM] NP is the number of points,
+            N is the batch size, NDIM is the number of spatial dimensions
     matrix_batch : torch.Tensor
-        a batch of affine matrices with shape N x NDIM-1 x NDIM
+        a batch of affine matrices with shape [N, NDIM, NDIM + 1],
+            N is the batch size and NDIM is the number of spatial dimensions
 
     Returns
     -------
@@ -511,7 +513,7 @@ def affine_image_transform(image_batch: torch.Tensor,
     Parameters
     ----------
     image_batch : torch.Tensor
-        the batch to transform. Should have shape of [N, C, dims]
+        the batch to transform. Should have shape of [N, C, NDIM]
     matrix_batch : torch.Tensor
         a batch of affine matrices with shape [N, NDIM, NDIM+1]
     output_size : Iterable
