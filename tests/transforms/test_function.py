@@ -27,7 +27,7 @@ class TestLambdaTransforms(unittest.TestCase):
         result = trafo(**{'abc': 4, 'hjk': 4})
         self.assertDictEqual(result, {'abc': 9, 'def': None, 'hjk': 4})
 
-        trafo = LambdaKeyTransform(lambda x,y: y + 5 if y is not None else None,
+        trafo = LambdaKeyTransform(lambda x, y: y + 5 if y is not None else None,
                                    keys=['abc', 'def'])
         result = trafo(**{'abc': 4, 'hjk': 4})
         self.assertDictEqual(result, {'abc': 9, 'def': None, 'hjk': 4})
