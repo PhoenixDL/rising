@@ -92,7 +92,8 @@ def create_scale(scale: AffineParamType,
     Returns
     -------
     torch.Tensor
-        the homogeneous transformation matrix
+        the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
+        the batch size and NDIM is the number of spatial dimensions
     """
     if scale is None:
         scale = 1
@@ -139,7 +140,8 @@ def create_translation(offset: AffineParamType,
     Returns
     -------
     torch.Tensor
-        the homogeneous transformation matrix
+        the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
+        the batch size and NDIM is the number of spatial dimensions
 
     """
     if offset is None:
@@ -189,7 +191,8 @@ def create_rotation(rotation: AffineParamType,
     Returns
     -------
     torch.Tensor
-        the homogeneous transformation matrix
+        the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
+        the batch size and NDIM is the number of spatial dimensions
 
     """
     if rotation is None:
@@ -371,7 +374,8 @@ def parametrize_matrix(scale: AffineParamType,
     Returns
     -------
     torch.Tensor
-        the transformation matrix [BATCHSIZE, NDIM, NDIM+1]
+        the transformation matrix [N, NDIM, NDIM+1], N is
+        the batch size and NDIM is the number of spatial dimensions
     """
     scale = create_scale(scale, batchsize=batchsize, ndim=ndim,
                          device=device, dtype=dtype)
@@ -446,7 +450,8 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
     Returns
     -------
     torch.Tensor
-        the assembled transformation matrix
+        the assembled transformation matrix [N, NDIM, NDIM+1], N is
+        the batch size and NDIM is the number of spatial dimensions
 
     """
     if matrix is None:
@@ -492,6 +497,8 @@ def affine_point_transform(point_batch: torch.Tensor,
     -------
     torch.Tensor
         the batch of transformed points in cartesian coordinates)
+        [N, NP, NDIM] NP is the number of points, N is the batch size,
+        NDIM is the number of spatial dimensions
     """
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
