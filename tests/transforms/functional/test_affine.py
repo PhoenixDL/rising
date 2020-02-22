@@ -43,7 +43,8 @@ class AffineTestCase(unittest.TestCase):
                 affine = matrix_to_homogeneous(
                     parametrize_matrix(scale=scale, rotation=rot,
                                        translation=tran, degree=True,
-                                       batchsize=1, ndim=ndim, dtype=torch.float))
+                                       batchsize=1, ndim=ndim, dtype=torch.float,
+                                       image_transform=False))
 
                 edge_pts = torch.tensor(edge_pts, dtype=torch.float)
                 img = img.to(torch.float)
@@ -78,7 +79,8 @@ class AffineTestCase(unittest.TestCase):
                                rotation=[0, 0, 90],
                                degree=True, batchsize=1,
                                ndim=3, dtype=torch.float,
-                               device='cpu')
+                               device='cpu',
+                               image_transform=False)
         ]
         expected = [
             [[0, 5], [1, 0]],
@@ -160,7 +162,7 @@ class AffineTestCase(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                res = create_scale(**inp).to(exp.dtype)
+                res = create_scale(**inp, image_transform=False).to(exp.dtype)
                 self.assertTrue(torch.allclose(res, exp, atol=1e-6))
 
         with self.assertRaises(ValueError):
@@ -205,7 +207,7 @@ class AffineTestCase(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                res = create_translation(**inp).to(exp.dtype)
+                res = create_translation(**inp, image_transform=False).to(exp.dtype)
                 self.assertTrue(torch.allclose(res, exp, atol=1e-6))
 
         with self.assertRaises(ValueError):
@@ -287,7 +289,7 @@ class AffineTestCase(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                res = parametrize_matrix(**inp).to(exp.dtype)
+                res = parametrize_matrix(**inp, image_transform=False).to(exp.dtype)
                 self.assertTrue(torch.allclose(res, matrix_to_cartesian(exp), atol=1e-6))
 
     def test_necessary_assembly(self):
@@ -315,7 +317,8 @@ class AffineTestCase(unittest.TestCase):
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
                 res = assemble_matrix_if_necessary(**inp, degree=False,
-                                                   device='cpu', scale=None, rotation=None).to(exp.dtype)
+                                                   device='cpu', scale=None, rotation=None,
+                                                   image_transform=False).to(exp.dtype)
                 self.assertTrue(torch.allclose(res, exp, atol=1e-6))
 
         with self.assertRaises(ValueError):

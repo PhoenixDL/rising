@@ -63,7 +63,8 @@ def expand_scalar_param(param: AffineParamType, batchsize: int, ndim: int) -> Te
 def create_scale(scale: AffineParamType,
                  batchsize: int, ndim: int,
                  device: Union[torch.device, str] = None,
-                 dtype: Union[torch.dtype, str] = None) -> torch.Tensor:
+                 dtype: Union[torch.dtype, str] = None,
+                 image_transform: bool = True) -> torch.Tensor:
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -88,6 +89,10 @@ def create_scale(scale: AffineParamType,
         device
     dtype : torch.dtype, str, optional
         the dtype of the resulting trensor. Defaults to the default dtype
+    image_transform: bool
+        inverts the scale matrix to match expected behavior when applied to
+        an image, e.g. scale>1 increases the size of an image but decrease
+        the size of an grid
 
     Returns
     -------
@@ -100,6 +105,8 @@ def create_scale(scale: AffineParamType,
 
     scale = expand_scalar_param(scale, batchsize, ndim).to(
         device=device, dtype=dtype)
+    if image_transform:
+        scale = 1 / scale
     scale_matrix = torch.stack(
         [eye * s for eye, s in zip(get_batched_eye(
             batchsize=batchsize, ndim=ndim, device=device, dtype=dtype), scale)])
@@ -109,8 +116,8 @@ def create_scale(scale: AffineParamType,
 def create_translation(offset: AffineParamType,
                        batchsize: int, ndim: int,
                        device: Union[torch.device, str] = None,
-                       dtype: Union[torch.dtype, str] = None
-                       ) -> torch.Tensor:
+                       dtype: Union[torch.dtype, str] = None,
+                       image_transform: bool = True) -> torch.Tensor:
     """
     Formats the given translation parameters to a homogeneous transformation
     matrix
@@ -136,13 +143,16 @@ def create_translation(offset: AffineParamType,
         device
     dtype : torch.dtype, str, optional
         the dtype of the resulting trensor. Defaults to the default dtype
+    image_transform: bool
+        inverts the translation matrix to match expected behavior when applied
+        to an image, e.g. translation > 0 should move the image in the
+        positive direction of an axis but the grid in the negative direction
 
     Returns
     -------
     torch.Tensor
         the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
         the batch size and NDIM is the number of spatial dimensions
-
     """
     if offset is None:
         offset = 0
@@ -151,6 +161,8 @@ def create_translation(offset: AffineParamType,
     eye_batch = get_batched_eye(batchsize=batchsize, ndim=ndim, device=device, dtype=dtype)
     translation_matrix = torch.stack([torch.cat([eye, o.view(-1, 1)], dim=1)
                                       for eye, o in zip(eye_batch, offset)])
+    if image_transform:
+        translation_matrix[..., -1] = -translation_matrix[..., -1]
     return matrix_to_homogeneous(translation_matrix)
 
 
@@ -321,7 +333,9 @@ def parametrize_matrix(scale: AffineParamType,
                        batchsize: int, ndim: int,
                        degree: bool = False,
                        device: Union[torch.device, str] = None,
-                       dtype: Union[torch.dtype, str] = None) -> torch.Tensor:
+                       dtype: Union[torch.dtype, str] = None,
+                       image_transform: bool = True,
+                       ) -> torch.Tensor:
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -370,6 +384,10 @@ def parametrize_matrix(scale: AffineParamType,
         device
     dtype : torch.dtype, str, optional
         the dtype of the resulting trensor. Defaults to the default dtype
+    image_transform: bool
+        adjusts transformation matrices such that they match the expected
+        behavior on images (see :func:`create_scale` and
+        :func:`create_translation` for more info)
 
     Returns
     -------
@@ -378,12 +396,13 @@ def parametrize_matrix(scale: AffineParamType,
         the batch size and NDIM is the number of spatial dimensions
     """
     scale = create_scale(scale, batchsize=batchsize, ndim=ndim,
-                         device=device, dtype=dtype)
+                         device=device, dtype=dtype,
+                         image_transform=image_transform)
     rotation = create_rotation(rotation, batchsize=batchsize, ndim=ndim,
                                degree=degree, device=device, dtype=dtype)
-
     translation = create_translation(translation, batchsize=batchsize,
-                                     ndim=ndim, device=device, dtype=dtype)
+                                     ndim=ndim, device=device, dtype=dtype,
+                                     image_transform=image_transform)
     return torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
 
 
@@ -394,7 +413,8 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
                                  matrix: torch.Tensor,
                                  degree: bool,
                                  device: Union[torch.device, str],
-                                 dtype: Union[torch.dtype, str]
+                                 dtype: Union[torch.dtype, str],
+                                 image_transform: bool = True,
                                  ) -> torch.Tensor:
     """
     Assembles a matrix, if the matrix is not already given
@@ -446,6 +466,10 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
         the device, the matrix should be put on
     dtype : str, torch.dtype
         the datatype, the matrix should have
+    image_transform: bool
+        adjusts transformation matrices such that they match the expected
+        behavior on images (see :func:`create_scale` and
+        :func:`create_translation` for more info)
 
     Returns
     -------
@@ -458,7 +482,7 @@ def assemble_matrix_if_necessary(batchsize: int, ndim: int,
         matrix = parametrize_matrix(
             scale=scale, rotation=rotation, translation=translation,
             batchsize=batchsize, ndim=ndim, degree=degree,
-            device=device, dtype=dtype)
+            device=device, dtype=dtype, image_transform=image_transform)
     else:
         if not torch.is_tensor(matrix):
             matrix = torch.tensor(matrix)

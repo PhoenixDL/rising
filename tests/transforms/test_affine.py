@@ -81,13 +81,13 @@ class AffineTestCase(unittest.TestCase):
         sample = {'data': torch.rand(1, 3, 25, 30)}
 
         trafos = [
-            Scale([2, 3], adjust_size=True),
+            Scale([5, 3], adjust_size=True),
             Resize([50, 90]),
             Rotate([90], adjust_size=True, degree=True),
         ]
 
         expected_sizes = [
-            (50, 90),
+            (5, 10),
             (50, 90),
             (30, 25),
         ]
@@ -101,9 +101,9 @@ class AffineTestCase(unittest.TestCase):
     def test_translation_assemble_matrix_with_pixel(self):
         trafo = Translate([1, 10, 100], unit='pixel')
         sample = {'data': torch.rand(3, 3, 100, 100)}
-        expected = torch.tensor([[1., 0., 0.01], [0., 1., 0.01],
-                                 [1., 0., 0.1], [0., 1., 0.1],
-                                 [1., 0., 1.], [0., 1., 1.]])
+        expected = torch.tensor([[1., 0., -0.01], [0., 1., -0.01],
+                                 [1., 0., -0.1], [0., 1., -0.1],
+                                 [1., 0., -1.], [0., 1., -1.]])
 
         trafo.assemble_matrix(**sample)
         self.assertTrue(expected.allclose(expected))
