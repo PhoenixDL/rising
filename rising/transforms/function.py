@@ -6,6 +6,7 @@ __all__ = [
     'LambdaTransform'
 ]
 
+
 class LambdaTransform(AbstractTransform):
     def __init__(self, trafo_fn: Callable, grad: bool = False):
         """
