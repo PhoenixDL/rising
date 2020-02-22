@@ -1,6 +1,10 @@
 from rising.transforms.abstract import AbstractTransform
 from typing import Callable, Sequence
 
+__all__ = [
+    'LambdaKeyTransform',
+    'LambdaTransform'
+]
 
 class LambdaTransform(AbstractTransform):
     def __init__(self, trafo_fn: Callable, grad: bool = False):
