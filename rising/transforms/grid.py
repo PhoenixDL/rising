@@ -110,7 +110,7 @@ class CenterCropGrid(GridTransform):
         self.size = size
 
     def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
-        return {key: center_crop(item, size=self.size, exclude_last=True)
+        return {key: center_crop(item, size=self.size, grid_crop=True)
                 for key, item in grid.items()}
 
 
@@ -131,7 +131,7 @@ class RandomCropGrid(GridTransform):
         self.dist = dist
 
     def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
-        return {key: random_crop(item, size=self.size, dist=self.dist, exclude_last=True)
+        return {key: random_crop(item, size=self.size, dist=self.dist, grid_crop=True)
                 for key, item in grid.items()}
 
 
@@ -179,6 +179,13 @@ class RadialDistortion(GridTransform):
 
 
 def radial_distortion_grid(grid: Tensor, scale: float) -> Tensor:
+    # spatial_shape = grid.shape[1:-1]
+    # new_grid = torch.stack([torch.meshgrid(
+    #     *[torch.linspace(-1, 1, i) for i in spatial_shape])], dim=-1).to(grid)
+    # print(new_grid.shape)
+    #
+    # distortion =
+
     dist = torch.norm(grid, 2, dim=-1, keepdim=True)
     dist = dist / dist.max()
     distortion = (scale[0] * dist.pow(3) + scale[1] * dist.pow(2) + scale[2] * dist) / 3
