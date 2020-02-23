@@ -7,9 +7,11 @@ from torch import Tensor
 
 from rising.transforms import AbstractTransform
 from rising.utils.affine import get_batched_eye, matrix_to_homogeneous
+from rising.transforms.functional import center_crop, random_crop, add_noise
 
 
-__all__ = ["GridTransform", "StackedGridTransform"]
+__all__ = ["GridTransform", "StackedGridTransform",
+           "CenterCropGrid", "RandomCropGrid", "RandomDistortion", "RadialDistortion"]
 
 
 class GridTransform(AbstractTransform):
@@ -42,8 +44,7 @@ class GridTransform(AbstractTransform):
 
             data[key] = torch.nn.functional.grid_sample(
                 data[key], _grid, mode=self.interpolation_mode,
-                padding_mode=self.padding_mode, align_corners=self.align_corners,
-                **self.kwargs)
+                padding_mode=self.padding_mode, align_corners=self.align_corners)
         self.grid = None
         return data
 
@@ -61,7 +62,7 @@ class GridTransform(AbstractTransform):
         for size in input_size:
             if tuple(size) not in grid:
                 grid[tuple(size)] = torch.nn.functional.affine_grid(
-                    matrix, size=input_size, align_corners=self.align_corners)
+                    matrix, size=size, align_corners=self.align_corners)
         return grid
 
     def __add__(self, other):
@@ -92,3 +93,95 @@ class StackedGridTransform(GridTransform):
         for transform in self.transforms:
             grid = transform.augment_grid(grid)
         return grid
+
+
+class CenterCropGrid(GridTransform):
+    def __init__(self,
+                 size: Union[int, Sequence[int]],
+                 keys: Sequence[str] = ('data',),
+                 interpolation_mode: str = 'bilinear',
+                 padding_mode: str = 'zeros',
+                 align_corners: bool = False,
+                 grad: bool = False,
+                 **kwargs,):
+        super().__init__(keys=keys, interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode, align_corners=align_corners,
+                         grad=grad, **kwargs)
+        self.size = size
+
+    def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
+        return {key: center_crop(item, size=self.size, exclude_last=True)
+                for key, item in grid.items()}
+
+
+class RandomCropGrid(GridTransform):
+    def __init__(self,
+                 size: Union[int, Sequence[int]],
+                 dist: Union[int, Sequence[int]] = 0,
+                 keys: Sequence[str] = ('data',),
+                 interpolation_mode: str = 'bilinear',
+                 padding_mode: str = 'zeros',
+                 align_corners: bool = False,
+                 grad: bool = False,
+                 **kwargs,):
+        super().__init__(keys=keys, interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode, align_corners=align_corners,
+                         grad=grad, **kwargs)
+        self.size = size
+        self.dist = dist
+
+    def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
+        return {key: random_crop(item, size=self.size, dist=self.dist, exclude_last=True)
+                for key, item in grid.items()}
+
+
+class RandomDistortion(GridTransform):
+    def __init__(self,
+                 noise_type: str,
+                 noise_kwargs: dict = None,
+                 keys: Sequence[str] = ('data',),
+                 interpolation_mode: str = 'bilinear',
+                 padding_mode: str = 'zeros',
+                 align_corners: bool = False,
+                 grad: bool = False,
+                 **kwargs,):
+        super().__init__(keys=keys, interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode, align_corners=align_corners,
+                         grad=grad, **kwargs)
+        self.noise_type = noise_type
+        self.noise_kwargs = noise_kwargs if noise_kwargs is not None else {}
+
+    def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
+        return {key: add_noise(item, noise_type=self.noise_type, **self.noise_kwargs)
+                for key, item in grid.items()}
+
+
+class RadialDistortion(GridTransform):
+    def __init__(self,
+                 scale: float,
+                 keys: Sequence[str] = ('data',),
+                 interpolation_mode: str = 'bilinear',
+                 padding_mode: str = 'zeros',
+                 align_corners: bool = False,
+                 grad: bool = False,
+                 **kwargs,):
+        super().__init__(keys=keys, interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode, align_corners=align_corners,
+                         grad=grad, **kwargs)
+        self.scale = scale
+
+    def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
+
+        new_grid = {key: radial_distortion_grid(item, scale=self.scale)
+                    for key, item in grid.items()}
+        print(new_grid)
+        return new_grid
+
+
+def radial_distortion_grid(grid: Tensor, scale: float) -> Tensor:
+    dist = torch.norm(grid, 2, dim=-1, keepdim=True)
+    dist = dist / dist.max()
+    distortion = (scale[0] * dist.pow(3) + scale[1] * dist.pow(2) + scale[2] * dist) / 3
+    print(distortion.max())
+    print(distortion.min())
+    return grid * (1 - distortion)

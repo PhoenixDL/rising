@@ -7,7 +7,8 @@ from rising.utils import check_scalar
 __all__ = ["crop", "center_crop", "random_crop"]
 
 
-def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):
+def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int],
+         exclude_last: bool = False):
     """
     Extract crop from last dimensions of data
 
@@ -19,6 +20,9 @@ def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):
         top left corner point
     size: Sequence[int]
         size of patch
+    exclude_last: bool
+        exclude last dimension from cropping (this is used to crop grids
+        from :class:`GridTransform`
 
     Returns
     -------
@@ -26,15 +30,20 @@ def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):
         cropped data
     """
     _slices = []
-    if len(corner) < data.ndim:
-        for i in range(data.ndim - len(corner)):
+    ndim = data.ndimension() - int(bool(exclude_last))
+    if len(corner) < ndim:
+        for i in range(ndim - len(corner)):
             _slices.append(slice(0, data.shape[i]))
 
     _slices = _slices + [slice(c, c + s) for c, s in zip(corner, size)]
+    if exclude_last:
+        _slices.append(_slices.append(slice(0, data.shape[-1])))
+    print(_slices)
     return data[_slices]
 
 
-def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]]) -> torch.Tensor:
+def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
+                exclude_last: bool = False) -> torch.Tensor:
     """
     Crop patch from center
 
@@ -44,6 +53,9 @@ def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]]) -> torch.Te
         input tensor
     size: Union[int, Sequence[int]]
         size of patch
+    exclude_last: bool
+        exclude last dimension from cropping (this is used to crop grids
+        from :class:`GridTransform`
 
     Returns
     -------
@@ -55,12 +67,19 @@ def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]]) -> torch.Te
     if not isinstance(size[0], int):
         size = [int(s) for s in size]
 
-    corner = [int(round((img_dim - crop_dim) / 2.)) for img_dim, crop_dim in zip(data.shape[2:], size)]
+    if exclude_last:
+        size = size[:-1]
+        data_shape = data.shape[2:-1]
+    else:
+        data_shape = data.shape[2:]
+
+    corner = [int(round((img_dim - crop_dim) / 2.)) for img_dim, crop_dim in zip(data_shape, size)]
     return crop(data, corner, size)
 
 
 def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
-                dist: Union[int, Sequence[int]] = 0) -> torch.Tensor:
+                dist: Union[int, Sequence[int]] = 0,
+                exclude_last: bool = False) -> torch.Tensor:
     """
     Crop random patch/volume from input tensor
 
@@ -72,6 +91,9 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
         size of patch/volume
     dist: Union[int, Sequence[int]]
         minimum distance to border. By default zero
+    exclude_last: bool
+        exclude last dimension from cropping (this is used to crop grids
+        from :class:`GridTransform`
 
     Returns
     -------
@@ -85,9 +107,15 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
     if not isinstance(size[0], int):
         size = [int(s) for s in size]
 
-    if any([crop_dim + dist_dim >= img_dim for img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)]):
+    if exclude_last:
+        size = size[:-1]
+        data_shape = data.shape[2:-1]
+    else:
+        data_shape = data.shape[2:]
+
+    if any([crop_dim + dist_dim >= img_dim for img_dim, crop_dim, dist_dim in zip(data_shape, size, dist)]):
         raise TypeError(f"Crop can not be realized with given size {size} and dist {dist}.")
 
     corner = [random.randrange(0, img_dim - crop_dim - dist_dim) for
-              img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)]
+              img_dim, crop_dim, dist_dim in zip(data_shape, size, dist)]
     return crop(data, corner, size)

@@ -9,3 +9,4 @@ from rising.transforms.spatial import *
 from rising.transforms.utility import *
 from rising.transforms.tensor import *
 from rising.transforms.affine import *
+from rising.transforms.grid import *
