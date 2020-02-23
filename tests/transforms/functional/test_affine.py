@@ -2,7 +2,7 @@ import unittest
 import torch
 from rising.transforms.functional.affine import _check_new_img_size, \
     affine_point_transform, affine_image_transform, parametrize_matrix, \
-    create_rotation, create_translation, create_scale, assemble_matrix_if_necessary
+    create_rotation, create_translation, create_scale
 from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 
 
@@ -291,41 +291,6 @@ class AffineTestCase(unittest.TestCase):
             with self.subTest(input=inp, expected=exp):
                 res = parametrize_matrix(**inp, image_transform=False).to(exp.dtype)
                 self.assertTrue(torch.allclose(res, matrix_to_cartesian(exp), atol=1e-6))
-
-    def test_necessary_assembly(self):
-        inputs = [
-            {'matrix': None, 'translation': [2, 3], 'ndim':2, 'batchsize': 3,
-             'dtype': torch.float},
-            {'matrix': [[1., 0., 4.], [0., 1., 5.], [0., 0., 1.]], 'translation': [2, 3], 'ndim': 2, 'batchsize': 3,
-             'dtype': torch.float},
-            {'matrix': [[1., 0., 4.], [0., 1., 5.]], 'translation': [2, 3], 'ndim': 2, 'batchsize': 3,
-             'dtype': torch.float}
-
-        ]
-        expectations = [
-            torch.tensor([[[1., 0., 2.], [0., 1., 3.]],
-                          [[1., 0., 2.], [0., 1., 3.]],
-                          [[1., 0., 2.], [0., 1., 3.]]]),
-            torch.tensor([[[1., 0., 4.], [0., 1., 5.]],
-                          [[1., 0., 4.], [0., 1., 5.]],
-                          [[1., 0., 4.], [0., 1., 5.]]]),
-            torch.tensor([[[1., 0., 4.], [0., 1., 5.]],
-                          [[1., 0., 4.], [0., 1., 5.]],
-                          [[1., 0., 4.], [0., 1., 5.]]])
-        ]
-
-        for inp, exp in zip(inputs, expectations):
-            with self.subTest(input=inp, expected=exp):
-                res = assemble_matrix_if_necessary(**inp, degree=False,
-                                                   device='cpu', scale=None, rotation=None,
-                                                   image_transform=False).to(exp.dtype)
-                self.assertTrue(torch.allclose(res, exp, atol=1e-6))
-
-        with self.assertRaises(ValueError):
-            assemble_matrix_if_necessary(matrix=[1, 2, 3, 4, 5], scale=None,
-                                         rotation=None, translation=None,
-                                         degree=False, dtype=torch.float,
-                                         device='cpu', batchsize=1, ndim=2)
 
 
 if __name__ == '__main__':

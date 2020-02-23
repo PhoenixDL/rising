@@ -36,6 +36,34 @@ class AffineTestCase(unittest.TestCase):
 
                     self.assertEqual(sample['label'], result['label'])
 
+    def test_affine_assemble_matrix(self):
+        matrices = [
+            [[1., 0.], [0., 1.]],
+            [[1., 0., 1.], [0., 1., 1.]],
+            [[1., 0., 1.], [0., 1., 1.], [0., 0., 1.]],
+            None,
+            [0., 1., 1., 0.]
+        ]
+        expected_matrices = [
+            torch.tensor([[1., 0., 0.], [0., 1., 0.]])[None],
+            torch.tensor([[1., 0., 1.], [0., 1., 1.]])[None],
+            torch.tensor([[1., 0., 1.], [0., 1., 1.]])[None],
+            None,
+            None,
+        ]
+        value_error = [False, False, False, True, True]
+        batch = {"data": torch.zeros(1, 1, 10, 10)}
+
+        for matrix, expected, ve in zip(matrices, expected_matrices, value_error):
+            with self.subTest(matrix=matrix, expected=expected):
+                trafo = Affine(matrix=matrix)
+                if ve:
+                    with self.assertRaises(ValueError):
+                        assembled = trafo.assemble_matrix(**batch)
+                else:
+                    assembled = trafo.assemble_matrix(**batch)
+                    self.assertTrue(expected.allclose(assembled))
+
     def test_affine_stacking(self):
         affines = [
             Affine(scale=1),

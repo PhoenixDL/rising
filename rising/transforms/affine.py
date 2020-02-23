@@ -3,7 +3,7 @@ from typing import Sequence, Union, Iterable
 
 from rising.transforms.abstract import BaseTransform
 from rising.transforms.functional.affine import affine_image_transform, \
-    AffineParamType, assemble_matrix_if_necessary
+    AffineParamType, parametrize_matrix
 from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 from rising.utils.checktype import check_scalar
 
@@ -19,13 +19,10 @@ __all__ = [
 
 
 class Affine(BaseTransform):
-    def __init__(self, scale: AffineParamType = None,
-                 rotation: AffineParamType = None,
-                 translation: AffineParamType = None,
-                 matrix: torch.Tensor = None,
+    def __init__(self,
+                 matrix: Union[torch.Tensor, Sequence[Sequence[float]]] = None,
                  keys: Sequence = ('data',),
                  grad: bool = False,
-                 degree: bool = False,
                  output_size: tuple = None,
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
@@ -39,38 +36,6 @@ class Affine(BaseTransform):
 
         Parameters
         ----------
-        scale : torch.Tensor, int, float, optional
-            the scale factor(s). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
-                * a parameter per sample, which will be
-                    replicated for all dimensions
-                * a parameter per dimension, which will be replicated for all
-                    batch samples
-                * a parameter per sampler per dimension
-            None will be treated as a scaling factor of 1
-        rotation : torch.Tensor, int, float, optional
-            the rotation factor(s). The rotation is performed in
-             consecutive order axis0 -> axis1 (-> axis 2). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
-                * a parameter per sample, which will be
-                    replicated for all dimensions
-                * a parameter per dimension, which will be replicated for all
-                    batch samples
-                * a parameter per sampler per dimension
-            None will be treated as a rotation factor of 1
-        translation : torch.Tensor, int, float
-            the translation offset(s) relative to image (should be in the
-            range [0, 1]). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
-                * a parameter per sample, which will be
-                    replicated for all dimensions
-                * a parameter per dimension, which will be replicated for all
-                    batch samples
-                * a parameter per sampler per dimension
-            None will be treated as a translation offset of 0
         matrix : torch.Tensor, optional
             if given, overwrites the parameters for :param:`scale`,
             :param:rotation` and :param:`translation`.
@@ -80,10 +45,6 @@ class Affine(BaseTransform):
             keys which should be augmented
         grad: bool
             enable gradient computation inside transformation
-        degree : bool
-            whether the given rotation(s) are in degrees.
-            Only valid for rotation parameters, which aren't passed as full
-            transformation matrix.
         output_size : Iterable
             if given, this will be the resulting image size.
             Defaults to ``None``
@@ -104,21 +65,12 @@ class Affine(BaseTransform):
             making the sampling more resolution agnostic.
         **kwargs :
             additional keyword arguments passed to the affine transform
-
-        Notes
-        -----
-        If a :param:`matrix` is specified, it overwrites  all arguments given
-        for :param:`scale`, :param:rotation` and :param:`translation`
         """
         super().__init__(augment_fn=affine_image_transform,
                          keys=keys,
                          grad=grad,
                          **kwargs)
-        self.scale = scale
-        self.rotation = rotation
-        self.translation = translation
         self.matrix = matrix
-        self.degree = degree
         self.output_size = output_size
         self.adjust_size = adjust_size
         self.interpolation_mode = interpolation_mode
@@ -141,17 +93,30 @@ class Affine(BaseTransform):
         torch.Tensor
             the (batched) transformation matrix
         """
+        if self.matrix is None:
+            raise ValueError("Matrix needs to be initialized or overwritten.")
+        if not torch.is_tensor(self.matrix):
+            self.matrix = torch.tensor(self.matrix)
+        self.matrix = self.matrix.to(data[self.keys[0]])
+
         batchsize = data[self.keys[0]].shape[0]
         ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
-        device = data[self.keys[0]].device
-        dtype = data[self.keys[0]].dtype
 
-        matrix = assemble_matrix_if_necessary(
-            batchsize, ndim, scale=self.scale, rotation=self.rotation,
-            translation=self.translation, matrix=self.matrix,
-            degree=self.degree, device=device, dtype=dtype)
+        # batch dimension missing -> Replicate for each sample in batch
+        if len(self.matrix.shape) == 2:
+            self.matrix = self.matrix[None].expand(batchsize, -1, -1).clone()
+        if self.matrix.shape == (batchsize, ndim, ndim + 1):
+            return self.matrix
+        elif self.matrix.shape == (batchsize, ndim, ndim):
+            return matrix_to_homogeneous(self.matrix)[:, :-1]
+        elif self.matrix.shape == (batchsize, ndim + 1, ndim + 1):
+            return matrix_to_cartesian(self.matrix)
 
-        return matrix
+        raise ValueError(
+            "Invalid Shape for affine transformation matrix. "
+            "Got %s but expected %s" % (
+                str(tuple(self.matrix.shape)),
+                str((batchsize, ndim, ndim + 1))))
 
     def forward(self, **data) -> dict:
         """
@@ -245,7 +210,129 @@ class Affine(BaseTransform):
                              **other.kwargs)
 
 
-class Rotate(Affine):
+class BaseAffine(Affine):
+    def __init__(self,
+                 scale: AffineParamType = None,
+                 rotation: AffineParamType = None,
+                 translation: AffineParamType = None,
+                 degree: bool = False,
+                 image_transform: bool = True,
+                 keys: Sequence = ('data',),
+                 grad: bool = False,
+                 output_size: tuple = None,
+                 adjust_size: bool = False,
+                 interpolation_mode: str = 'bilinear',
+                 padding_mode: str = 'zeros',
+                 align_corners: bool = False,
+                 **kwargs,
+                 ):
+        """
+        Class performing a basic Affine Transformation on a given sample dict.
+        The transformation will be applied to all the dict-entries specified
+        in :attr:`keys`.
+
+        Parameters
+        ----------
+        scale : torch.Tensor, int, float, optional
+            the scale factor(s). Supported are:
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
+            None will be treated as a scaling factor of 1
+        rotation : torch.Tensor, int, float, optional
+            the rotation factor(s). The rotation is performed in
+             consecutive order axis0 -> axis1 (-> axis 2). Supported are:
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
+            None will be treated as a rotation factor of 1
+        translation : torch.Tensor, int, float
+            the translation offset(s) relative to image (should be in the
+            range [0, 1]). Supported are:
+                * a single parameter (as float or int), which will be replicated
+                    for all dimensions and batch samples
+                * a parameter per sample, which will be
+                    replicated for all dimensions
+                * a parameter per dimension, which will be replicated for all
+                    batch samples
+                * a parameter per sampler per dimension
+            None will be treated as a translation offset of 0
+        keys: Sequence
+            keys which should be augmented
+        grad: bool
+            enable gradient computation inside transformation
+        degree : bool
+            whether the given rotation(s) are in degrees.
+            Only valid for rotation parameters, which aren't passed as full
+            transformation matrix.
+        output_size : Iterable
+            if given, this will be the resulting image size.
+            Defaults to ``None``
+        adjust_size : bool
+            if True, the resulting image size will be calculated dynamically
+            to ensure that the whole image fits.
+        interpolation_mode : str
+            interpolation mode to calculate output values
+            'bilinear' | 'nearest'. Default: 'bilinear'
+        padding_mode :
+            padding mode for outside grid values
+            'zeros' | 'border' | 'reflection'. Default: 'zeros'
+        align_corners : Geometrically, we consider the pixels of the input as
+            squares rather than points. If set to True, the extrema (-1 and 1)
+            are considered as referring to the center points of the input’s
+            corner pixels. If set to False, they are instead considered as
+            referring to the corner points of the input’s corner pixels,
+            making the sampling more resolution agnostic.
+        **kwargs :
+            additional keyword arguments passed to the affine transform
+        """
+        super().__init__(keys=keys, grad=grad, output_size=output_size,
+                         adjust_size=adjust_size, interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode, align_corners=align_corners,
+                         **kwargs)
+        self.scale = scale
+        self.rotation = rotation
+        self.translation = translation
+        self.degree = degree
+        self.image_transform = image_transform
+
+    def assemble_matrix(self, **data) -> torch.Tensor:
+        """
+        Assembles the matrix (and takes care of batching and having it on the
+        right device and in the correct dtype and dimensionality).
+
+        Parameters
+        ----------
+        **data :
+            the data to be transformed. Will be used to determine batchsize,
+            dimensionality, dtype and device
+
+        Returns
+        -------
+        torch.Tensor
+            the (batched) transformation matrix
+        """
+        batchsize = data[self.keys[0]].shape[0]
+        ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
+        device = data[self.keys[0]].device
+        dtype = data[self.keys[0]].dtype
+
+        self.matrix = parametrize_matrix(
+            scale=self.scale, rotation=self.rotation, translation=self.translation,
+            batchsize=batchsize, ndim=ndim, degree=self.degree,
+            device=device, dtype=dtype, image_transform=self.image_transform)
+        return self.matrix
+
+
+class Rotate(BaseAffine):
     def __init__(self,
                  rotation: AffineParamType,
                  keys: Sequence = ('data',),
@@ -319,7 +406,7 @@ class Rotate(Affine):
                          **kwargs)
 
 
-class Translate(Affine):
+class Translate(BaseAffine):
     def __init__(self,
                  translation: AffineParamType,
                  keys: Sequence = ('data',),
@@ -417,7 +504,7 @@ class Translate(Affine):
         return matrix
 
 
-class Scale(Affine):
+class Scale(BaseAffine):
     def __init__(self,
                  scale: AffineParamType,
                  keys: Sequence = ('data',),
@@ -556,9 +643,7 @@ class StackedAffine(Affine):
             [trafo if isinstance(trafo, Affine) else Affine(matrix=trafo)
              for trafo in transforms])
 
-        super().__init__(matrix=None,
-                         scale=None, rotation=None, translation=None,
-                         keys=keys, grad=grad, degree=False,
+        super().__init__(keys=keys, grad=grad,
                          output_size=output_size, adjust_size=adjust_size,
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
