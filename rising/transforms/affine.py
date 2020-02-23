@@ -130,7 +130,7 @@ class Affine(GridTransform):
                 grid[tuple(size)] = create_affine_grid(
                     size, self.assemble_matrix(size), output_size=self.output_size,
                     adjust_size=self.adjust_size, align_corners=self.align_corners,
-                    )
+                )
         return grid
 
     def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
@@ -760,7 +760,6 @@ class Resize(Scale):
                         device: Union[torch.device, str] = None,
                         dtype: Union[torch.dtype, str] = None,
                         ) -> Tensor:
-
         """
         Handles the matrix assembly and calculates the scale factors for
         resizing
