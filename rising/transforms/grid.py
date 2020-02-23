@@ -5,13 +5,13 @@ import torch
 from abc import abstractmethod
 from torch import Tensor
 
-from rising.transforms import AbstractTransform
+from rising.transforms import AbstractTransform, GaussianSmoothing
 from rising.utils.affine import get_batched_eye, matrix_to_homogeneous
-from rising.transforms.functional import center_crop, random_crop, add_noise
+from rising.transforms.functional import center_crop, random_crop
 
 
 __all__ = ["GridTransform", "StackedGridTransform",
-           "CenterCropGrid", "RandomCropGrid", "RandomDistortion", "RadialDistortion"]
+           "CenterCropGrid", "RandomCropGrid", "ElasticDistortion", "RadialDistortion"]
 
 
 class GridTransform(AbstractTransform):
@@ -135,10 +135,11 @@ class RandomCropGrid(GridTransform):
                 for key, item in grid.items()}
 
 
-class RandomDistortion(GridTransform):
+class ElasticDistortion(GridTransform):
     def __init__(self,
-                 noise_type: str,
-                 noise_kwargs: dict = None,
+                 std: Union[float, Sequence[float]],
+                 alpha: float,
+                 dim: int = 2,
                  keys: Sequence[str] = ('data',),
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
@@ -148,12 +149,21 @@ class RandomDistortion(GridTransform):
         super().__init__(keys=keys, interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode, align_corners=align_corners,
                          grad=grad, **kwargs)
-        self.noise_type = noise_type
-        self.noise_kwargs = noise_kwargs if noise_kwargs is not None else {}
+        self.std = std
+        self.alpha = alpha
+        self.gaussian = GaussianSmoothing(in_channels=1, kernel_size=7, std=self.std,
+                                          dim=dim, stride=1, padding=3)
 
     def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
-        return {key: add_noise(item, noise_type=self.noise_type, **self.noise_kwargs)
-                for key, item in grid.items()}
+        for key in grid.keys():
+            random_offsets = torch.rand(1, 1, *grid[key].shape[1:-1]) * 2 - 1
+            random_offsets = self.gaussian(**{"data": random_offsets})["data"] * self.alpha
+            print(random_offsets.shape)
+            print(grid[key].shape)
+            print(random_offsets.max())
+            print(random_offsets.min())
+            grid[key] += random_offsets[:, 0, ..., None]
+        return grid
 
 
 class RadialDistortion(GridTransform):

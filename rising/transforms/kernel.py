@@ -4,6 +4,7 @@ from typing import Sequence, Union, Callable
 
 from .abstract import AbstractTransform
 from rising.utils import check_scalar
+from rising.transforms.functional import gaussian_kernel
 
 __all__ = ["KernelTransform", "GaussianSmoothing"]
 
@@ -111,10 +112,12 @@ class KernelTransform(AbstractTransform):
 
 
 class GaussianSmoothing(KernelTransform):
-    def __init__(self, in_channels: int, kernel_size: Union[int, Sequence],
+    def __init__(self,
+                 in_channels: int,
+                 kernel_size: Union[int, Sequence],
                  std: Union[int, Sequence], dim: int = 2,
                  stride: Union[int, Sequence] = 1, padding: Union[int, Sequence] = 0,
-                 padding_mode: str = 'reflect', keys: Sequence = ('data',), grad: bool = False,
+                 padding_mode: str = 'constant', keys: Sequence = ('data',), grad: bool = False,
                  **kwargs):
         """
         Perform Gaussian Smoothing.
@@ -150,9 +153,8 @@ class GaussianSmoothing(KernelTransform):
         --------
         :func:`torch.functional.pad`
         """
-        if check_scalar(std):
-            std = [std] * dim
         self.std = std
+        self.spatial_dim = dim
         super().__init__(in_channels=in_channels, kernel_size=kernel_size, dim=dim, stride=stride,
                          padding=padding, padding_mode=padding_mode, keys=keys, grad=grad, **kwargs)
 
@@ -160,22 +162,6 @@ class GaussianSmoothing(KernelTransform):
         """
         Create gaussian blur kernel
         """
-        # The gaussian kernel is the product of the gaussian function of each dimension.
-        kernel = 1
-        meshgrids = torch.meshgrid([
-            torch.arange(size, dtype=torch.float32)
-            for size in self.kernel_size
-        ])
-
-        for size, std, mgrid in zip(self.kernel_size, self.std, meshgrids):
-            mean = (size - 1) / 2
-            kernel *= 1 / (std * math.sqrt(2 * math.pi)) * torch.exp(-((mgrid - mean) / std) ** 2 / 2)
-
-        # Make sure sum of values in gaussian kernel equals 1.
-        kernel = kernel / kernel.sum()
-
-        # Reshape to depthwise convolutional weight
-        kernel = kernel.view(1, 1, *kernel.size())
-        kernel = kernel.repeat(self.in_channels, *[1] * (kernel.dim() - 1))
-        kernel.requires_grad = False
-        return kernel.contiguous()
+        return gaussian_kernel(kernel_size=self.kernel_size,
+                               std=self.std, in_channels=self.in_channels,
+                               dim=self.spatial_dim)
