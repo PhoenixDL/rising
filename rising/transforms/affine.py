@@ -260,9 +260,7 @@ class StackedAffine(Affine):
             making the sampling more resolution agnostic.
         **kwargs :
             additional keyword arguments passed to the affine transform
-
         """
-
         if isinstance(transforms, (tuple, list)):
             if isinstance(transforms[0], (tuple, list)):
                 transforms = transforms[0]
