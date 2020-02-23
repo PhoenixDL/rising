@@ -1,8 +1,9 @@
 import torch
-from typing import Sequence, Union, Iterable
+from torch import Tensor
+from typing import Sequence, Union, Iterable, Dict, Tuple
 
-from rising.transforms.abstract import BaseTransform
-from rising.transforms.functional.affine import affine_image_transform, \
+from rising.transforms.grid import GridTransform
+from rising.transforms.functional.affine import create_affine_grid, \
     AffineParamType, parametrize_matrix
 from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 from rising.utils.checktype import check_scalar
@@ -18,9 +19,9 @@ __all__ = [
 ]
 
 
-class Affine(BaseTransform):
+class Affine(GridTransform):
     def __init__(self,
-                 matrix: Union[torch.Tensor, Sequence[Sequence[float]]] = None,
+                 matrix: Union[Tensor, Sequence[Sequence[float]]] = None,
                  keys: Sequence = ('data',),
                  grad: bool = False,
                  output_size: tuple = None,
@@ -36,7 +37,7 @@ class Affine(BaseTransform):
 
         Parameters
         ----------
-        matrix : torch.Tensor, optional
+        matrix : Tensor, optional
             if given, overwrites the parameters for :param:`scale`,
             :param:rotation` and :param:`translation`.
             Should be a matrix of shape [(BATCHSIZE,) NDIM, NDIM(+1)]
@@ -64,43 +65,46 @@ class Affine(BaseTransform):
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
         **kwargs :
-            additional keyword arguments passed to the affine transform
+            additional keyword arguments passed to grid sample
         """
-        super().__init__(augment_fn=affine_image_transform,
-                         keys=keys,
-                         grad=grad,
+        super().__init__(keys=keys, grad=grad, interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode, align_corners=align_corners,
                          **kwargs)
         self.matrix = matrix
         self.output_size = output_size
         self.adjust_size = adjust_size
-        self.interpolation_mode = interpolation_mode
-        self.padding_mode = padding_mode
-        self.align_corners = align_corners
 
-    def assemble_matrix(self, **data) -> torch.Tensor:
+    def assemble_matrix(self,
+                        batch_shape: Sequence[int],
+                        device: Union[torch.device, str] = None,
+                        dtype: Union[torch.dtype, str] = None,
+                        ) -> Tensor:
         """
         Assembles the matrix (and takes care of batching and having it on the
         right device and in the correct dtype and dimensionality).
 
         Parameters
         ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        batch_shape : Sequence[int]
+            shape of batch
+        device: Union[torch.device, str]
+            device where grid will be cached
+        dtype: Union[torch.dtype, str]
+            data type of grid
 
         Returns
         -------
-        torch.Tensor
+        Tensor
             the (batched) transformation matrix
         """
         if self.matrix is None:
             raise ValueError("Matrix needs to be initialized or overwritten.")
         if not torch.is_tensor(self.matrix):
-            self.matrix = torch.tensor(self.matrix)
-        self.matrix = self.matrix.to(data[self.keys[0]])
+            self.matrix = Tensor(self.matrix)
+        self.matrix = self.matrix.to(device=device, dtype=dtype)
 
-        batchsize = data[self.keys[0]].shape[0]
-        ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
+        batchsize = batch_shape[0]
+        ndim = len(batch_shape) - 2  # channel and batch dim
 
         # batch dimension missing -> Replicate for each sample in batch
         if len(self.matrix.shape) == 2:
@@ -118,34 +122,19 @@ class Affine(BaseTransform):
                 str(tuple(self.matrix.shape)),
                 str((batchsize, ndim, ndim + 1))))
 
-    def forward(self, **data) -> dict:
-        """
-        Assembles the matrix and applies it to the specified sample-entities.
+    def create_grid(self, input_size: Sequence[Sequence[int]],
+                    matrix: Tensor = None) -> Dict[Tuple, Tensor]:
+        grid = {}
+        for size in input_size:
+            if tuple(size) not in grid:
+                grid[tuple(size)] = create_affine_grid(
+                    size, self.assemble_matrix(size), output_size=self.output_size,
+                    adjust_size=self.adjust_size, align_corners=self.align_corners,
+                    )
+        return grid
 
-        Parameters
-        ----------
-        **data :
-            the data to transform
-
-        Returns
-        -------
-        dict
-            dictionary containing the transformed data
-        """
-        matrix = self.assemble_matrix(**data)
-
-        for key in self.keys:
-            data[key] = self.augment_fn(
-                data[key], matrix_batch=matrix,
-                output_size=self.output_size,
-                adjust_size=self.adjust_size,
-                interpolation_mode=self.interpolation_mode,
-                padding_mode=self.padding_mode,
-                align_corners=self.align_corners,
-                **self.kwargs
-            )
-
-        return data
+    def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
+        return grid
 
     def __add__(self, other):
         """
@@ -154,7 +143,7 @@ class Affine(BaseTransform):
 
         Parameters
         ----------
-        other : torch.Tensor, Affine
+        other : Tensor, Affine
             the other transformation
 
         Returns
@@ -162,7 +151,7 @@ class Affine(BaseTransform):
         StackedAffine
             a stacked affine transformation
         """
-        if not isinstance(other, Affine):
+        if not isinstance(other, GridTransform):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
                            output_size=self.output_size,
                            adjust_size=self.adjust_size,
@@ -171,12 +160,15 @@ class Affine(BaseTransform):
                            align_corners=self.align_corners,
                            **self.kwargs)
 
-        return StackedAffine(self, other, keys=self.keys, grad=self.grad,
-                             output_size=self.output_size,
-                             adjust_size=self.adjust_size,
-                             interpolation_mode=self.interpolation_mode,
-                             padding_mode=self.padding_mode,
-                             align_corners=self.align_corners, **self.kwargs)
+        if isinstance(other, Affine):
+            return StackedAffine(self, other, keys=self.keys, grad=self.grad,
+                                 output_size=self.output_size,
+                                 adjust_size=self.adjust_size,
+                                 interpolation_mode=self.interpolation_mode,
+                                 padding_mode=self.padding_mode,
+                                 align_corners=self.align_corners, **self.kwargs)
+        else:
+            return super().__add__(other)
 
     def __radd__(self, other):
         """
@@ -185,7 +177,7 @@ class Affine(BaseTransform):
 
         Parameters
         ----------
-        other : torch.Tensor, Affine
+        other : Tensor, Affine
             the other transformation
 
         Returns
@@ -193,7 +185,7 @@ class Affine(BaseTransform):
         StackedAffine
             a stacked affine transformation
         """
-        if not isinstance(other, Affine):
+        if not isinstance(other, GridTransform):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
                            output_size=self.output_size,
                            adjust_size=self.adjust_size,
@@ -201,13 +193,16 @@ class Affine(BaseTransform):
                            padding_mode=self.padding_mode,
                            align_corners=self.align_corners, **self.kwargs)
 
-        return StackedAffine(other, self, grad=other.grad,
-                             output_size=other.output_size,
-                             adjust_size=other.adjust_size,
-                             interpolation_mode=other.interpolation_mode,
-                             padding_mode=other.padding_mode,
-                             align_corners=other.align_corners,
-                             **other.kwargs)
+        if isinstance(other, Affine):
+            return StackedAffine(other, self, grad=other.grad,
+                                 output_size=other.output_size,
+                                 adjust_size=other.adjust_size,
+                                 interpolation_mode=other.interpolation_mode,
+                                 padding_mode=other.padding_mode,
+                                 align_corners=other.align_corners,
+                                 **other.kwargs)
+        else:
+            return super().__add__(other)
 
 
 class StackedAffine(Affine):
@@ -279,25 +274,34 @@ class StackedAffine(Affine):
 
         self.transforms = transforms
 
-    def assemble_matrix(self, **data) -> torch.Tensor:
+    def assemble_matrix(self,
+                        batch_shape: Sequence[int],
+                        device: Union[torch.device, str] = None,
+                        dtype: Union[torch.dtype, str] = None,
+                        ) -> Tensor:
         """
         Handles the matrix assembly and stacking
 
         Parameters
         ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        batch_shape : Sequence[int]
+            shape of batch
+        device: Union[torch.device, str]
+            device where grid will be cached
+        dtype: Union[torch.dtype, str]
+            data type of grid
 
         Returns
         -------
-        torch.Tensor
+        Tensor
             the (batched) transformation matrix
 
         """
         whole_trafo = None
         for trafo in self.transforms:
-            matrix = matrix_to_homogeneous(trafo.assemble_matrix(**data))
+            matrix = matrix_to_homogeneous(trafo.assemble_matrix(
+                batch_shape=batch_shape, device=device, dtype=dtype
+            ))
             if whole_trafo is None:
                 whole_trafo = matrix
             else:
@@ -328,7 +332,7 @@ class BaseAffine(Affine):
 
         Parameters
         ----------
-        scale : torch.Tensor, int, float, optional
+        scale : Tensor, int, float, optional
             the scale factor(s). Supported are:
                 * a single parameter (as float or int), which will be replicated
                     for all dimensions and batch samples
@@ -338,7 +342,7 @@ class BaseAffine(Affine):
                     batch samples
                 * a parameter per sampler per dimension
             None will be treated as a scaling factor of 1
-        rotation : torch.Tensor, int, float, optional
+        rotation : Tensor, int, float, optional
             the rotation factor(s). The rotation is performed in
              consecutive order axis0 -> axis1 (-> axis 2). Supported are:
                 * a single parameter (as float or int), which will be replicated
@@ -349,7 +353,7 @@ class BaseAffine(Affine):
                     batch samples
                 * a parameter per sampler per dimension
             None will be treated as a rotation factor of 1
-        translation : torch.Tensor, int, float
+        translation : Tensor, int, float
             the translation offset(s) relative to image (should be in the
             range [0, 1]). Supported are:
                 * a single parameter (as float or int), which will be replicated
@@ -399,26 +403,31 @@ class BaseAffine(Affine):
         self.degree = degree
         self.image_transform = image_transform
 
-    def assemble_matrix(self, **data) -> torch.Tensor:
+    def assemble_matrix(self,
+                        batch_shape: Sequence[int],
+                        device: Union[torch.device, str] = None,
+                        dtype: Union[torch.dtype, str] = None,
+                        ) -> Tensor:
         """
         Assembles the matrix (and takes care of batching and having it on the
         right device and in the correct dtype and dimensionality).
 
         Parameters
         ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        batch_shape : Sequence[int]
+            shape of batch
+        device: Union[torch.device, str]
+            device where grid will be cached
+        dtype: Union[torch.dtype, str]
+            data type of grid
 
         Returns
         -------
-        torch.Tensor
+        Tensor
             the (batched) transformation matrix
         """
-        batchsize = data[self.keys[0]].shape[0]
-        ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
-        device = data[self.keys[0]].device
-        dtype = data[self.keys[0]].dtype
+        batchsize = batch_shape[0]
+        ndim = len(batch_shape) - 2  # channel and batch dim
 
         self.matrix = parametrize_matrix(
             scale=self.scale, rotation=self.rotation, translation=self.translation,
@@ -448,7 +457,7 @@ class Rotate(BaseAffine):
 
         Parameters
         ----------
-        rotation : torch.Tensor, int, float, optional
+        rotation : Tensor, int, float, optional
             the rotation factor(s). Supported are:
                 * a single parameter (as float or int), which will be replicated
                     for all dimensions and batch samples
@@ -522,7 +531,7 @@ class Translate(BaseAffine):
 
         Parameters
         ----------
-        translation : torch.Tensor, int, float
+        translation : Tensor, int, float
             the translation offset(s). The translation unit can be specified.
             Supported are:
                 * a single parameter (as float or int), which will be replicated
@@ -578,25 +587,33 @@ class Translate(BaseAffine):
                          **kwargs)
         self.unit = unit
 
-    def assemble_matrix(self, **data) -> torch.Tensor:
+    def assemble_matrix(self,
+                        batch_shape: Sequence[int],
+                        device: Union[torch.device, str] = None,
+                        dtype: Union[torch.dtype, str] = None,
+                        ) -> Tensor:
         """
         Assembles the matrix (and takes care of batching and having it on the
         right device and in the correct dtype and dimensionality).
 
         Parameters
         ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        batch_shape : Sequence[int]
+            shape of batch
+        device: Union[torch.device, str]
+            device where grid will be cached
+        dtype: Union[torch.dtype, str]
+            data type of grid
 
         Returns
         -------
-        torch.Tensor
+        Tensor
             the (batched) transformation matrix [N, NDIM, NDIM]
         """
-        matrix = super().assemble_matrix(**data)
+        matrix = super().assemble_matrix(batch_shape=batch_shape,
+                                         device=device, dtype=dtype)
         if self.unit.lower() == 'pixel':
-            img_size = torch.tensor(data[self.keys[0]].shape[2:]).to(matrix)
+            img_size = torch.tensor(batch_shape[2:]).to(matrix)
             matrix[..., -1] = matrix[..., -1] / img_size
         return matrix
 
@@ -620,7 +637,7 @@ class Scale(BaseAffine):
 
         Parameters
         ----------
-        scale : torch.Tensor, int, float, optional
+        scale : Tensor, int, float, optional
             the scale factor(s). Supported are:
                 * a single parameter (as float or int), which will be replicated
                     for all dimensions and batch samples
@@ -738,24 +755,32 @@ class Resize(Scale):
                          align_corners=align_corners,
                          **kwargs)
 
-    def assemble_matrix(self, **data) -> torch.Tensor:
+    def assemble_matrix(self,
+                        batch_shape: Sequence[int],
+                        device: Union[torch.device, str] = None,
+                        dtype: Union[torch.dtype, str] = None,
+                        ) -> Tensor:
+
         """
         Handles the matrix assembly and calculates the scale factors for
         resizing
 
         Parameters
         ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        batch_shape : Sequence[int]
+            shape of batch
+        device: Union[torch.device, str]
+            device where grid will be cached
+        dtype: Union[torch.dtype, str]
+            data type of grid
 
         Returns
         -------
-        torch.Tensor
+        Tensor
             the (batched) transformation matrix
 
         """
-        curr_img_size = data[self.keys[0]].shape[2:]
+        curr_img_size = batch_shape[2:]
 
         was_scalar = check_scalar(self.output_size)
 
@@ -765,7 +790,8 @@ class Resize(Scale):
         self.scale = [self.output_size[i] / curr_img_size[-i]
                       for i in range(len(curr_img_size))]
 
-        matrix = super().assemble_matrix(**data)
+        matrix = super().assemble_matrix(batch_shape=batch_shape,
+                                         device=device, dtype=dtype)
 
         if was_scalar:
             self.output_size = self.output_size[0]

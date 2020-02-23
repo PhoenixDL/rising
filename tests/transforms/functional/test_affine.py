@@ -1,7 +1,7 @@
 import unittest
 import torch
 from rising.transforms.functional.affine import _check_new_img_size, \
-    affine_point_transform, affine_image_transform, parametrize_matrix, \
+    affine_point_transform, create_affine_grid, parametrize_matrix, \
     create_rotation, create_translation, create_scale
 from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 
@@ -121,18 +121,24 @@ class AffineTestCase(unittest.TestCase):
                                   output_size=output_size):
                     if output_size is not None and adjust_size:
                         with self.assertWarns(UserWarning):
-                            result = affine_image_transform(
-                                image_batch=image_batch,
+                            grid = create_affine_grid(
+                                batch_shape=image_batch.shape,
                                 matrix_batch=matrix,
                                 output_size=output_size,
-                                adjust_size=adjust_size)
+                                adjust_size=adjust_size,
+                                device=image_batch.device,
+                                dtype=image_batch.dtype,
+                            )
                     else:
-                        result = affine_image_transform(
-                            image_batch=image_batch,
+                        grid = create_affine_grid(
+                            batch_shape=image_batch.shape,
                             matrix_batch=matrix,
                             output_size=output_size,
-                            adjust_size=adjust_size)
-
+                            adjust_size=adjust_size,
+                            device=image_batch.device,
+                            dtype=image_batch.dtype,
+                        )
+                    result = torch.nn.functional.grid_sample(image_batch, grid)
                     self.assertTupleEqual(result.shape[2:], target_size)
 
     def test_create_scale(self):

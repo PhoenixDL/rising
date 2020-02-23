@@ -9,7 +9,7 @@ from rising.utils.checktype import check_scalar
 
 
 __all__ = [
-    'affine_image_transform',
+    'create_affine_grid',
     'affine_point_transform',
     "create_rotation",
     "create_scale",
@@ -434,20 +434,21 @@ def affine_point_transform(point_batch: torch.Tensor,
     return points_to_cartesian(transformed_points)
 
 
-def affine_image_transform(image_batch: torch.Tensor,
-                           matrix_batch: torch.Tensor,
-                           output_size: tuple = None,
-                           adjust_size: bool = False,
-                           interpolation_mode: str = 'bilinear',
-                           padding_mode: str = 'zeros',
-                           align_corners: bool = False) -> torch.Tensor:
+def create_affine_grid(batch_shape: Sequence[int],
+                       matrix_batch: torch.Tensor,
+                       output_size: tuple = None,
+                       adjust_size: bool = False,
+                       align_corners: bool = False,
+                       device: Union[torch.device, str] = None,
+                       dtype: Union[torch.dtype, str] = None,
+                       ) -> torch.Tensor:
     """
     Performs an affine transformation on a batch of images
 
     Parameters
     ----------
-    image_batch : torch.Tensor
-        the batch to transform. Should have shape of [N, C, NDIM]
+    batch_shape : Sequence[int]
+        shape of batch
     matrix_batch : torch.Tensor
         a batch of affine matrices with shape [N, NDIM, NDIM+1]
     output_size : Iterable
@@ -455,18 +456,16 @@ def affine_image_transform(image_batch: torch.Tensor,
     adjust_size : bool
         if True, the resulting image size will be calculated dynamically to
         ensure that the whole image fits.
-    interpolation_mode : str
-        interpolation mode to calculate output values 'bilinear' | 'nearest'.
-        Default: 'bilinear'
-    padding_mode :
-        padding mode for outside grid values
-        'zeros' | 'border' | 'reflection'. Default: 'zeros'
     align_corners : Geometrically, we consider the pixels of the input as
         squares rather than points. If set to True, the extrema (-1 and 1) are
         considered as referring to the center points of the input’s corner
         pixels. If set to False, they are instead considered as referring to
         the corner points of the input’s corner pixels, making the sampling
         more resolution agnostic.
+    device: Union[torch.device, str]
+        device where grid will be cached
+    dtype: Union[torch.dtype, str]
+        data type of grid
 
     Returns
     -------
@@ -489,9 +488,9 @@ def affine_image_transform(image_batch: torch.Tensor,
     # add batch dimension if necessary
     if len(matrix_batch.shape) < 3:
         matrix_batch = matrix_batch[None, ...].expand(
-            image_batch.size(0), -1, -1).clone()
+            batch_shape[0], -1, -1).clone()
 
-    image_size = image_batch.shape[2:]
+    image_size = batch_shape[2:]
 
     if output_size is not None:
         if check_scalar(output_size):
@@ -508,19 +507,15 @@ def affine_image_transform(image_batch: torch.Tensor,
     else:
         new_size = image_size
 
-    if len(image_size) < len(image_batch.shape):
-        missing_dims = len(image_batch.shape) - len(image_size)
-        new_size = (*image_batch.shape[:missing_dims], *new_size)
+    if len(image_size) < len(batch_shape):
+        missing_dims = len(batch_shape) - len(image_size)
+        new_size = (*batch_shape[:missing_dims], *new_size)
 
-    matrix_batch = matrix_batch.to(image_batch)
+    matrix_batch = matrix_batch.to(device=device, dtype=dtype)
 
-    grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size,
-                                           align_corners=align_corners)
-
-    return torch.nn.functional.grid_sample(image_batch, grid,
-                                           mode=interpolation_mode,
-                                           padding_mode=padding_mode,
-                                           align_corners=align_corners)
+    grid = torch.nn.functional.affine_grid(
+        matrix_batch, size=new_size, align_corners=align_corners)
+    return grid
 
 
 def _check_new_img_size(curr_img_size, matrix: torch.Tensor,

@@ -52,16 +52,18 @@ class AffineTestCase(unittest.TestCase):
             None,
         ]
         value_error = [False, False, False, True, True]
-        batch = {"data": torch.zeros(1, 1, 10, 10)}
+        batch = torch.zeros(1, 1, 10, 10)
 
         for matrix, expected, ve in zip(matrices, expected_matrices, value_error):
             with self.subTest(matrix=matrix, expected=expected):
                 trafo = Affine(matrix=matrix)
                 if ve:
                     with self.assertRaises(ValueError):
-                        assembled = trafo.assemble_matrix(**batch)
+                        assembled = trafo.assemble_matrix(
+                            batch.shape, device=batch.device, dtype=batch.dtype)
                 else:
-                    assembled = trafo.assemble_matrix(**batch)
+                    assembled = trafo.assemble_matrix(
+                        batch.shape, device=batch.device, dtype=batch.dtype)
                     self.assertTrue(expected.allclose(assembled))
 
     def test_affine_stacking(self):
@@ -92,9 +94,10 @@ class AffineTestCase(unittest.TestCase):
         second_matrix = torch.tensor([[[4., 0., 3.], [0., 5., 4.]]])
         trafo = StackedAffine([first_matrix, second_matrix])
 
-        sample = {'data': torch.rand(1, 3, 25, 25)}
+        sample = torch.rand(1, 3, 25, 25)
 
-        matrix = trafo.assemble_matrix(**sample)
+        matrix = trafo.assemble_matrix(sample.shape,
+                                       dtype=sample.dtype, device=sample.device)
 
         target_matrix = matrix_to_cartesian(
             torch.bmm(
@@ -128,13 +131,14 @@ class AffineTestCase(unittest.TestCase):
 
     def test_translation_assemble_matrix_with_pixel(self):
         trafo = Translate([1, 10, 100], unit='pixel')
-        sample = {'data': torch.rand(3, 3, 100, 100)}
-        expected = torch.tensor([[1., 0., -0.01], [0., 1., -0.01],
-                                 [1., 0., -0.1], [0., 1., -0.1],
-                                 [1., 0., -1.], [0., 1., -1.]])
+        sample = torch.rand(3, 3, 100, 100)
+        expected = torch.tensor([[[1., 0., -0.01], [0., 1., -0.01]],
+                                 [[1., 0., -0.1], [0., 1., -0.1]],
+                                 [[1., 0., -1.], [0., 1., -1.]]])
 
-        trafo.assemble_matrix(**sample)
-        self.assertTrue(expected.allclose(expected))
+        out = trafo.assemble_matrix(
+            sample.shape, device=sample.device, dtype=sample.dtype)
+        self.assertTrue(expected.allclose(out))
 
 
 if __name__ == '__main__':

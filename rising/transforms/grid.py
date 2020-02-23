@@ -18,12 +18,15 @@ class GridTransform(AbstractTransform):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
-                 grad: bool = False,):
+                 grad: bool = False,
+                 **kwargs,
+                 ):
         super().__init__(grad=grad)
         self.keys = keys
         self.interpolation_mode = interpolation_mode
         self.padding_mode = padding_mode
         self.align_corners = align_corners
+        self.kwargs = kwargs
 
         self.grid: Dict[Tuple, Tensor] = None
 
@@ -35,10 +38,12 @@ class GridTransform(AbstractTransform):
 
         for key in self.keys:
             _grid = self.grid[tuple(data[key].shape)]
+            _grid = _grid.to(data[key])
 
             data[key] = torch.nn.functional.grid_sample(
                 data[key], _grid, mode=self.interpolation_mode,
-                padding_mode=self.padding_mode, align_corners=self.align_corners)
+                padding_mode=self.padding_mode, align_corners=self.align_corners,
+                **self.kwargs)
         self.grid = None
         return data
 
@@ -46,8 +51,8 @@ class GridTransform(AbstractTransform):
     def augment_grid(self, grid: Dict[Tuple, Tensor]) -> Dict[Tuple, Tensor]:
         raise NotImplementedError
 
-    def create_grid(self, input_size: Sequence[Sequence[int]], matrix: Tensor = None) -> \
-            Dict[Tuple, Tensor]:
+    def create_grid(self, input_size: Sequence[Sequence[int]],
+                    matrix: Tensor = None) -> Dict[Tuple, Tensor]:
         if matrix is None:
             matrix = get_batched_eye(batchsize=input_size[0][0], ndim=len(input_size[0]) - 2)
             matrix = matrix_to_homogeneous(matrix)[:, :-1]
