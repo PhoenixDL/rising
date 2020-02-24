@@ -1,3 +1,4 @@
+
 import unittest
 import torch
 
@@ -61,12 +62,12 @@ class TestCompose(unittest.TestCase):
         trafo_a = trafo_a.to(torch.float32)
         trafo_b = DummyTrafo(torch.tensor([2.], dtype=torch.float32))
         trafo_b = trafo_b.to(torch.float32)
-        self.assertEquals(trafo_a.tmp.dtype, torch.float32)
-        self.assertEquals(trafo_b.tmp.dtype, torch.float32)
+        self.assertEqual(trafo_a.tmp.dtype, torch.float32)
+        self.assertEqual(trafo_b.tmp.dtype, torch.float32)
         compose = Compose(trafo_a, trafo_b)
         compose = compose.to(torch.float64)
 
-        self.assertEquals(compose.transforms[0].tmp.dtype, torch.float64)
+        self.assertEqual(compose.transforms[0].tmp.dtype, torch.float64)
 
     def test_wrapping_non_module_trafos(self):
         class DummyTrafo:

@@ -13,7 +13,7 @@ class AffineTestCase(unittest.TestCase):
                                   device='cpu')
         matrix = matrix.expand(image_batch.size(0), -1, -1).clone()
 
-        target_sizes = [(121, 97), image_batch.shape[2:], (50, 50), (50, 50),
+        target_sizes = [(100, 125), image_batch.shape[2:], (50, 50), (50, 50),
                         (45, 50), (45, 50)]
 
         for output_size in [None, 50, (45, 50)]:
@@ -35,6 +35,34 @@ class AffineTestCase(unittest.TestCase):
                                           target_size)
 
                     self.assertEqual(sample['label'], result['label'])
+
+    def test_affine_assemble_matrix(self):
+        matrices = [
+            [[1., 0.], [0., 1.]],
+            [[1., 0., 1.], [0., 1., 1.]],
+            [[1., 0., 1.], [0., 1., 1.], [0., 0., 1.]],
+            None,
+            [0., 1., 1., 0.]
+        ]
+        expected_matrices = [
+            torch.tensor([[1., 0., 0.], [0., 1., 0.]])[None],
+            torch.tensor([[1., 0., 1.], [0., 1., 1.]])[None],
+            torch.tensor([[1., 0., 1.], [0., 1., 1.]])[None],
+            None,
+            None,
+        ]
+        value_error = [False, False, False, True, True]
+        batch = {"data": torch.zeros(1, 1, 10, 10)}
+
+        for matrix, expected, ve in zip(matrices, expected_matrices, value_error):
+            with self.subTest(matrix=matrix, expected=expected):
+                trafo = Affine(matrix=matrix)
+                if ve:
+                    with self.assertRaises(ValueError):
+                        assembled = trafo.assemble_matrix(**batch)
+                else:
+                    assembled = trafo.assemble_matrix(**batch)
+                    self.assertTrue(expected.allclose(assembled))
 
     def test_affine_stacking(self):
         affines = [
@@ -78,20 +106,35 @@ class AffineTestCase(unittest.TestCase):
         self.assertTrue(torch.allclose(matrix, target_matrix))
 
     def test_affine_subtypes(self):
+        sample = {'data': torch.rand(1, 3, 25, 30)}
 
-        sample = {'data': torch.rand(10, 3, 25, 25)}
         trafos = [
-            Scale(5),
-            Rotate(45),
-            Translate(10),
-            Resize((5, 4))
+            Scale([5, 3], adjust_size=True),
+            Resize([50, 90]),
+            Rotate([90], adjust_size=True, degree=True),
         ]
 
-        for trafo in trafos:
-            with self.subTest(trafo=trafo):
-                self.assertIsInstance(trafo(**sample)['data'], torch.Tensor)
+        expected_sizes = [
+            (5, 10),
+            (50, 90),
+            (30, 25),
+        ]
 
-        self.assertTupleEqual((5, 4), trafos[-1](**sample)['data'].shape[2:])
+        for trafo, expected_size in zip(trafos, expected_sizes):
+            with self.subTest(trafo=trafo, exp_size=expected_size):
+                result = trafo(**sample)['data']
+                self.assertIsInstance(result, torch.Tensor)
+                self.assertTupleEqual(expected_size, result.shape[-2:])
+
+    def test_translation_assemble_matrix_with_pixel(self):
+        trafo = Translate([1, 10, 100], unit='pixel')
+        sample = {'data': torch.rand(3, 3, 100, 100)}
+        expected = torch.tensor([[1., 0., -0.01], [0., 1., -0.01],
+                                 [1., 0., -0.1], [0., 1., -0.1],
+                                 [1., 0., -1.], [0., 1., -1.]])
+
+        trafo.assemble_matrix(**sample)
+        self.assertTrue(expected.allclose(expected))
 
 
 if __name__ == '__main__':
