@@ -1,6 +1,6 @@
 import unittest
 from rising.utils.affine import points_to_homogeneous, matrix_to_homogeneous, \
-    matrix_to_cartesian, points_to_cartesian, \
+    matrix_to_cartesian, points_to_cartesian, matrix_revert_coordinate_order, \
     get_batched_eye, deg_to_rad, unit_box
 import torch
 import math
@@ -182,6 +182,24 @@ class AffineHelperTests(unittest.TestCase):
             ])
         created_box = unit_box(3, curr_img_size).to(box)
         self.compare_points_unordered(box, created_box)
+
+    def test_matrix_coordinate_order(self):
+        inputs = [
+            torch.tensor([[[1, 2, 3],
+                           [4, 5, 6],
+                           [7, 8, 9]]])
+        ]
+
+        expectations = [
+            torch.tensor([[[5, 4, 6],
+                           [2, 1, 3],
+                           [7, 8, 9]]])
+        ]
+
+        for inp, exp in zip(inputs, expectations):
+            with self.subTest(input=inp, expected=exp):
+                self.assertTrue(torch.allclose(matrix_revert_coordinate_order(inp), exp))
+                # self.assertTrue(torch.allclose(inp, matrix_revert_coordinate_order(exp)))
 
 
 if __name__ == '__main__':

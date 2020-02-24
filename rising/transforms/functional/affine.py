@@ -4,7 +4,8 @@ from torch import Tensor
 from typing import Union, Sequence
 
 from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
-    points_to_homogeneous, unit_box, get_batched_eye, deg_to_rad
+    points_to_homogeneous, unit_box, get_batched_eye, deg_to_rad, \
+    matrix_revert_coordinate_order
 from rising.utils.checktype import check_scalar
 
 
@@ -211,14 +212,14 @@ def create_rotation(rotation: AffineParamType,
         rotation = 0
     num_rot_params = 1 if ndim == 2 else ndim
 
-    rotation = expand_scalar_param(rotation, batchsize, num_rot_params)
+    rotation = expand_scalar_param(rotation, batchsize, num_rot_params).to(
+        device=device, dtype=dtype)
     if degree:
         rotation = deg_to_rad(rotation)
 
     matrix_fn = create_rotation_2d if ndim == 2 else create_rotation_3d
     sin, cos = torch.sin(rotation), torch.cos(rotation)
-    rotation_matrix = torch.stack([matrix_fn(s, c) for s, c in zip(sin, cos)]).to(
-        device=device, dtype=dtype)
+    rotation_matrix = torch.stack([matrix_fn(s, c) for s, c in zip(sin, cos)])
     return matrix_to_homogeneous(rotation_matrix)
 
 
@@ -238,7 +239,9 @@ def create_rotation_2d(sin: Tensor, cos: Tensor) -> Tensor:
     Tensor
         rotation matrix, [2, 2]
     """
-    return torch.tensor([[cos.clone(), -sin.clone()], [sin.clone(), cos.clone()]])
+    return torch.tensor([[cos.clone(), -sin.clone()],
+                         [sin.clone(), cos.clone()]],
+                        device=sin.device, dtype=sin.dtype)
 
 
 def create_rotation_3d(sin: Tensor, cos: Tensor) -> Tensor:
@@ -282,7 +285,8 @@ def create_rotation_3d_0(sin: Tensor, cos: Tensor) -> Tensor:
     """
     return torch.tensor([[1., 0., 0.],
                          [0., cos.clone(), -sin.clone()],
-                         [0., sin.clone(), cos.clone()]])
+                         [0., sin.clone(), cos.clone()]],
+                        device=sin.device, dtype=sin.dtype)
 
 
 def create_rotation_3d_1(sin: Tensor, cos: Tensor) -> Tensor:
@@ -303,7 +307,8 @@ def create_rotation_3d_1(sin: Tensor, cos: Tensor) -> Tensor:
     """
     return torch.tensor([[cos.clone(), 0., sin.clone()],
                          [0., 1., 0.],
-                         [-sin.clone(), 0., cos.clone()]])
+                         [-sin.clone(), 0., cos.clone()]],
+                        device=sin.device, dtype=sin.dtype)
 
 
 def create_rotation_3d_2(sin: Tensor, cos: Tensor) -> Tensor:
@@ -324,7 +329,8 @@ def create_rotation_3d_2(sin: Tensor, cos: Tensor) -> Tensor:
     """
     return torch.tensor([[cos.clone(), -sin.clone(), 0.],
                          [sin.clone(), cos.clone(), 0.],
-                         [0., 0., 1.]])
+                         [0., 0., 1.]],
+                        device=sin.device, dtype=sin.dtype)
 
 
 def parametrize_matrix(scale: AffineParamType,
@@ -440,7 +446,8 @@ def affine_image_transform(image_batch: torch.Tensor,
                            adjust_size: bool = False,
                            interpolation_mode: str = 'bilinear',
                            padding_mode: str = 'zeros',
-                           align_corners: bool = False) -> torch.Tensor:
+                           align_corners: bool = False,
+                           reverse_order: bool = False,) -> torch.Tensor:
     """
     Performs an affine transformation on a batch of images
 
@@ -513,6 +520,9 @@ def affine_image_transform(image_batch: torch.Tensor,
         new_size = (*image_batch.shape[:missing_dims], *new_size)
 
     matrix_batch = matrix_batch.to(image_batch)
+
+    if reverse_order:
+        matrix_batch = matrix_revert_coordinate_order(matrix_batch)
 
     grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size,
                                            align_corners=align_corners)

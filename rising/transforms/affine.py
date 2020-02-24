@@ -28,6 +28,7 @@ class Affine(BaseTransform):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
+                 reverse_order: bool = False,
                  **kwargs):
         """
         Class Performing an Affine Transformation on a given sample dict.
@@ -57,12 +58,17 @@ class Affine(BaseTransform):
         padding_mode :
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
             additional keyword arguments passed to the affine transform
         """
@@ -76,6 +82,7 @@ class Affine(BaseTransform):
         self.interpolation_mode = interpolation_mode
         self.padding_mode = padding_mode
         self.align_corners = align_corners
+        self.reverse_order = reverse_order
 
     def assemble_matrix(self, **data) -> torch.Tensor:
         """
@@ -142,6 +149,7 @@ class Affine(BaseTransform):
                 interpolation_mode=self.interpolation_mode,
                 padding_mode=self.padding_mode,
                 align_corners=self.align_corners,
+                reverse_order=self.reverse_order,
                 **self.kwargs
             )
 
@@ -222,6 +230,7 @@ class StackedAffine(Affine):
             interpolation_mode: str = 'bilinear',
             padding_mode: str = 'zeros',
             align_corners: bool = False,
+            reverse_order: bool = False,
             **kwargs):
         """
         Class Performing an Affine Transformation on a given sample dict.
@@ -252,17 +261,20 @@ class StackedAffine(Affine):
         padding_mode :
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
             additional keyword arguments passed to the affine transform
-
         """
-
         if isinstance(transforms, (tuple, list)):
             if isinstance(transforms[0], (tuple, list)):
                 transforms = transforms[0]
@@ -277,6 +289,7 @@ class StackedAffine(Affine):
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
+                         reverse_order=reverse_order,
                          **kwargs)
 
         self.transforms = transforms
@@ -321,6 +334,7 @@ class BaseAffine(Affine):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
+                 reverse_order: bool = False,
                  **kwargs,
                  ):
         """
@@ -382,18 +396,24 @@ class BaseAffine(Affine):
         padding_mode :
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
             additional keyword arguments passed to the affine transform
         """
         super().__init__(keys=keys, grad=grad, output_size=output_size,
                          adjust_size=adjust_size, interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode, align_corners=align_corners,
+                         reverse_order=reverse_order,
                          **kwargs)
         self.scale = scale
         self.rotation = rotation
@@ -440,6 +460,7 @@ class Rotate(BaseAffine):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
+                 reverse_order: bool = False,
                  **kwargs):
         """
         Class Performing a Rotation-OnlyAffine Transformation on a given
@@ -480,14 +501,19 @@ class Rotate(BaseAffine):
         padding_mode :
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
-                    additional keyword arguments passed to the affine transform
+            additional keyword arguments passed to the affine transform
         """
         super().__init__(scale=None,
                          rotation=rotation,
@@ -501,6 +527,7 @@ class Rotate(BaseAffine):
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
+                         reverse_order=reverse_order,
                          **kwargs)
 
 
@@ -515,6 +542,7 @@ class Translate(BaseAffine):
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
                  unit: str = 'relative',
+                 reverse_order: bool = False,
                  **kwargs):
         """
         Class Performing an Translation-Only
@@ -551,7 +579,8 @@ class Translate(BaseAffine):
         padding_mode : str
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
@@ -562,6 +591,10 @@ class Translate(BaseAffine):
             'pixel': define number of pixels to translate | 'relative':
             translation should be in the range [0, 1] and is scaled
             with the image size
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
             additional keyword arguments passed to the affine transform
         """
@@ -577,6 +610,7 @@ class Translate(BaseAffine):
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
+                         reverse_order=reverse_order,
                          **kwargs)
         self.unit = unit
 
@@ -613,6 +647,7 @@ class Scale(BaseAffine):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
+                 reverse_order: bool = False,
                  **kwargs):
         """
         Class Performing a Scale-Only Affine Transformation on a given
@@ -652,18 +687,19 @@ class Scale(BaseAffine):
         padding_mode :
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
             additional keyword arguments passed to the affine transform
-
-        Warnings
-        --------
-        This transform is not applied around the image center
         """
         super().__init__(scale=scale,
                          rotation=None,
@@ -677,6 +713,7 @@ class Scale(BaseAffine):
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
+                         reverse_order=reverse_order,
                          **kwargs)
 
 
@@ -688,6 +725,7 @@ class Resize(Scale):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
+                 reverse_order: bool = False,
                  **kwargs):
         """
         Class Performing a Resizing Affine Transformation on a given
@@ -710,12 +748,17 @@ class Resize(Scale):
         padding_mode :
             padding mode for outside grid values
             'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : Geometrically, we consider the pixels of the input as
+        align_corners : bool
+            Geometrically, we consider the pixels of the input as
             squares rather than points. If set to True, the extrema (-1 and 1)
             are considered as referring to the center points of the input’s
             corner pixels. If set to False, they are instead considered as
             referring to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: bool
+            reverses the coordinate order of the transformation to conform
+            to the pytorch convention: transformation params order [W,H(,D)] and
+            batch order [(D,)H,W]
         **kwargs :
             additional keyword arguments passed to the affine transform
 
@@ -723,12 +766,6 @@ class Resize(Scale):
         ----
         The offsets for shifting back and to origin are calculated on the
         entry matching the first item iin :attr:`keys` for each batch
-
-        Note
-        ----
-        The target size must be specified in x, y (,z) order and will be
-        converted to (D,) H, W order internally
-
         """
         super().__init__(output_size=size,
                          scale=None,
@@ -738,6 +775,7 @@ class Resize(Scale):
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
+                         reverse_order=reverse_order,
                          **kwargs)
 
     def assemble_matrix(self, **data) -> torch.Tensor:

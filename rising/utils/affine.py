@@ -2,7 +2,7 @@ import torch
 import itertools
 
 from math import pi
-from typing import Union, Sequence
+from typing import Union
 
 
 def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
@@ -102,6 +102,25 @@ def points_to_cartesian(batch: torch.Tensor) -> torch.Tensor:
     """
 
     return batch[..., :-1] / batch[..., -1, None]
+
+
+def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
+    """
+    Reverts the coordinate order of a matrix (e.g. from xyz to zyx).
+    Parameters
+    ----------
+    batch : torch.Tensor
+        the batched transformation matrices; Should be of shape
+        BATCHSIZE x NDIM x NDIM
+    Returns
+    -------
+    torch.Tensor
+        the matrix performing the same transformation on vectors with a
+        reversed coordinate order
+    """
+    batch[:, :-1, :] = batch[:, :-1, :].flip(1).clone()
+    batch[:, :-1, :-1] = batch[:, :-1, :-1].flip(2).clone()
+    return batch
 
 
 def get_batched_eye(batchsize: int, ndim: int,
