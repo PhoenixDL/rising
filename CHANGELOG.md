@@ -2,6 +2,7 @@
 
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
+| 2020-02-24 | a11abc7cd1c57bdf66f5a61fcfc5140e395a7246 | Refactor Affine Transforms | Yes |
 | 2020-02-17 | f69f36918a03bac835ff6bbe9b5cc7045bcf5d92 | Add Transforms to pop and filter keys | No |
 | 2020-02-17 | 5053ca76f7fc43ff813748d040c69d490ba0210c | Use ModuleList in Compose | No |
 | 2020-02-17 | 26d7c9432b90247f8b9e0ab3e6881e88fb7749d4 | Add Resizing Transform | No |
