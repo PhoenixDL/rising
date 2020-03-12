@@ -402,9 +402,8 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
         loader : DataLoader
             the dataloader instance to iterate over
         """
-        with patch_worker_init_fn(loader, new_worker_init_fn):
-            with patch_collate_fn(loader):
-                super().__init__(loader)
+        with patch_collate_fn(loader):
+            super().__init__(loader)
 
         self._gpu_transforms = loader.get_gpu_batch_transformer()
 
