@@ -56,8 +56,8 @@ def h5ify(dset: Dataset, hdf5_path: Union[str, Path], dset_name: str,
         for idx in tqdm(range(0, len(dset))):
             sample = numpy_collate(dset[idx])
 
-            if isinstance(sample, Sequence):
-                sample = {idx, v for idx, v in enumerate(sample)}
+            if isinstance(sample, Sequence) and not isinstance(sample, str):
+                sample = {idx: v for idx, v in enumerate(sample)}
 
             if idx == 0:
                 for key, val in sample.items():
