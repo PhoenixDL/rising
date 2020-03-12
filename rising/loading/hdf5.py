@@ -8,7 +8,7 @@ from pathlib import Path
 from rising.loading.collate import numpy_collate
 
 
-def h5ify(dset: Dataset, hdf5_path: Union[str, Path], dset_name: str, 
+def h5ify(dset: Dataset, hdf5_path: Union[str, Path], dset_name: str,
           overwrite: bool = False, strict: bool = True):
     """
 
@@ -80,7 +80,7 @@ def h5ify(dset: Dataset, hdf5_path: Union[str, Path], dset_name: str,
 
 
 class Hdf5Dataset(Dataset):
-    def __init__(self, hdf5_path: Union[str, Path], dset_name: str, 
+    def __init__(self, hdf5_path: Union[str, Path], dset_name: str,
                  keep_open: bool = False):
         """
         Dataset to read from a given hdf5 file.
