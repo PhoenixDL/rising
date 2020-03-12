@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import contextmanager
 
 import torch
 import warnings
@@ -178,10 +179,8 @@ class DataLoader(_DataLoader):
                           RuntimeWarning)
             gpu_transforms = None
 
-        self.collate_fn = BatchTransformer(self.collate_fn,
-                                           transforms=batch_transforms,
-                                           auto_convert=auto_convert,
-                                           transform_call=transform_call)
+        self.batch_transforms = batch_transforms
+
         if gpu_transforms is not None:
             if device is None:
                 device = torch.cuda.current_device()
@@ -191,11 +190,27 @@ class DataLoader(_DataLoader):
             gpu_transforms = Compose(to_gpu_trafo, gpu_transforms)
             gpu_transforms = gpu_transforms.to(device)
 
-        self.gpu_transforms = BatchTransformer(do_nothing_collate,
-                                               transforms=gpu_transforms,
-                                               auto_convert=auto_convert,
-                                               transform_call=transform_call
-                                               )
+        self.gpu_transforms = gpu_transforms
+        self.auto_convert = auto_convert
+        self.transform_call = transform_call
+
+    def get_batch_transformer(self):
+        # this is a function on purpose, since frameworks like ignite parse
+        # the class dict to specify what to treat as args during reinit
+        return BatchTransformer(
+            self.collate_fn,
+            transforms=self.batch_transforms,
+            auto_convert=self.auto_convert,
+            transform_call=self.transform_call)
+
+    def get_gpu_batch_transformer(self):
+        # this is a function on purpose, since frameworks like ignite parse
+        # the class dict to specify what to treat as args during reinit
+        return BatchTransformer(do_nothing_collate,
+                                transforms=self.gpu_transforms,
+                                auto_convert=self.auto_convert,
+                                transform_call=self.transform_call
+                                )
 
     def __iter__(self) -> Union[_SingleProcessDataLoaderIter,
                                 _MultiProcessingDataLoaderIter]:
@@ -211,6 +226,59 @@ class DataLoader(_DataLoader):
             return _SingleProcessDataLoaderIter(self)
         else:
             return _MultiProcessingDataLoaderIter(self)
+
+
+@contextmanager
+def patch_worker_init_fn(loader: DataLoader, new_worker_init: Callable):
+    """
+    Patches the loader to temporarily have the correct worker init function.
+
+    Parameters
+    ----------
+    loader : DataLoader
+        the loader to patch
+    new_worker_init : Callable
+        the new worker init function
+
+    Yields
+    ------
+    DataLoader
+        the patched loader
+
+    """
+    old_init = loader.worker_init_fn
+    loader.worker_init_fn = new_worker_init
+
+    yield loader
+
+    loader.worker_init_fn = old_init
+
+
+@contextmanager
+def patch_collate_fn(loader: DataLoader):
+    """
+    Patches the loader to temporarily have the correct collate function
+
+     Parameters
+    ----------
+    loader : DataLoader
+        the loader to patch
+    new_worker_init : Callable
+        the new worker init function
+
+    Yields
+    ------
+    DataLoader
+        the patched loader
+
+    """
+
+    old_collate_fn = loader.collate_fn
+    loader.collate_fn = loader.get_batch_transformer()
+
+    yield loader
+
+    loader.collate_fn = old_collate_fn
 
 
 class BatchTransformer(object):
@@ -303,15 +371,13 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
             new_worker_init_fn = partial(_seed_npy_before_worker_init,
                                          seed=npy_seed,
                                          worker_init_fn=old_worker_init)
-        loader.worker_init_fn = new_worker_init_fn
 
-        with threadpool_limits(limits=1, user_api='blas'):
-            super().__init__(loader)
+        with patch_worker_init_fn(loader, new_worker_init_fn):
+            with patch_collate_fn(loader):
+                with threadpool_limits(limits=1, user_api='blas'):
+                    super().__init__(loader)
 
-        # reset worker_init_fn once the workers have been startet to reset
-        # to original state for next epoch
-        loader.worker_init_fn = old_worker_init
-        self._gpu_transforms = loader.gpu_transforms
+        self._gpu_transforms = loader.get_gpu_batch_transformer()
 
     def __next__(self) -> Any:
         """
@@ -336,8 +402,11 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
         loader : DataLoader
             the dataloader instance to iterate over
         """
-        super().__init__(loader)
-        self._gpu_transforms = loader.gpu_transforms
+        with patch_worker_init_fn(loader, new_worker_init_fn):
+            with patch_collate_fn(loader):
+                super().__init__(loader)
+
+        self._gpu_transforms = loader.get_gpu_batch_transformer()
 
     def __next__(self) -> Any:
         """
