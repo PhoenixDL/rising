@@ -2,19 +2,21 @@ from rising.loading.dataset import Dataset
 import os
 import numpy as np
 from tqdm import tqdm
+from typing import Union
+from pathlib import Path
 
 from rising.loading.collate import numpy_collate
 
 
-def h5ify(dset: Dataset, hdf5_path: str, dset_name: str, overwrite: bool = False,
-          strict: bool = True):
+def h5ify(dset: Dataset, hdf5_path: Union[str, Path], dset_name: str, 
+          overwrite: bool = False, strict: bool = True):
     """
 
     Parameters
     ----------
     dset : Dataset
         The dataset to write a hdf5 path from
-    hdf5_path : str
+    hdf5_path : str, Path
         the path to save the hdf5 file to
     dset_name : str
         the name of the dataset
@@ -78,13 +80,14 @@ def h5ify(dset: Dataset, hdf5_path: str, dset_name: str, overwrite: bool = False
 
 
 class Hdf5Dataset(Dataset):
-    def __init__(self, hdf5_path: str, dset_name: str, keep_open: bool = False):
+    def __init__(self, hdf5_path: Union[str, Path], dset_name: str, 
+                 keep_open: bool = False):
         """
         Dataset to read from a given hdf5 file.
 
         Parameters
         ----------
-        hdf5_path : str
+        hdf5_path : str, Path
             the path to the hdf5 file
         dset_name : str
             the datasets name
@@ -126,7 +129,7 @@ class Hdf5Dataset(Dataset):
         """
 
         import h5py
-        if isinstance(self.hdf5_path, str):
+        if isinstance(self.hdf5_path, (str, Path)):
             file = h5py.File(self.hdf5_path, 'r')
         else:
             file = self.hdf5_path
@@ -144,5 +147,5 @@ class Hdf5Dataset(Dataset):
             self.hdf5_path = path
 
     def __del__(self):
-        if not isinstance(self.hdf5_path, str):
+        if not isinstance(self.hdf5_path, (str, Path)):
             self.hdf5_path.close()
