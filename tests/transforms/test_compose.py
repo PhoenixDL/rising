@@ -34,7 +34,7 @@ class TestCompose(unittest.TestCase):
         compose = Compose(self.transforms)
         outp = compose(**self.batch)
         self.assertTrue((self.batch["data"] == outp["data"]).all())
-    
+
     def test_compose_multiple_tuple(self):
         compose = Compose(tuple(self.transforms))
         outp = compose(**self.batch)
