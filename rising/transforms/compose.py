@@ -68,6 +68,11 @@ class Compose(AbstractTransform):
         super().__init__(grad=True)
         if isinstance(transforms[0], Sequence):
             transforms = transforms[0]
+            
+        # make transforms a list to be mutable.
+        # Otherwise the enforced typesetting below might fail.
+        if isinstance(transforms, tuple):
+            transforms = list(transforms)
 
         for idx, trafo in enumerate(transforms):
             if not isinstance(trafo, torch.nn.Module):
