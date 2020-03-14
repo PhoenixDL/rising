@@ -3,6 +3,7 @@
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
 | 2020-03-14 | 9423a31bd117ac64c294997ae0c5d755024d8fd8 | Make transform sequence mutable in Compose | No |
+| 2020-03-14 | d9bf35202e59b04d566208310046efb7c429bef6 | Update DataLoader to work better with frameworks like ignite| No |
 | 2020-02-24 | a11abc7cd1c57bdf66f5a61fcfc5140e395a7246 | Refactor Affine Transforms | Yes |
 | 2020-02-17 | f69f36918a03bac835ff6bbe9b5cc7045bcf5d92 | Add Transforms to pop and filter keys | No |
 | 2020-02-17 | 5053ca76f7fc43ff813748d040c69d490ba0210c | Use ModuleList in Compose | No |
