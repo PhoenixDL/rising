@@ -35,6 +35,11 @@ class TestCompose(unittest.TestCase):
         outp = compose(**self.batch)
         self.assertTrue((self.batch["data"] == outp["data"]).all())
 
+    def test_compose_multiple_tuple(self):
+        compose = Compose(tuple(self.transforms))
+        outp = compose(**self.batch)
+        self.assertTrue((self.batch["data"] == outp["data"]).all())
+
     def test_dropout_compose(self):
         compose = DropoutCompose(self.transforms[0], dropout=0.0)
         outp = compose(**self.batch)
