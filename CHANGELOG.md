@@ -2,6 +2,7 @@
 
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
+| 2020-03-14 | 4e347fb1252c53189417adcbeb8ef13f8471712f | Add 3.8 Tests | No |
 | 2020-03-14 | 9423a31bd117ac64c294997ae0c5d755024d8fd8 | Make transform sequence mutable in Compose | No |
 | 2020-03-14 | d9bf35202e59b04d566208310046efb7c429bef6 | Update DataLoader to work better with frameworks like ignite| No |
 | 2020-02-24 | a11abc7cd1c57bdf66f5a61fcfc5140e395a7246 | Refactor Affine Transforms | Yes |
