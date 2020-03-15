@@ -120,7 +120,7 @@ class Resize(BaseTransform):
         Parameters
         ----------
         size: Union[int, Sequence[int]]
-            output size (with channel and batch dim)
+            spatial output size (excluding batch size and number of channels)
         mode: str
             one of :param:`nearest`, :param:`linear`, :param:`bilinear`, :param:`bicubic`,
             :param:`trilinear`, :param:`area` (for more inforamtion see :func:`torch.nn.functional.interpolate`
