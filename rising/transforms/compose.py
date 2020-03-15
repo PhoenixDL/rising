@@ -108,7 +108,7 @@ class Compose(AbstractTransform):
         return data
 
     @property
-    def transforms(self):
+    def transforms(self) -> torch.nn.ModuleList:
         """
         Transforms getter
 
@@ -120,7 +120,8 @@ class Compose(AbstractTransform):
         return self._transforms
 
     @transforms.setter
-    def transforms(self, transforms):
+    def transforms(self, transforms: Union[AbstractTransform,
+                                           Sequence[AbstractTransform]]):
         """
         Transforms setter
 
