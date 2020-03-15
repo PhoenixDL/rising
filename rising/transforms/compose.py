@@ -97,6 +97,7 @@ class Compose(AbstractTransform):
             dict with transformed data
         """
         assert not (seq_like and map_like)
+        assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
         
         if self.shuffle:
@@ -232,6 +233,7 @@ class DropoutCompose(RandomProcess, Compose):
             dict with transformed data
         """
         assert not (seq_like and map_like)
+        assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
 
         for idx in self.transform_order:
