@@ -1,6 +1,8 @@
 
 import unittest
 import torch
+import random
+import copy
 
 from rising.transforms.spatial import Mirror
 from rising.transforms.compose import Compose, DropoutCompose, \
@@ -34,6 +36,21 @@ class TestCompose(unittest.TestCase):
         compose = Compose(self.transforms)
         outp = compose(**self.batch)
         self.assertTrue((self.batch["data"] == outp["data"]).all())
+    
+    def test_compose_shuffle(self):
+        compose = Compose([Mirror(dims=(0,))] * 10, shuffle=True)
+        
+        random.seed(0)
+        outp = compose(**self.batch)
+        
+        order = list(range(len(compose.transforms)))
+        expected_order = copy.deepcopy(order)
+        random.seed(0)
+        random.shuffle(expected_order)
+        
+        self.assertEqual(compose.transform_order, expected_order)
+        self.assertNotEqual(expected_order, order)
+
 
     def test_compose_multiple_tuple(self):
         compose = Compose(tuple(self.transforms))
