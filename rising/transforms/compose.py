@@ -99,19 +99,19 @@ class Compose(AbstractTransform):
         assert not (seq_like and map_like)
         assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
-        
+
         if self.shuffle:
             shuffle(self.transform_order)
 
         for idx in self.transform_order:
             data = self.transform_call(data, self.transforms[idx])
         return data
-    
+
     @property
     def transforms(self):
         """
         Transforms getter
-        
+
         Returns
         -------
         torch.nn.ModuleList
@@ -129,7 +129,7 @@ class Compose(AbstractTransform):
         transforms: Union[AbstractTransform, Sequence[AbstractTransform]]
             one or multiple transformations which are applied in consecutive
             order
-        
+
         Returns
         -------
         torch.nn.ModuleList
@@ -151,7 +151,7 @@ class Compose(AbstractTransform):
     def shuffle(self) -> bool:
         """
         Getter for attribute shuffle
-        
+
         Returns
         -------
         bool
@@ -163,7 +163,7 @@ class Compose(AbstractTransform):
     def shuffle(self, shuffle: bool):
         """
         Setter for shuffle
-        
+
         Parameters
         ----------
         shuffle : bool
