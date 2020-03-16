@@ -5,6 +5,11 @@ __pycache__/
 *.vscode
 __pycache__
 *.pyc
+*.idea
+*.DS_Store
+
+# data which is automatically downloaded inside notebooks
+notebooks/ExBox3
 
 # C extensions
 *.so
