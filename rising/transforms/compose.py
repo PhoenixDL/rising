@@ -66,7 +66,7 @@ class Compose(AbstractTransform):
             one or multiple transformations which are applied in consecutive
             order
         shuffle: bool
-            aplly transforms in random order
+            apply transforms in random order
         transform_call: Callable[[Any, Callable], Any], optional
             function which determines how transforms are called. By default
             Mappings and Sequences are unpacked during the transform.
