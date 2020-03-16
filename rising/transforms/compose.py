@@ -1,7 +1,10 @@
+import torch
+from random import shuffle
 from typing import Sequence, Union, Callable, Any, Mapping
+
+
 from rising.utils import check_scalar
 from rising.transforms import AbstractTransform, RandomProcess
-import torch
 
 
 __all__ = ["Compose", "DropoutCompose"]
@@ -52,7 +55,7 @@ class _TransformWrapper(torch.nn.Module):
 
 
 class Compose(AbstractTransform):
-    def __init__(self, *transforms,
+    def __init__(self, *transforms, shuffle: bool = False,
                  transform_call: Callable[[Any, Callable], Any] = dict_call):
         """
         Compose multiple transforms
@@ -60,7 +63,10 @@ class Compose(AbstractTransform):
         Parameters
         ----------
         transforms: Union[AbstractTransform, Sequence[AbstractTransform]]
-            one or multiple transformations which are applied in consecutive order
+            one or multiple transformations which are applied in consecutive
+            order
+        shuffle: bool
+            apply transforms in random order
         transform_call: Callable[[Any, Callable], Any], optional
             function which determines how transforms are called. By default
             Mappings and Sequences are unpacked during the transform.
@@ -69,17 +75,9 @@ class Compose(AbstractTransform):
         if isinstance(transforms[0], Sequence):
             transforms = transforms[0]
 
-        # make transforms a list to be mutable.
-        # Otherwise the enforced typesetting below might fail.
-        if isinstance(transforms, tuple):
-            transforms = list(transforms)
-
-        for idx, trafo in enumerate(transforms):
-            if not isinstance(trafo, torch.nn.Module):
-                transforms[idx] = _TransformWrapper(trafo)
-
-        self.transforms = torch.nn.ModuleList(transforms)
+        self.transforms = transforms
         self.transform_call = transform_call
+        self.shuffle = shuffle
 
     def forward(self, *seq_like, **map_like) -> Union[Sequence, Mapping]:
         """
@@ -99,11 +97,81 @@ class Compose(AbstractTransform):
             dict with transformed data
         """
         assert not (seq_like and map_like)
+        assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
 
-        for trafo in self.transforms:
-            data = self.transform_call(data, trafo)
+        if self.shuffle:
+            shuffle(self.transform_order)
+
+        for idx in self.transform_order:
+            data = self.transform_call(data, self.transforms[idx])
         return data
+
+    @property
+    def transforms(self) -> torch.nn.ModuleList:
+        """
+        Transforms getter
+
+        Returns
+        -------
+        torch.nn.ModuleList
+            transforms to compose
+        """
+        return self._transforms
+
+    @transforms.setter
+    def transforms(self, transforms: Union[AbstractTransform,
+                                           Sequence[AbstractTransform]]):
+        """
+        Transforms setter
+
+        Parameters
+        ----------
+        transforms: Union[AbstractTransform, Sequence[AbstractTransform]]
+            one or multiple transformations which are applied in consecutive
+            order
+
+        Returns
+        -------
+        torch.nn.ModuleList
+            transforms to compose
+        """
+        # make transforms a list to be mutable.
+        # Otherwise the enforced typesetting below might fail.
+        if isinstance(transforms, tuple):
+            transforms = list(transforms)
+
+        for idx, trafo in enumerate(transforms):
+            if not isinstance(trafo, torch.nn.Module):
+                transforms[idx] = _TransformWrapper(trafo)
+
+        self._transforms = torch.nn.ModuleList(transforms)
+        self.transform_order = list(range(len(self.transforms)))
+
+    @property
+    def shuffle(self) -> bool:
+        """
+        Getter for attribute shuffle
+
+        Returns
+        -------
+        bool
+            True if shuffle is enabled, False otherwise
+        """
+        return self._shuffle
+
+    @shuffle.setter
+    def shuffle(self, shuffle: bool):
+        """
+        Setter for shuffle
+
+        Parameters
+        ----------
+        shuffle : bool
+            new status of shuffle
+        """
+        self._shuffle = shuffle
+        self.transform_order = list(range(len(self.transforms)))
 
 
 class DropoutCompose(RandomProcess, Compose):
@@ -166,9 +234,10 @@ class DropoutCompose(RandomProcess, Compose):
             dict with transformed data
         """
         assert not (seq_like and map_like)
+        assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
 
-        for trafo, drop in zip(self.transforms, self.dropout):
-            if self.rand() > drop:
-                data = self.transform_call(data, trafo)
+        for idx in self.transform_order:
+            if self.rand() > self.dropout[idx]:
+                data = self.transform_call(data, self.transforms[idx])
         return data
