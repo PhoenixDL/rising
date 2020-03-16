@@ -2,6 +2,7 @@
 
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
+| 2020-03-16 | 70c133a231bec1d8bb858e9d82a81b88651d874e | Add option to shuffle transforms in compose | No |
 | 2020-03-14 | 4e347fb1252c53189417adcbeb8ef13f8471712f | Add 3.8 Tests | No |
 | 2020-03-14 | 9423a31bd117ac64c294997ae0c5d755024d8fd8 | Make transform sequence mutable in Compose | No |
 | 2020-03-14 | d9bf35202e59b04d566208310046efb7c429bef6 | Update DataLoader to work better with frameworks like ignite| No |
