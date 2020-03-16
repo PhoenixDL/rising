@@ -64,7 +64,7 @@ def resize(data: torch.Tensor, size: Union[int, Sequence[int]] = None,
     data: torch.Tensor
         input tensor of shape batch x channels x height x width x [depth]
     size: Union[int, Sequence[int]]
-        output size (with channel and batch dim)
+        spatial output size (excluding batch size and number of channels)
     scale_factor: Union[int, Sequence[int]]
         multiplier for spatial size
     mode: str
