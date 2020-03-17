@@ -2,11 +2,12 @@ import torch
 import random
 from typing import Union, Sequence
 
-from .abstract import BaseTransform, PerSampleTransform, AbstractTransform, \
-    PerChannelTransform, RandomProcess
+from rising.transforms.abstract import BaseTransform, PerSampleTransform, AbstractTransform, \
+    PerChannelTransform
 from rising.utils import check_scalar
 from rising.transforms.functional.intensity import norm_range, norm_min_max, norm_mean_std, \
     norm_zero_mean_unit_std, add_noise, gamma_correction, add_value, scale_by_value
+from rising.random import AbstractParameter, UniformParameter
 
 __all__ = ["Clamp", "NormRange", "NormMinMax",
            "NormZeroMeanUnitStd", "NormMeanStd", "Noise",
@@ -15,7 +16,9 @@ __all__ = ["Clamp", "NormRange", "NormMinMax",
 
 
 class Clamp(BaseTransform):
-    def __init__(self, min: float, max: float, keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(self, min: Union[float, AbstractParameter],
+                 max: Union[float, AbstractParameter],
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Apply augment_fn to keys
 
@@ -30,11 +33,14 @@ class Clamp(BaseTransform):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=torch.clamp, keys=keys, grad=grad, min=min, max=max, **kwargs)
+        super().__init__(augment_fn=torch.clamp, keys=keys, grad=grad,
+                         min=min, max=max, property_names=('min', 'max'),
+                         **kwargs)
 
 
 class NormRange(PerSampleTransform):
-    def __init__(self, min: float, max: float, keys: Sequence = ('data',), per_channel: bool = True,
+    def __init__(self, min: float, max: float, keys: Sequence = ('data',),
+                 per_channel: bool = True,
                  grad: bool = False, **kwargs):
         """
         Scale data to provided min and max values
@@ -55,11 +61,13 @@ class NormRange(PerSampleTransform):
             keyword arguments passed to normalization function
         """
         super().__init__(augment_fn=norm_range, keys=keys, grad=grad,
-                         min=min, max=max, per_channel=per_channel, **kwargs)
+                         min=min, max=max, per_channel=per_channel,
+                         property_names=('min', 'max'), **kwargs)
 
 
 class NormMinMax(PerSampleTransform):
-    def __init__(self, keys: Sequence = ('data',), per_channel: bool = True, grad: bool = False, **kwargs):
+    def __init__(self, keys: Sequence = ('data',), per_channel: bool = True,
+                 grad: bool = False, **kwargs):
         """
         Scale data to [0, 1]
 
@@ -79,7 +87,8 @@ class NormMinMax(PerSampleTransform):
 
 
 class NormZeroMeanUnitStd(PerSampleTransform):
-    def __init__(self, keys: Sequence = ('data',), per_channel: bool = True, grad: bool = False, **kwargs):
+    def __init__(self, keys: Sequence = ('data',), per_channel: bool = True,
+                 grad: bool = False, **kwargs):
         """
         Normalize mean to zero and std to one
 
@@ -94,13 +103,16 @@ class NormZeroMeanUnitStd(PerSampleTransform):
         kwargs:
             keyword arguments passed to normalization function
         """
-        super().__init__(augment_fn=norm_zero_mean_unit_std, keys=keys, grad=grad,
+        super().__init__(augment_fn=norm_zero_mean_unit_std, keys=keys,
+                         grad=grad,
                          per_channel=per_channel, **kwargs)
 
 
 class NormMeanStd(PerSampleTransform):
-    def __init__(self, mean: Union[float, Sequence], std: Union[float, Sequence],
-                 keys: Sequence = ('data',), per_channel: bool = True, grad: bool = False, **kwargs):
+    def __init__(self, mean: Union[float, Sequence],
+                 std: Union[float, Sequence],
+                 keys: Sequence = ('data',), per_channel: bool = True,
+                 grad: bool = False, **kwargs):
         """
         Normalize mean and std with provided values
 
@@ -151,7 +163,8 @@ class Noise(PerChannelTransform):
 
 
 class ExponentialNoise(Noise):
-    def __init__(self, lambd: float, keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(self, lambd: float, keys: Sequence = ('data',),
+                 grad: bool = False, **kwargs):
         """
         Add exponential noise to data
 
@@ -166,11 +179,13 @@ class ExponentialNoise(Noise):
         kwargs:
             keyword arguments passed to noise function
         """
-        super().__init__(noise_type='exponential_', lambd=lambd, keys=keys, grad=grad, **kwargs)
+        super().__init__(noise_type='exponential_', lambd=lambd, keys=keys,
+                         grad=grad, **kwargs)
 
 
 class GaussianNoise(Noise):
-    def __init__(self, mean: float, std: float, keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(self, mean: float, std: float, keys: Sequence = ('data',),
+                 grad: bool = False, **kwargs):
         """
         Add noise to data
 
@@ -187,7 +202,8 @@ class GaussianNoise(Noise):
         kwargs:
             keyword arguments passed to noise function
         """
-        super().__init__(noise_type='normal_', mean=mean, std=std, keys=keys, grad=grad, **kwargs)
+        super().__init__(noise_type='normal_', mean=mean, std=std, keys=keys,
+                         grad=grad, **kwargs)
 
 
 class GammaCorrection(AbstractTransform):
@@ -246,8 +262,9 @@ class GammaCorrection(AbstractTransform):
         return data
 
 
-class RandomValuePerChannel(RandomProcess, PerChannelTransform):
-    def __init__(self, augment_fn: callable, random_mode: str, random_args: Sequence = (),
+class RandomValuePerChannel(PerChannelTransform):
+    def __init__(self, augment_fn: callable,
+                 random_sampler: AbstractParameter,
                  per_channel: bool = False, keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
         """
@@ -258,11 +275,8 @@ class RandomValuePerChannel(RandomProcess, PerChannelTransform):
         ----------
         augment_fn: callable
             augmentation function
-        random_mode: str
-            specifies distribution which should be used to sample additive value.
-            All function from python's random module are supported
-        random_args: Sequence
-            positional arguments passed for random function
+        random_sampler:
+            the sampler producing random numbers
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -273,8 +287,8 @@ class RandomValuePerChannel(RandomProcess, PerChannelTransform):
             keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=augment_fn, per_channel=per_channel,
-                         keys=keys, grad=grad, random_mode=random_mode,
-                         random_args=random_args, random_module="random",
+                         keys=keys, grad=grad, random_sampler=random_sampler,
+                         property_names=('random_sampler',),
                          rand_seq=False, **kwargs)
 
     def forward(self, **data) -> dict:
@@ -292,14 +306,16 @@ class RandomValuePerChannel(RandomProcess, PerChannelTransform):
             augmented data
         """
         if self.per_channel:
-            random_seed = random.random()
+            seed = torch.random.seed()
             for _key in self.keys:
-                random.seed(random_seed)
+                torch.manual_seed(seed)
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    rand_value = self.rand()
-                    out[:, _i] = self.augment_fn(data[_key][:, _i], value=rand_value,
-                                                 out=out[:, _i], **self.kwargs)
+                    rand_value = self.random_sampler
+                    out[:, _i] = self.augment_fn(data[_key][:, _i],
+                                                 value=rand_value,
+                                                 out=out[:, _i],
+                                                 **self.kwargs)
                 data[_key] = out
             return data
         else:
@@ -308,16 +324,16 @@ class RandomValuePerChannel(RandomProcess, PerChannelTransform):
 
 
 class RandomAddValue(RandomValuePerChannel):
-    def __init__(self, random_mode: str, per_channel: bool = False,
+    def __init__(self, random_sampler: AbstractParameter,
+                 per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Increase values additively
 
         Parameters
         ----------
-        random_mode: str
-            specifies distribution which should be used to sample additive value (supports all
-            random generators from python random package)
+        random_sampler:
+            the sampler producing random numbers
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -327,21 +343,21 @@ class RandomAddValue(RandomValuePerChannel):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=add_value, random_mode=random_mode,
+        super().__init__(augment_fn=add_value, random_sampler=random_sampler,
                          per_channel=per_channel, keys=keys, grad=grad, **kwargs)
 
 
 class RandomScaleValue(RandomValuePerChannel):
-    def __init__(self, random_mode, per_channel: bool = False,
+    def __init__(self, random_sampler: AbstractParameter,
+                 per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Scale values
 
         Parameters
         ----------
-        random_mode: str
-            specifies distribution which should be used to sample additive value (supports all
-            random generators from python random package)
+        random_sampler:
+            the sampler producing random numbers
         per_channel: bool
             enable transformation per channel
         keys: Sequence
@@ -351,5 +367,5 @@ class RandomScaleValue(RandomValuePerChannel):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=scale_by_value, random_mode=random_mode,
+        super().__init__(augment_fn=scale_by_value, random_sampler=random_sampler,
                          per_channel=per_channel, keys=keys, grad=grad, **kwargs)
