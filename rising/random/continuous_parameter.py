@@ -34,3 +34,20 @@ class ContinuousParameter(AbstractParameter):
 
         """
         return self.dist.sample_n(n_samples)
+
+
+class UniformParameter(ContinuousParameter):
+    def __init__(self, low: Union[float, torch.Tensor],
+                 high: Union[float, torch.Tensor]):
+        """
+        Samples Parameters from a uniform distribution.
+        For details have a look at :class:`torch.distributions.Uniform`
+
+        Parameters
+        ----------
+        low : float or torch.Tensor
+            the lower range (inclusive)
+        high : float or torch.Tensor
+            the higher range (exclusive)
+        """
+        super().__init__(torch.distributions.Uniform(low=low, high=high))
