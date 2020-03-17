@@ -5,6 +5,7 @@ from typing import Callable, Union, Sequence, Any
 
 from rising import AbstractMixin
 from rising.utils import check_scalar
+from rising.random import AbstractParameter, DiscreteParameter
 
 __all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
            "PerChannelTransform", "RandomDimsTransform", "RandomProcess"]
@@ -28,6 +29,40 @@ class AbstractTransform(torch.nn.Module):
         self.grad = grad
         for key, item in kwargs.items():
             setattr(self, key, item)
+
+    def register_sampler(self, name: str, sampler: AbstractParameter,
+                         *args, **kwargs):
+        """
+        Registers a parameter sampler to the transform.
+        Internally a property is created to forward calls to the attribute to
+        calls of the sampler.
+
+        Parameters
+        ----------
+        name : str
+            the property name
+        sampler : AbstractParameter
+            the sampler. Will be wrapped to a sampler always returning the
+            same element if not already a sampler
+        *args :
+            additional positional arguments (will be forwarded to sampler call)
+        **kwargs :
+            additional keyword arguments (will be forwarded to sampler call)
+
+        """
+        if not isinstance(sampler, AbstractParameter):
+            sampler = DiscreteParameter([sampler], replacement=True)
+
+        # value_name = '_' + name
+        # while hasattr(self, value_name):
+        #     value_name = '_' + value_name
+        #
+        # setattr(self, value_name, sampler)
+
+        if hasattr(self, name):
+            raise NameError('Name %s already exists' % name)
+        setattr(self, name, property(
+            lambda self: sampler(*args, **kwargs)))
 
     def __call__(self, *args, **kwargs) -> typing.Any:
         """
