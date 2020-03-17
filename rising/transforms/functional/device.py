@@ -7,7 +7,8 @@ __all__ = ["to_device_dtype"]
 data_type = Union[Tensor, List[Tensor], Tuple[Tensor], Mapping[Hashable, Tensor]]
 
 
-def to_device_dtype(data: data_type, dtype: Union[torch.dtype, str] = None, device: Union[torch.device, str] = None, **kwargs) -> data_type:
+def to_device_dtype(data: data_type, dtype: Union[torch.dtype, str] = None,
+                    device: Union[torch.device, str] = None, **kwargs) -> data_type:
     """
     Pushes data to device
 
