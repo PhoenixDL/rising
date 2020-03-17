@@ -10,7 +10,6 @@ from rising.random import AbstractParameter, DiscreteParameter
 __all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
            "PerChannelTransform", "RandomDimsTransform", "RandomProcess"]
 
-
 augment_callable = Callable[[torch.Tensor], Any]
 augment_axis_callable = Callable[[torch.Tensor, Union[float, Sequence]], Any]
 
@@ -270,76 +269,3 @@ class RandomDimsTransform(AbstractTransform):
             for key in self.keys:
                 data[key] = self.augment_fn(data[key], dims=dims, **self.kwargs)
         return data
-
-
-class RandomProcess(AbstractMixin):
-    def __init__(self, *args, random_mode: str,
-                 random_args: Union[Sequence, Sequence[Sequence]] = (),
-                 random_module: str = "random", rand_seq: bool = True,
-                 **kwargs):
-        """
-        Saves specified function to generate random values to current class.
-        Function is saved inside :param:`random_fn`.
-
-        Parameters
-        ----------
-        random_mode: str
-            specifies distribution which should be used to sample additive value
-        random_args: Union[Sequence, Sequence[Sequence]]
-            positional arguments passed for random function. If Sequence[Sequence]
-            is provided, a random value for each item in the outer
-            Sequence is generated
-        random_module: str
-            module from where function random function should be imported
-        rand_seq: bool
-            if enabled, multiple random values are generated if :param:`random_args`
-            is of type Sequence[Sequence]
-        """
-        super().__init__(*args, **kwargs)
-        self.random_module = random_module
-        self.random_mode = random_mode
-        self.random_args = random_args
-        self.rand_seq = rand_seq
-
-    def rand(self, **kwargs):
-        """
-        Return random value
-
-        Returns
-        -------
-        Any
-            object generated from function
-        """
-        if (self.rand_seq and len(self.random_args) > 0 and
-                isinstance(self.random_args[0], Sequence)):
-            val = tuple(self.random_fn(*args, **kwargs) for args in self.random_args)
-        else:
-            val = self.random_fn(*self.random_args, **kwargs)
-        return val
-
-    @property
-    def random_mode(self) -> str:
-        """
-        Get random mode
-
-        Returns
-        -------
-        str
-            random mode
-        """
-        return self._random_mode
-
-    @random_mode.setter
-    def random_mode(self, mode) -> None:
-        """
-        Set random mode
-
-        Parameters
-        ----------
-        mode: str
-            specifies distribution which should be used to sample additive value (supports all
-            random generators from python random package)
-        """
-        module = importlib.import_module(self.random_module)
-        self._random_mode = mode
-        self.random_fn = getattr(module, mode)
