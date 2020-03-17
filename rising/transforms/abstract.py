@@ -29,7 +29,8 @@ class AbstractTransform(torch.nn.Module):
         for key, item in kwargs.items():
             setattr(self, key, item)
 
-    def register_sampler(self, name: str, sampler: AbstractParameter,
+    def register_sampler(self, name: str,
+                         sampler: Union[Sequence, AbstractParameter],
                          *args, **kwargs):
         """
         Registers a parameter sampler to the transform.
@@ -49,19 +50,28 @@ class AbstractTransform(torch.nn.Module):
             additional keyword arguments (will be forwarded to sampler call)
 
         """
-        if not isinstance(sampler, AbstractParameter):
-            sampler = DiscreteParameter([sampler], replacement=True)
-
-        # value_name = '_' + name
-        # while hasattr(self, value_name):
-        #     value_name = '_' + value_name
-        #
-        # setattr(self, value_name, sampler)
-
         if hasattr(self, name):
             raise NameError('Name %s already exists' % name)
-        setattr(self, name, property(
-            lambda self: sampler(*args, **kwargs)))
+        if not isinstance(sampler, (tuple, list)):
+            sampler = [sampler]
+
+        new_sampler = []
+        for _sampler in sampler:
+            if not isinstance(_sampler, AbstractParameter):
+                _sampler = DiscreteParameter([_sampler], replacement=True)
+            new_sampler.append(_sampler)
+        sampler = tuple(sampler)
+
+        def sample(self):
+            sample_result = tuple([_sampler(*args, **kwargs)
+                                   for _sampler in sampler])
+
+            if len(sample_result) == 1:
+                return sample_result[0]
+            else:
+                return sample_result
+
+        setattr(self, name, property(sample))
 
     def __call__(self, *args, **kwargs) -> typing.Any:
         """
