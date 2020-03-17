@@ -36,6 +36,23 @@ class ContinuousParameter(AbstractParameter):
         return self.dist.sample_n(n_samples)
 
 
+class NormalParameter(ContinuousParameter):
+    def __init__(self, mu: Union[float, torch.Tensor],
+                 sigma: Union[float, torch.Tensor]):
+        """
+        Samples Parameters from a normal distribution.
+        For details have a look at :class:`torch.distributions.Normal`
+
+        Parameters
+        ----------
+        mu : float or torch.Tensor
+            the distributions mean
+        sigma : float or torch.Tensor
+            the distributions standard deviation
+        """
+        super().__init__(torch.distributions.Normal(loc=mu, scale=sigma))
+
+
 class UniformParameter(ContinuousParameter):
     def __init__(self, low: Union[float, torch.Tensor],
                  high: Union[float, torch.Tensor]):
