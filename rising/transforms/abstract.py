@@ -115,7 +115,8 @@ class AbstractTransform(torch.nn.Module):
 
 class BaseTransform(AbstractTransform):
     def __init__(self, augment_fn: augment_callable, *args,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+                 keys: Sequence = ('data',), grad: bool = False,
+                 property_names: Tuple[str] = (), **kwargs):
         """
         Apply augment_fn to keys
 
@@ -127,14 +128,19 @@ class BaseTransform(AbstractTransform):
             keys which should be augmented
         grad: bool
             enable gradient computation inside transformation
+        property_names : tuple
+            a tuple containing all the properties to call during forward pass
         kwargs:
             keyword arguments passed to augment_fn
         """
         super().__init__(grad=grad)
         self.augment_fn = augment_fn
         self.keys = keys
+        self.property_names = property_names
         self.args = args
         self.kwargs = kwargs
+        for name in property_names:
+            self.register_sampler(name, kwargs.pop(name))
 
     def forward(self, **data) -> dict:
         """
@@ -150,8 +156,14 @@ class BaseTransform(AbstractTransform):
         dict
             dict with augmented data
         """
+        kwargs = {}
+        for k in self.property_names:
+            kwargs[k] = getattr(self, k)
+
+        kwargs.update(self.kwargs)
+
         for _key in self.keys:
-            data[_key] = self.augment_fn(data[_key], *self.args, **self.kwargs)
+            data[_key] = self.augment_fn(data[_key], *self.args, **kwargs)
         return data
 
 
@@ -172,17 +184,23 @@ class PerSampleTransform(BaseTransform):
         dict
             dict with augmented data
         """
+        kwargs = {}
+        for k in self.property_names:
+            kwargs[k] = getattr(self, k)
+
+        kwargs.update(self.kwargs)
         for _key in self.keys:
             out = torch.empty_like(data[_key])
             for _i in range(data[_key].shape[0]):
-                out[_i] = self.augment_fn(data[_key][_i], out=out[_i], **self.kwargs)
+                out[_i] = self.augment_fn(data[_key][_i], out=out[_i], **kwargs)
             data[_key] = out
         return data
 
 
 class PerChannelTransform(BaseTransform):
     def __init__(self, augment_fn: augment_callable, per_channel: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+                 keys: Sequence = ('data',), grad: bool = False,
+                 property_names: Tuple[str] = (), **kwargs):
         """
         Apply transformation per channel (but still to whole batch)
 
@@ -199,7 +217,8 @@ class PerChannelTransform(BaseTransform):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=augment_fn, keys=keys, grad=grad, **kwargs)
+        super().__init__(augment_fn=augment_fn, keys=keys, grad=grad,
+                         property_names=property_names, **kwargs)
         self.per_channel = per_channel
 
     def forward(self, **data) -> dict:
@@ -217,10 +236,16 @@ class PerChannelTransform(BaseTransform):
             dict with augmented data
         """
         if self.per_channel:
+            kwargs = {}
+            for k in self.property_names:
+                kwargs[k] = getattr(self, k)
+
+            kwargs.update(self.kwargs)
             for _key in self.keys:
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    out[:, _i] = self.augment_fn(data[_key][:, _i], out=out[:, _i], **self.kwargs)
+                    out[:, _i] = self.augment_fn(data[_key][:, _i],
+                                                 out=out[:, _i], **kwargs)
                 data[_key] = out
             return data
         else:
