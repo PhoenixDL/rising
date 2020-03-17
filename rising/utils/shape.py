@@ -16,5 +16,3 @@ def reshape_list(flat_list: list, size: Union[torch.Size, tuple]) -> list:
         return [flat_list.pop(0) for _ in range(size[0])]
     else:
         return [reshape_list(flat_list, size[1:]) for _ in range(size[0])]
-
-
