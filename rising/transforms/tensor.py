@@ -3,7 +3,7 @@ from typing import Dict, Union, Sequence
 from torch.utils.data._utils.collate import default_convert
 
 from rising.transforms import AbstractTransform, BaseTransform
-from rising.transforms.functional import tensor_op, to_device
+from rising.transforms.functional import tensor_op, to_device_dtype
 
 __all__ = ["ToTensor", "ToDeviceDtype", "ToDevice", "ToDevice", "TensorOp", "Permute"]
 
@@ -53,7 +53,7 @@ class ToDeviceDtype(BaseTransform):
         kwargs:
             keyword arguments passed to function
         """
-        super().__init__(augment_fn=to_device, keys=keys, grad=grad, device=device,
+        super().__init__(augment_fn=to_device_dtype, keys=keys, grad=grad, device=device,
                          dtype=dtype, non_blocking=non_blocking, copy=copy, **kwargs)
 
 
