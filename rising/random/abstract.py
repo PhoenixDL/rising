@@ -3,6 +3,10 @@ from abc import abstractmethod, ABC
 from typing import Union, Sequence
 from rising.utils.shape import reshape
 
+__all__ = [
+    'AbstractParameter'
+]
+
 
 class AbstractParameter(ABC, torch.nn.Module):
     """
@@ -97,4 +101,3 @@ class AbstractParameter(ABC, torch.nn.Module):
                 samples = samples.to(device=device, dtype=dtype)
 
         return samples
-

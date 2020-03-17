@@ -3,7 +3,13 @@ from typing import Union
 import torch
 from torch.distributions import Distribution as TorchDistribution
 
-from rising.random.base_parameter import AbstractParameter
+from rising.random.abstract import AbstractParameter
+
+__all__ = [
+    'ContinuousParameter',
+    'NormalParameter',
+    'UniformParameter'
+]
 
 
 class ContinuousParameter(AbstractParameter):

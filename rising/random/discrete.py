@@ -4,7 +4,11 @@ from random import sample as sample_without_replacement, \
 
 from functools import partial
 
-from rising.random.base_parameter import AbstractParameter
+from rising.random.abstract import AbstractParameter
+
+__all__ = [
+    'DiscreteParameter'
+]
 
 
 class DiscreteParameter(AbstractParameter):
