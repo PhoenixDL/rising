@@ -3,7 +3,8 @@ from __future__ import annotations
 import torch
 import random
 from torch.multiprocessing import Value
-from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform, RandomProcess
+from rising.transforms.abstract import AbstractTransform, BaseTransform
+from rising.random import AbstractParameter, DiscreteParameter
 from typing import Union, Sequence, Callable
 from itertools import permutations
 
@@ -15,9 +16,9 @@ __all__ = ["Mirror", "Rot90", "Resize",
 schduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 
-class Mirror(RandomDimsTransform):
-    def __init__(self, dims: Sequence, keys: Sequence = ('data',),
-                 prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
+class Mirror(BaseTransform):
+    def __init__(self, dims: Union[int, AbstractParameter, Sequence],
+                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Random mirror transform
 
@@ -27,20 +28,19 @@ class Mirror(RandomDimsTransform):
             axes which should be mirrored
         keys: tuple
             keys which should be mirrored
-        prob: typing.Union[float, tuple]
-            probability for mirror. If float value is provided, it is used
-            for all dims
         grad: bool
             enable gradient computation inside transformation
         kwargs:
             keyword arguments passed to superclass
         """
-        super().__init__(augment_fn=mirror, dims=dims, keys=keys, prob=prob, grad=grad, **kwargs)
+
+        super().__init__(augment_fn=mirror, dims=dims, keys=keys, grad=grad,
+                         property_names=('dims',), **kwargs)
 
 
-class Rot90(AbstractTransform):
+class Rot90(BaseTransform):
     def __init__(self, dims: tuple, keys: tuple = ('data',),
-                 prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
+                 prob: float = 0.5, grad: bool = False, **kwargs):
         """
         Randomly rotate 90 degree around dims
 
@@ -62,9 +62,10 @@ class Rot90(AbstractTransform):
         --------
         :func:`torch.Tensor.rot90`
         """
-        super().__init__(grad=grad, **kwargs)
-        self.dims = dims
-        self.keys = keys
+        super().__init__(grad=grad, num_rots=DiscreteParameter((0, 1, 2, 3)),
+                         dims=DiscreteParameter(list(permutations(dims, 2))),
+                         property_names=('dims', 'num_rots'), keys=keys
+                                                                   ** kwargs)
         self.prob = prob
 
     def forward(self, **data) -> dict:
@@ -82,32 +83,12 @@ class Rot90(AbstractTransform):
             dict with augmented data
         """
         if torch.rand(1) < self.prob:
-            k = random.randrange(0, 4)
-            rand_dims = self._permutations[random.randrange(0, len(self._permutations))]
+            num_rots = self.num_rots
+            rand_dims = self.dims
 
             for key in self.keys:
-                data[key] = rot90(data[key], k=k, dims=rand_dims)
+                data[key] = rot90(data[key], k=num_rots, dims=rand_dims)
         return data
-
-    @property
-    def dims(self) -> Sequence:
-        """
-        Number of dimensions
-        """
-        return self._dims
-
-    @dims.setter
-    def dims(self, dims: Sequence):
-        """
-        Set number of dimensions and compute new set of permutations
-
-        Parameters
-        ----------
-        dims: Sequence
-            number of dimensions
-        """
-        self._dims = dims
-        self._permutations = tuple(permutations(dims, 2))
 
 
 class Resize(BaseTransform):
@@ -141,8 +122,8 @@ class Resize(BaseTransform):
                          keys=keys, grad=grad, **kwargs)
 
 
-class Zoom(RandomProcess, BaseTransform):
-    def __init__(self, random_args: Union[Sequence, Sequence[Sequence]] = (0.75, 1.25),
+class Zoom(BaseTransform):
+    def __init__(self, scale_factor: Union[Sequence, AbstractParameter] = (0.75, 1.25),
                  random_mode: str = "uniform", mode: str = 'nearest',
                  align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -152,7 +133,7 @@ class Zoom(RandomProcess, BaseTransform):
 
         Parameters
         ----------
-        random_args: Union[Sequence, Sequence[Sequence]]
+        scale_factor: Union[Sequence, AbstractParameter]
             positional arguments passed for random function. If Sequence[Sequence]
             is provided, a random value for each item in the outer
             Sequence is generated. This can be
@@ -178,27 +159,10 @@ class Zoom(RandomProcess, BaseTransform):
         --------
         :func:`random.uniform`, :func:`torch.nn.functional.interpolate`
         """
-        super().__init__(augment_fn=resize, random_args=random_args,
+        super().__init__(augment_fn=resize, scale_factor=scale_factor,
                          random_mode=random_mode, mode=mode,
                          align_corners=align_corners, preserve_range=preserve_range,
-                         keys=keys, grad=grad, **kwargs)
-
-    def forward(self, **data) -> dict:
-        """
-        Augment data
-
-        Parameters
-        ----------
-        data: dict
-            input data
-
-        Returns
-        -------
-        dict
-            augmented data
-        """
-        self.kwargs["scale_factor"] = self.rand()
-        return super().forward(**data)
+                         keys=keys, grad=grad, property_names=('scale_factor',), **kwargs)
 
 
 class ProgressiveResize(Resize):
