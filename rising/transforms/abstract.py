@@ -8,7 +8,7 @@ from rising.utils import check_scalar
 from rising.random import AbstractParameter, DiscreteParameter
 
 __all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
-           "PerChannelTransform", "RandomDimsTransform", "RandomProcess"]
+           "PerChannelTransform"]
 
 augment_callable = Callable[[torch.Tensor], Any]
 augment_axis_callable = Callable[[torch.Tensor, Union[float, Sequence]], Any]
