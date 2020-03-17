@@ -415,9 +415,10 @@ class BaseAffine(Affine):
                          padding_mode=padding_mode, align_corners=align_corners,
                          reverse_order=reverse_order,
                          **kwargs)
-        self.scale = scale
-        self.rotation = rotation
-        self.translation = translation
+        self.register_sampler('scale', scale)
+        self.register_sampler('rotation', rotation)
+        self.register_sampler('translation', translation)
+
         self.degree = degree
         self.image_transform = image_transform
 
@@ -802,6 +803,7 @@ class Resize(Scale):
         if was_scalar:
             self.output_size = [self.output_size] * len(curr_img_size)
 
+        # TODO: Figure out a way to bypass the scale parameter
         self.scale = [self.output_size[i] / curr_img_size[-i]
                       for i in range(len(curr_img_size))]
 
