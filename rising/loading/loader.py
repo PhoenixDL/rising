@@ -356,7 +356,8 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
             # generate numpy seed. The range comes so that the seed in each
             # worker (which is this baseseed plus the worker id) is always an
             # uint32. This is because numpy only accepts uint32 as valid seeds
-            npy_seed = np.random.randint(0, (2 ** 32) - (1 + loader.num_workers))
+            npy_seed = np.random.randint(0, (2 ** 32) - (1 + loader.num_workers),
+                                         dtype=np.uint32)
         except ImportError:
             # we don't generate a numpy seed here with torch, since we don't
             # need one; if the import fails in the main process it should
