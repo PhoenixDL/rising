@@ -56,7 +56,7 @@ class AbstractTransform(torch.nn.Module):
             if not isinstance(_sampler, AbstractParameter):
                 _sampler = DiscreteParameter([_sampler], replacement=True)
             new_sampler.append(_sampler)
-        sampler = tuple(sampler)
+        sampler = tuple(new_sampler)
 
         def sample(self):
             """
@@ -132,7 +132,6 @@ class BaseTransform(AbstractTransform):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(grad=grad)
         self.augment_fn = augment_fn
         self.keys = keys
         self.property_names = property_names
@@ -140,6 +139,7 @@ class BaseTransform(AbstractTransform):
         self.kwargs = kwargs
         for name in property_names:
             self.register_sampler(name, kwargs.pop(name))
+        super().__init__(grad=grad, **kwargs)
 
     def forward(self, **data) -> dict:
         """
@@ -157,7 +157,7 @@ class BaseTransform(AbstractTransform):
         """
         kwargs = {}
         for k in self.property_names:
-            kwargs[k] = getattr(self, k)
+            kwargs[k] = getattr(self, k).__get__(self)
 
         kwargs.update(self.kwargs)
 

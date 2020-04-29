@@ -1,3 +1,5 @@
+import torch
+
 
 def check_scalar(x):
     """
@@ -15,5 +17,7 @@ def check_scalar(x):
     """
     if isinstance(x, (int, float)):
         return True
+    elif torch.is_tensor(x):
+        return x.numel() == 1
     else:
         return False
