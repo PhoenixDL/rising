@@ -65,7 +65,7 @@ class Rot90(BaseTransform):
         super().__init__(grad=grad, num_rots=DiscreteParameter((0, 1, 2, 3)),
                          dims=DiscreteParameter(list(permutations(dims, 2))),
                          property_names=('dims', 'num_rots'), keys=keys
-                         **kwargs)
+                         ** kwargs)
         self.prob = prob
 
     def forward(self, **data) -> dict:
