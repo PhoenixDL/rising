@@ -1,10 +1,6 @@
 import torch
-import typing
-import importlib
-from typing import Callable, Union, Sequence, Any
+from typing import Callable, Union, Sequence, Any, Tuple
 
-from rising import AbstractMixin
-from rising.utils import check_scalar
 from rising.random import AbstractParameter, DiscreteParameter
 
 __all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
@@ -63,6 +59,9 @@ class AbstractTransform(torch.nn.Module):
         sampler = tuple(sampler)
 
         def sample(self):
+            """
+            Sample random values
+            """
             sample_result = tuple([_sampler(*args, **kwargs)
                                    for _sampler in sampler])
 
@@ -73,7 +72,7 @@ class AbstractTransform(torch.nn.Module):
 
         setattr(self, name, property(sample))
 
-    def __call__(self, *args, **kwargs) -> typing.Any:
+    def __call__(self, *args, **kwargs) -> Any:
         """
         Call super class with correct torch context
 

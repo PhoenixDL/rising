@@ -3,7 +3,7 @@ from rising.transforms.abstract import BaseTransform
 from rising.random import AbstractParameter
 from rising.transforms.functional.crop import random_crop, center_crop
 
-__all__ = ["CenterCrop", "RandomCrop", "CenterCropRandomSize", "RandomCropRandomSize"]
+__all__ = ["CenterCrop", "RandomCrop"]
 
 
 class CenterCrop(BaseTransform):

@@ -2,6 +2,7 @@ import unittest
 import torch
 import random
 
+from rising.random import DiscreteParameter
 from rising.transforms.crop import *
 from rising.transforms.functional.crop import random_crop, center_crop
 
@@ -37,7 +38,8 @@ class TestCrop(unittest.TestCase):
     def test_center_crop_random_size_transform(self):
         for _ in range(10):
             random.seed(0)
-            trafo = CenterCropRandomSize((3, 8))
+            # trafo = CenterCrop((3, 8))
+            trafo = CenterCrop([3, 4, 5, 6, 7, 8])
             crop = trafo(**self.batch)["data"]
 
             random.seed(0)
