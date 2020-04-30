@@ -11,10 +11,7 @@ This is an alpha release which is highly experimental. All transforms should be 
 
 |                                                         | Unittests      | Notebooktests |
 |---------------------------------------------------------|----------------|----------------
-| ![Python](https://img.shields.io/badge/python-3.8-blue) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)              | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)            |
-| ![Python](https://img.shields.io/badge/python-3.7-blue) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)              | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)            |
-| ![Python](https://img.shields.io/badge/python-3.6-blue) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)              | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)            |
-
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)              | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)            |
 
 ## What is `rising`?
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
@@ -26,6 +23,7 @@ Our goal is to provide a seamless integration into the PyTorch Ecosystem without
 | 3D data augmentation | ❌              | ❌              | ✅              | ❌      | ❌   | ✅       |
 | gradient propagation | ❌              | ❌              | ❌              | ✅      | ❌   | ✅       |
 | augmentation on GPU  | ❌              | ❌              | ❌              | ✅      | ✅   | ✅       |
+| backend              | PyTorch         | numpy          | numpy           | PyTorch | C++   | PyTorch |
 
 ### What can I do with `rising`?
 Rising currently consists out of two main modules:
