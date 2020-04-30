@@ -17,7 +17,7 @@ def resolve_requirements(file):
 
 
 def read_file(file):
-    with open(file) as f:
+    with open(file, encoding="utf8") as f:
         content = f.read()
     return content
 
