@@ -2,12 +2,10 @@ import logging
 import os
 import pathlib
 from functools import partial
-from multiprocessing import cpu_count, Pool as MPPool
-from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator
-from warnings import warn
+from typing import Any, Sequence, Callable, Union, List, Iterator
 
 import dill
-from torch.multiprocessing import Pool
+from torch.multiprocessing import Pool, cpu_count
 from torch.utils.data import Dataset as TorchDset, Subset
 from tqdm import tqdm
 
@@ -34,7 +32,7 @@ def dill_helper(payload: Any) -> Any:
     return fn(*args, **kwargs)
 
 
-def load_async(pool: MPPool, fn: Callable, *args, callback: Callable = None, **kwargs) -> Any:
+def load_async(pool: Pool, fn: Callable, *args, callback: Callable = None, **kwargs) -> Any:
     """
     Load data asynchronously and serialize data via dill
 
