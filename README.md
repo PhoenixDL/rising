@@ -9,9 +9,9 @@
 ### :warning: Current release disclaimer :warning:
 This is an alpha release which is highly experimental. All transforms should be stable and tested but there might be some bugs.
 
-|                                                         | Unittests      | Notebooktests |
+|                                                         | Unittests      | NotebookTests |
 |---------------------------------------------------------|----------------|----------------
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)              | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions)            |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions) | ![NotebookTests](https://github.com/PhoenixDL/rising/workflows/NotebookTests/badge.svg) |
 
 ## What is `rising`?
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
