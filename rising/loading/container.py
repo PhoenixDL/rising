@@ -1,9 +1,8 @@
-from __future__ import annotations
+import pathlib
+import typing
+from collections import defaultdict
 
 import pandas as pd
-import typing
-import pathlib
-from collections import defaultdict
 
 from rising.loading.dataset import Dataset
 from rising.loading.splitter import SplitType
@@ -82,7 +81,7 @@ class DataContainer:
         self.split_by_index(self._read_split_from_df(df, col[0]))
 
     def kfold_by_csv(self, path: typing.Union[pathlib.Path, str],
-                     index_column: str, **kwargs) -> DataContainer:
+                     index_column: str, **kwargs) -> typing.Any:
         """
         Produces kfold splits based on the given csv file.
 
