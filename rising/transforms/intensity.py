@@ -1,13 +1,11 @@
 import torch
-import random
 from typing import Union, Sequence
 
-from rising.transforms.abstract import BaseTransform, PerSampleTransform, AbstractTransform, \
+from rising.transforms.abstract import BaseTransform, PerSampleTransform, \
     PerChannelTransform
-from rising.utils import check_scalar
 from rising.transforms.functional.intensity import norm_range, norm_min_max, norm_mean_std, \
-    norm_zero_mean_unit_std, add_noise, gamma_correction, add_value, scale_by_value
-from rising.random import AbstractParameter, UniformParameter
+    norm_zero_mean_unit_std, add_noise, gamma_correction, add_value, scale_by_value, clamp
+from rising.random import AbstractParameter
 
 __all__ = ["Clamp", "NormRange", "NormMinMax",
            "NormZeroMeanUnitStd", "NormMeanStd", "Noise",
@@ -24,8 +22,10 @@ class Clamp(BaseTransform):
 
         Parameters
         ----------
-        augment_fn: callable
-            function for augmentation
+        min:
+            lower bound of clipping
+        max:
+            upper bound of clipping
         dims: tuple
             axes which should be mirrored
         grad: bool
@@ -33,13 +33,14 @@ class Clamp(BaseTransform):
         kwargs:
             keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=torch.clamp, keys=keys, grad=grad,
+        super().__init__(augment_fn=clamp, keys=keys, grad=grad,
                          min=min, max=max, property_names=('min', 'max'),
                          **kwargs)
 
 
 class NormRange(PerSampleTransform):
-    def __init__(self, min: float, max: float, keys: Sequence = ('data',),
+    def __init__(self, min: Union[float, AbstractParameter],
+                 max: Union[float, AbstractParameter], keys: Sequence = ('data',),
                  per_channel: bool = True,
                  grad: bool = False, **kwargs):
         """
@@ -109,9 +110,9 @@ class NormZeroMeanUnitStd(PerSampleTransform):
 
 
 class NormMeanStd(PerSampleTransform):
-    def __init__(self, mean: Union[float, Sequence],
-                 std: Union[float, Sequence],
-                 keys: Sequence = ('data',), per_channel: bool = True,
+    def __init__(self, mean: Union[float, Sequence[float]],
+                 std: Union[float, Sequence[float]],
+                 keys: Sequence[str] = ('data',), per_channel: bool = True,
                  grad: bool = False, **kwargs):
         """
         Normalize mean and std with provided values
@@ -206,18 +207,16 @@ class GaussianNoise(Noise):
                          grad=grad, **kwargs)
 
 
-class GammaCorrection(AbstractTransform):
-    def __init__(self, gamma: Union[float, Sequence] = (0.5, 2),
+class GammaCorrection(BaseTransform):
+    def __init__(self, gamma: Union[float, AbstractParameter],
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
-        Apply gamma correction as augmentation
+        Apply gamma correction
 
         Parameters
         ----------
-        gamma: float or sequence
-            if gamma is float it is always applied. if gamma is a sequence it is interpreted as
-            the minimal and maximal value. If the maximal value is greater than one, the transform
-            chooses gamma <1 in 50% of the cases and gamma >1 in the other cases.
+        gamma:
+            specify value for gamma
         keys: Sequence
             keys to normalize
         grad: bool
@@ -225,41 +224,9 @@ class GammaCorrection(AbstractTransform):
         kwargs:
             keyword arguments passed to superclass
         """
-        super().__init__(augment_fn=gamma_correction, keys=keys, grad=grad)
-        self.kwargs = kwargs
-        self.gamma = gamma
-        if not check_scalar(self.gamma):
-            if not len(self.gamma) == 2:
-                raise TypeError(f"Gamma needs to be scalar or a Sequence with two entries "
-                                f"(min, max), found {self.gamma}")
-
-    def forward(self, **data) -> dict:
-        """
-        Apply transformation
-
-        Parameters
-        ----------
-        data: dict
-            dict with tensors
-
-        Returns
-        -------
-        dict
-            dict with augmented data
-        """
-        if check_scalar(self.gamma):
-            _gamma = self.gamma
-        elif self.gamma[1] < 1:
-            _gamma = random.uniform(self.gamma[0], self.gamma[1])
-        else:
-            if random.random() < 0.5:
-                _gamma = _gamma = random.uniform(self.gamma[0], 1)
-            else:
-                _gamma = _gamma = random.uniform(1, self.gamma[1])
-
-        for _key in self.keys:
-            data[_key] = self.augment_fn(data[_key], _gamma, **self.kwargs)
-        return data
+        super().__init__(augment_fn=gamma_correction, gamma=gamma,
+                         property_names=("gamma",), keys=keys, grad=grad,
+                         **kwargs)
 
 
 class RandomValuePerChannel(PerChannelTransform):
@@ -289,7 +256,7 @@ class RandomValuePerChannel(PerChannelTransform):
         super().__init__(augment_fn=augment_fn, per_channel=per_channel,
                          keys=keys, grad=grad, random_sampler=random_sampler,
                          property_names=('random_sampler',),
-                         rand_seq=False, **kwargs)
+                         **kwargs)
 
     def forward(self, **data) -> dict:
         """
@@ -311,16 +278,16 @@ class RandomValuePerChannel(PerChannelTransform):
                 torch.manual_seed(seed)
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    rand_value = self.random_sampler
-                    out[:, _i] = self.augment_fn(data[_key][:, _i],
-                                                 value=rand_value,
-                                                 out=out[:, _i],
-                                                 **self.kwargs)
+                    rand_value = self.random_sampler.__get__(self)
+                    out[:, _i] = self.augment_fn(
+                        data[_key][:, _i], value=rand_value, out=out[:, _i],
+                        **self.kwargs)
                 data[_key] = out
-            return data
         else:
-            self.kwargs["value"] = self.rand()
-            return super().forward(**data)
+            rand_value = self.random_sampler.__get__(self)
+            for _key in self.keys:
+                data[_key] = self.augment_fn(data[_key], value=rand_value, **self.kwargs)
+        return data
 
 
 class RandomAddValue(RandomValuePerChannel):

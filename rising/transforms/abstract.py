@@ -184,7 +184,7 @@ class PerSampleTransform(BaseTransform):
         """
         kwargs = {}
         for k in self.property_names:
-            kwargs[k] = getattr(self, k)
+            kwargs[k] = getattr(self, k).__get__(self)
 
         kwargs.update(self.kwargs)
         for _key in self.keys:
@@ -236,7 +236,7 @@ class PerChannelTransform(BaseTransform):
         if self.per_channel:
             kwargs = {}
             for k in self.property_names:
-                kwargs[k] = getattr(self, k)
+                kwargs[k] = getattr(self, k).__get__(self)
 
             kwargs.update(self.kwargs)
             for _key in self.keys:

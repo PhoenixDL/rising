@@ -13,7 +13,7 @@ from .functional.spatial import *
 __all__ = ["Mirror", "Rot90", "Resize",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
-schduler_type = Callable[[int], Union[int, Sequence[int]]]
+scheduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 
 class Mirror(BaseTransform):
@@ -170,7 +170,7 @@ class Zoom(BaseTransform):
 
 
 class ProgressiveResize(Resize):
-    def __init__(self, scheduler: schduler_type, mode: str = 'nearest',
+    def __init__(self, scheduler: scheduler_type, mode: str = 'nearest',
                  align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """

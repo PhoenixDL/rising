@@ -1,11 +1,35 @@
 import torch
 
-from typing import Union, Sequence
+from typing import Union, Sequence, Optional
 
 from rising.utils import check_scalar
 
 __all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_std",
-           "add_noise", "add_value", "gamma_correction", "scale_by_value"]
+           "add_noise", "add_value", "gamma_correction", "scale_by_value", "clamp"]
+
+
+def clamp(data: torch.Tensor, min: float, max: float,
+          out: Optional[torch.Tensor] = None) -> torch.Tensor:
+    """
+
+
+    Parameters
+    ----------
+    data:
+        tensor to clamp
+    min:
+        lower limit
+    max:
+        upper limit
+    out:
+        output tensor
+
+    Returns
+    -------
+    Tensor:
+        clamped tensor
+    """
+    return torch.clamp(data, min=float(min), max=float(max), out=out)
 
 
 def norm_range(data: torch.Tensor, min: float, max: float,
