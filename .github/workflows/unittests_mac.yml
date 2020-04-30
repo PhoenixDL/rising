@@ -1,4 +1,4 @@
-name: Unittests macOS
+name: Unittests MacOS
 
 on: [push]
 
