@@ -23,7 +23,7 @@ Our goal is to provide a seamless integration into the PyTorch Ecosystem without
 | 3D data augmentation | ❌              | ❌              | ✅              | ❌      | ❌   | ✅       |
 | gradient propagation | ❌              | ❌              | ❌              | ✅      | ❌   | ✅       |
 | augmentation on GPU  | ❌              | ❌              | ❌              | ✅      | ✅   | ✅       |
-| backend              | PyTorch         | numpy          | numpy           | PyTorch | C++   | PyTorch |
+| backend              | PyTorch         | Numpy          | Numpy           | PyTorch | C++   | PyTorch |
 
 ### What can I do with `rising`?
 Rising currently consists out of two main modules:
