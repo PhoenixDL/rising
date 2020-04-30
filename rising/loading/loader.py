@@ -1,22 +1,20 @@
-from __future__ import annotations
+import warnings
 from contextlib import contextmanager
+from functools import partial
+from typing import Callable, Mapping, Sequence, Union, Any, Iterator
 
 import torch
-import warnings
-
-from typing import Callable, Mapping, Sequence, Union, Any
-from torch.utils.data._utils.collate import default_convert
+from threadpoolctl import threadpool_limits
 from torch.utils.data import DataLoader as _DataLoader, Sampler
+from torch.utils.data._utils.collate import default_convert
 from torch.utils.data.dataloader import \
     _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter, \
     _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
-from functools import partial
-from threadpoolctl import threadpool_limits
 
 from rising.loading.collate import do_nothing_collate
-from rising.transforms import ToDevice, Compose
-from rising.loading.debug_mode import get_debug_mode
 from rising.loading.dataset import Dataset
+from rising.loading.debug_mode import get_debug_mode
+from rising.transforms import ToDevice, Compose
 
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:
@@ -172,7 +170,8 @@ class DataLoader(_DataLoader):
         if gpu_transforms is not None and not torch.cuda.is_available():
             if hasattr(gpu_transforms, 'to'):
                 gpu_transforms = gpu_transforms.to('cpu')
-            transforms = (batch_transforms, gpu_transforms) if batch_transforms is not None else gpu_transforms
+            transforms = (
+                batch_transforms, gpu_transforms) if batch_transforms is not None else gpu_transforms
             batch_transforms = Compose(transforms)
             warnings.warn("No CUDA-capable device was found. "
                           "Applying GPU-Transforms on CPU instead.",
@@ -212,8 +211,7 @@ class DataLoader(_DataLoader):
                                 transform_call=self.transform_call
                                 )
 
-    def __iter__(self) -> Union[_SingleProcessDataLoaderIter,
-                                _MultiProcessingDataLoaderIter]:
+    def __iter__(self) -> Iterator:
         """
         Geneator iterator
 
