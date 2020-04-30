@@ -46,8 +46,8 @@ def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
     torch.Tensor
         tensor with mirrored dimensions
     """
-    dims = [d + 2 for d in dims]
-    return torch.rot90(data, k, dims)
+    dims = [int(d + 2) for d in dims]
+    return torch.rot90(data, int(k), dims)
 
 
 def resize(data: torch.Tensor, size: Union[int, Sequence[int]] = None,
@@ -65,7 +65,7 @@ def resize(data: torch.Tensor, size: Union[int, Sequence[int]] = None,
         input tensor of shape batch x channels x height x width x [depth]
     size: Union[int, Sequence[int]]
         spatial output size (excluding batch size and number of channels)
-    scale_factor: Union[int, Sequence[int]]
+    scale_factor: Union[float, Sequence[float]]
         multiplier for spatial size
     mode: str
         one of :param:`nearest`, :param:`linear`, :param:`bilinear`, :param:`bicubic`,
@@ -85,8 +85,12 @@ def resize(data: torch.Tensor, size: Union[int, Sequence[int]] = None,
     --------
     :func:`torch.nn.functional.interpolate`
     """
-    out = torch.nn.functional.interpolate(data, size=size, scale_factor=scale_factor,
-                                          mode=mode, align_corners=align_corners)
+    if check_scalar(scale_factor):
+        # pytorch internally checks for an iterable. Single value tensors are still iterable
+        scale_factor = float(scale_factor)
+    out = torch.nn.functional.interpolate(
+        data, size=size, scale_factor=scale_factor, mode=mode,
+        align_corners=align_corners)
 
     if preserve_range:
         out.clamp_(data.min(), data.max())

@@ -17,8 +17,9 @@ schduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 
 class Mirror(BaseTransform):
-    def __init__(self, dims: Union[int, AbstractParameter, Sequence],
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(self,
+                 dims: Union[int, DiscreteParameter, Sequence[int, DiscreteParameter]],
+                 keys: Sequence[str] = ('data',), grad: bool = False, **kwargs):
         """
         Random mirror transform
 
@@ -38,20 +39,23 @@ class Mirror(BaseTransform):
                          property_names=('dims',), **kwargs)
 
 
-class Rot90(BaseTransform):
-    def __init__(self, dims: tuple, keys: tuple = ('data',),
+class Rot90(AbstractTransform):
+    def __init__(self, dims: Union[Sequence[int], DiscreteParameter],
+                 keys: Sequence[str] = ('data',),
                  prob: float = 0.5, grad: bool = False, **kwargs):
         """
         Randomly rotate 90 degree around dims
 
         Parameters
         ----------
-        dims: tuple
-            dims which should be rotated. If more than two dims are provided,
-            two dimensions are randomly chosen at each call
-        keys: tuple
+        dims: Union[Sequence[int], DiscreteParameter]
+            dims which should be rotated. If dims is a
+            :class:`DiscreteParameter` it is directly used. If dims is a
+            sequence of dimensions, the rotated dimensions all sampled
+            from al permutations of the provided dimensions.
+        keys: Sequence[str]
             keys which should be rotated
-        prob: typing.Union[float, tuple]
+        prob: float
             probability for rotation
         grad: bool
             enable gradient computation inside transformation
@@ -62,11 +66,13 @@ class Rot90(BaseTransform):
         --------
         :func:`torch.Tensor.rot90`
         """
-        super().__init__(grad=grad, num_rots=DiscreteParameter((0, 1, 2, 3)),
-                         dims=DiscreteParameter(list(permutations(dims, 2))),
-                         property_names=('dims', 'num_rots'), keys=keys
-                         **kwargs)
+        super().__init__(grad=grad, **kwargs)
+        self.keys = keys
         self.prob = prob
+        if not isinstance(dims, DiscreteParameter):
+            dims = DiscreteParameter(list(permutations(dims, 2)))
+        self.register_sampler("dims", dims)
+        self.register_sampler("num_rots", DiscreteParameter((0, 1, 2, 3)))
 
     def forward(self, **data) -> dict:
         """
@@ -83,8 +89,8 @@ class Rot90(BaseTransform):
             dict with augmented data
         """
         if torch.rand(1) < self.prob:
-            num_rots = self.num_rots
-            rand_dims = self.dims
+            num_rots = self.num_rots.__get__(self)
+            rand_dims = self.dims.__get__(self)
 
             for key in self.keys:
                 data[key] = rot90(data[key], k=num_rots, dims=rand_dims)
@@ -124,9 +130,9 @@ class Resize(BaseTransform):
 
 class Zoom(BaseTransform):
     def __init__(self, scale_factor: Union[Sequence, AbstractParameter] = (0.75, 1.25),
-                 random_mode: str = "uniform", mode: str = 'nearest',
-                 align_corners: bool = None, preserve_range: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+                 mode: str = 'nearest', align_corners: bool = None,
+                 preserve_range: bool = False, keys: Sequence = ('data',),
+                 grad: bool = False, **kwargs):
         """
         Apply augment_fn to keys. By default the scaling factor is sampled from a uniform
         distribution with the range specified by :param:`random_args`
@@ -138,8 +144,6 @@ class Zoom(BaseTransform):
             is provided, a random value for each item in the outer
             Sequence is generated. This can be
             used to set different ranges for different axis.
-        random_mode: str
-            specifies distribution which should be used to sample additive value
         mode: str
             one of :param:`nearest`, :param:`linear`, :param:`bilinear`, :param:`bicubic`,
             :param:`trilinear`, :param:`area` (for more inforamtion see :func:`torch.nn.functional.interpolate`)
@@ -160,9 +164,9 @@ class Zoom(BaseTransform):
         :func:`random.uniform`, :func:`torch.nn.functional.interpolate`
         """
         super().__init__(augment_fn=resize, scale_factor=scale_factor,
-                         random_mode=random_mode, mode=mode,
-                         align_corners=align_corners, preserve_range=preserve_range,
-                         keys=keys, grad=grad, property_names=('scale_factor',), **kwargs)
+                         mode=mode, align_corners=align_corners,
+                         preserve_range=preserve_range, keys=keys, grad=grad,
+                         property_names=('scale_factor',), **kwargs)
 
 
 class ProgressiveResize(Resize):

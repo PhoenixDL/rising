@@ -1,6 +1,6 @@
 import torch
 from abc import abstractmethod, ABC
-from typing import Union, Sequence
+from typing import Union, Sequence, Optional
 from rising.utils.shape import reshape
 
 __all__ = [
@@ -30,7 +30,7 @@ class AbstractParameter(ABC, torch.nn.Module):
         """
         if not isinstance(size, torch.Size):
             size = torch.Size(size)
-        return size.numel()
+        return size.numel() # TODO: check this?
 
     @abstractmethod
     def sample(self, n_samples: int) -> Union[torch.Tensor, list]:
@@ -50,7 +50,8 @@ class AbstractParameter(ABC, torch.nn.Module):
         """
         raise NotImplementedError
 
-    def forward(self, size: Union[Sequence, torch.Size] = (1,),
+    def forward(self,
+                size: Optional[Union[Sequence, torch.Size]] = None,
                 device: Union[torch.device, str] = None,
                 dtype: Union[torch.dtype, str] = None,
                 tensor_like: torch.Tensor = None) -> Union[list, torch.Tensor]:
@@ -61,8 +62,9 @@ class AbstractParameter(ABC, torch.nn.Module):
 
         Parameters
         ----------
-        size: Sequence or torch.Size
-            the size of the sampled values
+        size: Optional[Union[Sequence, torch.Size]]
+            the size of the sampled values. If None, it samples one value
+            without reshaping
         device : torch.device or str, optional
             the device the result value should be set to, if it is a tensor
         dtype : torch.dtype or str, optional
@@ -83,21 +85,21 @@ class AbstractParameter(ABC, torch.nn.Module):
         it overwrites the parameters ``dtype`` and ``device``
 
         """
-        n_samples = self._get_n_samples(size)
-        flat_samples = self.sample(n_samples)
+        n_samples = self._get_n_samples(size if size is not None else (1,))
+        samples = self.sample(n_samples)
 
-        if not isinstance(flat_samples, torch.Tensor):
+        if not isinstance(samples, torch.Tensor):
             try:
-                flat_samples = torch.tensor(flat_samples)
+                samples = torch.tensor(samples).flatten()
             except TypeError:
                 pass
 
-        samples = reshape(flat_samples, size)
+        if size is not None:
+            samples = reshape(samples, size)
 
         if isinstance(samples, torch.Tensor):
             if tensor_like is not None:
                 samples = samples.to(tensor_like)
             else:
                 samples = samples.to(device=device, dtype=dtype)
-
         return samples

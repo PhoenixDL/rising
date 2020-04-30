@@ -204,16 +204,16 @@ class DropoutCompose(Compose):
         TypeError
             if dropout is a sequence it must have the same length as transforms
         """
-        super().__init__(transforms, transform_call=transform_call, **kwargs)
+        super().__init__(*transforms, transform_call=transform_call, **kwargs)
 
         if random_sampler is None:
             random_sampler = UniformParameter(0., 1.)
 
-        self.register_sampler('prob', random_sampler,
-                              n_samples=len(self.transforms))
+        self.register_sampler('prob', random_sampler, size=(len(self.transforms),))
 
         if check_scalar(dropout):
             dropout = [dropout] * len(self.transforms)
+        self.dropout = dropout
         if len(dropout) != len(self.transforms):
             raise TypeError(f"If dropout is a sequence it must specify the "
                             f"dropout probability for each transform, "
@@ -242,7 +242,7 @@ class DropoutCompose(Compose):
         assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
 
-        rand = self.prob
+        rand = self.prob.__get__(self)
         for idx in self.transform_order:
             if rand[idx] > self.dropout[idx]:
                 data = self.transform_call(data, self.transforms[idx])

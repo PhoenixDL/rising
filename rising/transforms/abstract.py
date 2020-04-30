@@ -62,8 +62,7 @@ class AbstractTransform(torch.nn.Module):
             """
             Sample random values
             """
-            sample_result = tuple([_sampler(*args, **kwargs)
-                                   for _sampler in sampler])
+            sample_result = tuple([_sampler(*args, **kwargs) for _sampler in sampler])
 
             if len(sample_result) == 1:
                 return sample_result[0]
@@ -115,7 +114,7 @@ class AbstractTransform(torch.nn.Module):
 class BaseTransform(AbstractTransform):
     def __init__(self, augment_fn: augment_callable, *args,
                  keys: Sequence = ('data',), grad: bool = False,
-                 property_names: Tuple[str] = (), **kwargs):
+                 property_names: Sequence[str] = (), **kwargs):
         """
         Apply augment_fn to keys
 

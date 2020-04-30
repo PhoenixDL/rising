@@ -13,8 +13,8 @@ class TestCompose(unittest.TestCase):
     def setUp(self) -> None:
         self.batch = {"data": torch.rand(1, 1, 10, 10)}
         self.transforms = [
-            Mirror(dims=(0,), prob=1.),
-            Mirror(dims=(0,), prob=1.)
+            Mirror(dims=(0,)),
+            Mirror(dims=(0,))
         ]
 
     def test_multiple_grad_context(self):
@@ -29,13 +29,14 @@ class TestCompose(unittest.TestCase):
     def test_compose_single(self):
         single_compose = Compose(self.transforms[0])
         outp = single_compose(**self.batch)
-        expected = Mirror(dims=(0,), prob=1.)(**self.batch)
+        expected = Mirror(dims=(0,))(**self.batch)
         self.assertTrue((expected["data"] == outp["data"]).all())
 
     def test_compose_multiple(self):
         compose = Compose(self.transforms)
         outp = compose(**self.batch)
         self.assertTrue((self.batch["data"] == outp["data"]).all())
+        self.assertEqual(len(compose.transform_order), 2)
 
     def test_compose_shuffle(self):
         compose = Compose([Mirror(dims=(0,))] * 10, shuffle=True)
@@ -58,12 +59,14 @@ class TestCompose(unittest.TestCase):
 
     def test_dropout_compose(self):
         compose = DropoutCompose(self.transforms[0], dropout=0.0)
+        self.assertEqual(len(compose.transform_order), 1)
         outp = compose(**self.batch)
-        expected = Mirror(dims=(0,), prob=1.)(**self.batch)
+        expected = Mirror(dims=(0,))(**self.batch)
         self.assertTrue((expected["data"] == outp["data"]).all())
 
-        compose = DropoutCompose(self.transforms[0], dropout=1.0)
+        compose = DropoutCompose(self.transforms, dropout=1.0)
         outp = compose(**self.batch)
+        self.assertEqual(len(compose.transform_order), 2)
         self.assertTrue((self.batch["data"] == outp["data"]).all())
 
     def test_dropout_compose_error(self):
