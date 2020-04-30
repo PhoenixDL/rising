@@ -1,13 +1,14 @@
-name: Unittests
+name: Unittests macOS
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       matrix:
+        os: [macos-latest]
         python-version: [3.6, 3.7, 3.8]
 
     steps:
@@ -27,10 +28,3 @@ jobs:
       run: |
         coverage run -m unittest
         coverage xml # convert .coverage file to coverage.xml file
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.0.2
-      with:
-        token: ${{secrets.CODECOV_TOKEN}} #required
-        file: ./coverage.xml #optional
-        flags: unittests #optional
-        name: codecov-rising #optional
