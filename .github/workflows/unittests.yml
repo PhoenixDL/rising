@@ -1,4 +1,4 @@
-name: Unittests
+name: Unittests Linux
 
 on: [push]
 
@@ -8,7 +8,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: [3.6, 3.7, 3.8]
 
     steps:
@@ -29,7 +29,6 @@ jobs:
         coverage run -m unittest
         coverage xml # convert .coverage file to coverage.xml file
     - name: Upload coverage to Codecov
-      if: runner.os == 'Linux'
       uses: codecov/codecov-action@v1.0.2
       with:
         token: ${{secrets.CODECOV_TOKEN}} #required
