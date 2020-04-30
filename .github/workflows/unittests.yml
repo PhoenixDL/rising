@@ -29,7 +29,7 @@ jobs:
         coverage run -m unittest
         coverage xml # convert .coverage file to coverage.xml file
     - name: Upload coverage to Codecov
-      if: contains(${{ matrix.os }}, 'ubuntu')
+      if: runner.os == 'ubuntu'
       uses: codecov/codecov-action@v1.0.2
       with:
         token: ${{secrets.CODECOV_TOKEN}} #required
