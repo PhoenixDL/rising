@@ -1,6 +1,6 @@
 import numpy as np
 
-from rising.loading.dataset import CacheDataset, CacheDatasetID
+from rising.loading.dataset import AsyncDataset
 
 
 class LoadDummySample:
@@ -17,14 +17,7 @@ class LoadDummySample:
         return data
 
 
-class DummyDataset(CacheDataset):
+class DummyDataset(AsyncDataset):
     def __init__(self, num_samples=10, load_fn=LoadDummySample(),
                  **load_kwargs):
         super().__init__(list(range(num_samples)), load_fn, **load_kwargs)
-
-
-class DummyDatasetID(CacheDatasetID):
-    def __init__(self, num_samples=10, load_fn=LoadDummySample(),
-                 **load_kwargs):
-        super().__init__(list(range(num_samples)), load_fn, id_key="id",
-                         **load_kwargs)
