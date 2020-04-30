@@ -39,7 +39,7 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=requirements,
     tests_require=["coverage"],
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     author="PhoenixDL",
     maintainer='Michael Baumgartner, Justus Schock',
     maintainer_email='justus.schock@rwth-aachen.de',
