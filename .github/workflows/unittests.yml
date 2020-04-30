@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       matrix:
