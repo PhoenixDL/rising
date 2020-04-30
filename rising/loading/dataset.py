@@ -1,24 +1,23 @@
-from __future__ import annotations
-
+import logging
 import os
 import pathlib
-import logging
-import dill
-from warnings import warn
 from functools import partial
-from tqdm import tqdm
-from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator
-
-from torch.utils.data import Dataset as TorchDset, Subset
 from multiprocessing import cpu_count, Pool as MPPool
+from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator
+from warnings import warn
+
+import dill
 from torch.multiprocessing import Pool
-from rising.loading.debug_mode import get_debug_mode
+from torch.utils.data import Dataset as TorchDset, Subset
+from tqdm import tqdm
+
 from rising import AbstractMixin
+from rising.loading.debug_mode import get_debug_mode
 
 logger = logging.getLogger(__file__)
 
-
-__all__ = ["Dataset", "CacheDataset", "LazyDataset", "CacheDatasetID", "LazyDatasetID", "LazyDatasetMulReturn"]
+__all__ = ["Dataset", "CacheDataset", "LazyDataset", "CacheDatasetID", "LazyDatasetID",
+           "LazyDatasetMulReturn"]
 
 
 def dill_helper(payload: Any) -> Any:
@@ -229,6 +228,7 @@ class CacheDataset(Dataset):
 
             def update(*a):
                 pbar.update(1)
+
             callback = update
         else:
             callback = None
