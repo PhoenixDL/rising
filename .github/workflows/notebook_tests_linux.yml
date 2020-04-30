@@ -1,4 +1,4 @@
-name: NotebookTests
+name: NotebookTests Linux
 
 on: [push]
 
