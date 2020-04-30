@@ -9,9 +9,11 @@
 ### :warning: Current release disclaimer :warning:
 This is an alpha release which is highly experimental. All transforms should be stable and tested but there might be some bugs.
 
-|                                                         | Unittests      | NotebookTests |
-|---------------------------------------------------------|----------------|----------------
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | [![Actions Status](https://github.com/PhoenixDL/rising/workflows/Unittests/badge.svg)](https://github.com/PhoenixDL/rising/actions) | ![NotebookTests](https://github.com/PhoenixDL/rising/workflows/NotebookTests/badge.svg) |
+| Python Version                                                 | Platform                                             | Unittests                                                                                         | NotebookTests                                                                            |
+|----------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | ![System](https://img.shields.io/badge/Linux-blue)   | ![Unittests Linux](https://github.com/PhoenixDL/rising/workflows/Unittests%20Linux/badge.svg)     | ![NotebookTests](https://github.com/PhoenixDL/rising/workflows/NotebookTests/badge.svg) |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | ![System](https://img.shields.io/badge/Windows-blue) | ![Unittests Windows](https://github.com/PhoenixDL/rising/workflows/Unittests%20Windows/badge.svg) | / |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)    | / |
 
 ## What is `rising`?
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
