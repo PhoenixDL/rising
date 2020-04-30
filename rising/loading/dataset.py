@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__file__)
 
-__all__ = ["Dataset", "CacheDataset"]
+__all__ = ["Dataset", "AsyncDataset"]
 
 
 def dill_helper(payload: Any) -> Any:
@@ -91,7 +91,7 @@ class Dataset(TorchDset):
         return subset
 
 
-class CacheDataset(Dataset):
+class AsyncDataset(Dataset):
     def __init__(self,
                  data_path: Union[pathlib.Path, str, list],
                  load_fn: Callable, mode: str = "append",
