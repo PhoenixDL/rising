@@ -1,4 +1,4 @@
-name: Unittests
+name: Unittests Windows
 
 on: [push]
 
