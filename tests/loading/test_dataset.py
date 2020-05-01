@@ -9,7 +9,6 @@ from torch.multiprocessing import Pool
 
 import numpy as np
 from rising.loading.dataset import AsyncDataset, load_async, dill_helper
-from rising.loading import get_debug_mode, set_debug_mode
 
 
 class LoadDummySample:
