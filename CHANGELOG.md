@@ -2,6 +2,7 @@
 
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
+| 2020-04-30 | b39d2abd190fcb76b3ed908a65e42f9492c7dcd6 | Add notebook tests for windows and mac | No |
 | 2020-04-30 | 89a10c72d927b72241ed9138099f4f2a0e015a3f | Add tests for windows and mac | No |
 | 2020-04-30 | 79c815e55270ef934120fb7be715af6bc53b6d3a | Re-enable Python 3.6 | No |
 | 2020-03-16 | 70c133a231bec1d8bb858e9d82a81b88651d874e | Add option to shuffle transforms in compose | No |
