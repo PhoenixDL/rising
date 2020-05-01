@@ -1,18 +1,13 @@
 # from __future__ import annotations
+import torch
 
-import random
-from torch.multiprocessing import Value
-from rising.transforms.abstract import AbstractTransform, BaseTransform
-from rising.random import AbstractParameter, DiscreteParameter
-from typing import Union, Sequence, Callable
 from itertools import permutations
 from typing import Union, Sequence, Callable, Optional
-
-import torch
 from torch.multiprocessing import Value
 
-from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform, RandomProcess
-from .functional.spatial import *
+from rising.random import AbstractParameter, DiscreteParameter
+from rising.transforms.abstract import AbstractTransform, BaseTransform
+from rising.transforms.functional.spatial import *
 
 __all__ = ["Mirror", "Rot90", "Resize",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
@@ -24,7 +19,8 @@ class Mirror(BaseTransform):
     """Random mirror transform"""
 
     def __init__(self,
-                 dims: Union[int, DiscreteParameter, Sequence[int, DiscreteParameter]],
+                 dims: Union[int, DiscreteParameter,
+                             Sequence[Union[int, DiscreteParameter]]],
                  keys: Sequence[str] = ('data',), grad: bool = False, **kwargs):
         """
         Args:
