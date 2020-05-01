@@ -1,21 +1,19 @@
-import torch
+from typing import Optional
+
 import numpy as np
+import torch
 
 
-def torch_one_hot(target: torch.Tensor, num_classes: int = None) -> torch.Tensor:
+def torch_one_hot(target: torch.Tensor, num_classes: Optional[int] = None) -> torch.Tensor:
     """
     Compute one hot encoding of input tensor
 
-    Parameters
-    ----------
-    target: torch.Tensor
-        tensor to be converted
-    num_classes: int
-        number of classes. If :param:`num_classes` is None, the maximum of target is used
+    Args:
+        target: tensor to be converted
+        num_classes: number of classes. If :param:`num_classes` is None,
+            the maximum of target is used
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         one hot encoded tensor
     """
     if num_classes is None:
@@ -25,22 +23,19 @@ def torch_one_hot(target: torch.Tensor, num_classes: int = None) -> torch.Tensor
     return target_onehot.scatter_(1, target.unsqueeze_(1), 1.0)
 
 
-def np_one_hot(target: np.ndarray, num_classes: int) -> np.ndarray:
+def np_one_hot(target: np.ndarray, num_classes: Optional[int] = None) -> np.ndarray:
     """
     Compute one hot encoding of input array
 
-    Parameters
-    ----------
-    target: np.ndarray
-        array to be converted
-    num_classes: int
-        number of classes
+    Args:
+        target: array to be converted
+        num_classes: number of classes
 
-    Returns
-    -------
-    np.ndarray
+    Returns:
         one hot encoded array
     """
+    if num_classes is None:
+        num_classes = int(target.max().item() + 1)
     dtype = target.dtype
     target_onehot = np.zeros((*target.shape, num_classes), dtype=dtype)
     for c in range(num_classes):
