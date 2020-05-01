@@ -5,15 +5,13 @@ from typing import Callable, Mapping, Sequence, Union, Any, Iterator, Optional, 
 
 import torch
 from threadpoolctl import threadpool_limits
-from torch.utils.data import DataLoader as _DataLoader, Sampler
+from torch.utils.data import DataLoader as _DataLoader, Sampler, Dataset
 from torch.utils.data._utils.collate import default_convert
 from torch.utils.data.dataloader import \
     _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter, \
     _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
 
 from rising.loading.collate import do_nothing_collate
-from rising.loading.dataset import Dataset
-from rising.loading.debug_mode import get_debug_mode
 from rising.transforms import ToDevice, Compose
 
 
@@ -214,7 +212,7 @@ class DataLoader(_DataLoader):
         Returns:
             iterator to load and augment data (can be either single or multiprocessing based)
         """
-        if self.num_workers == 0 or get_debug_mode():
+        if self.num_workers == 0:
             return _SingleProcessDataLoaderIter(self)
         else:
             return _MultiProcessingDataLoaderIter(self)
