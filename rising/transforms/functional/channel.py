@@ -1,24 +1,22 @@
+from typing import Optional
+
 import torch
 from rising.ops import torch_one_hot
 
 __all__ = ["one_hot_batch"]
 
 
-def one_hot_batch(target: torch.Tensor, num_classes: int = None) -> torch.Tensor:
+def one_hot_batch(target: torch.Tensor, num_classes: Optional[int] = None) -> torch.Tensor:
     """
     Compute one hot for input tensor (assumed to a be batch and thus saved
     into first dimension -> input should only have one channel)
 
-    Parameters
-    ----------
-    target: torch.Tensor
-        tensor to be converted
-    num_classes: int
-        number of classes. If :param:`num_classes` is None, the maximum of target is used
+    Args:
+        target: tensor to be converted
+        num_classes: number of classes.
+            If :param:`num_classes` is None, the maximum of target is used
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         one hot encoded tensor
     """
     if target.ndim in [0, 1]:
