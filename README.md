@@ -1,4 +1,4 @@
-![logo](docs/_static/rising_logo.svg "rising")
+![logo](docs/source/images/rising_logo.svg "rising")
 
 ![Project Status](https://img.shields.io/badge/status-alpha-red)
 ![PyPI](https://img.shields.io/pypi/v/rising)
@@ -11,9 +11,9 @@ This is an alpha release which is highly experimental. All transforms should be 
 
 | Python Version                                                 | Platform                                             | Unittests                                                                                         | NotebookTests                                                                            |
 |----------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | ![System](https://img.shields.io/badge/Linux-blue)   | ![Unittests Linux](https://github.com/PhoenixDL/rising/workflows/Unittests%20Linux/badge.svg)     | ![NotebookTests](https://github.com/PhoenixDL/rising/workflows/NotebookTests/badge.svg) |
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | ![System](https://img.shields.io/badge/Windows-blue) | ![Unittests Windows](https://github.com/PhoenixDL/rising/workflows/Unittests%20Windows/badge.svg) | / |
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-red) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)    | / |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-blue) | ![System](https://img.shields.io/badge/Linux-blue)   | ![Unittests Linux](https://github.com/PhoenixDL/rising/workflows/Unittests%20Linux/badge.svg)     | ![NotebookTests](https://github.com/PhoenixDL/rising/workflows/NotebookTests/badge.svg) |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-blue) | ![System](https://img.shields.io/badge/Windows-blue) | ![Unittests Windows](https://github.com/PhoenixDL/rising/workflows/Unittests%20Windows/badge.svg) | / |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-blue) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)    | / |
 
 ## What is `rising`?
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
