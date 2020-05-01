@@ -1,6 +1,7 @@
+from typing import List, Tuple, Union, Mapping, Hashable
+
 import torch
 from torch import Tensor
-from typing import List, Tuple, Union, Mapping, Hashable
 
 __all__ = ["to_device_dtype"]
 
@@ -12,21 +13,13 @@ def to_device_dtype(data: data_type, dtype: Union[torch.dtype, str] = None,
     """
     Pushes data to device
 
-    Parameters
-    ----------
-    data: data_type
-        data which should be pushed to device. Sequence and mapping items are
-        mapping individually to gpu
-    dtype : Union[torch.dtype, str]
-        target dtype
-    device: Union[torch.device, str]
-        target device
-    kwargs:
-        keyword arguments passed to assiging function
+    Args:
+        data: data which should be pushed to device. Sequence and mapping
+            items are mapping individually to gpu
+        device: target device
+        kwargs: keyword arguments passed to assigning function
 
-    Returns
-    -------
-    data_type:
+    Returns:
         data which was pushed to device
     """
     if torch.is_tensor(data):
@@ -34,6 +27,6 @@ def to_device_dtype(data: data_type, dtype: Union[torch.dtype, str] = None,
     elif isinstance(data, Mapping):
         return {key: to_device_dtype(item, device=device, dtype=dtype, **kwargs) for key, item in data.items()}
     elif isinstance(data, (list, tuple)):
-        return type(data)([to_device(item, device=device, dtype=dtype, **kwargs) for item in data])
+        return type(data)([to_device_dtype(item, device=device, dtype=dtype, **kwargs) for item in data])
     else:
         return data

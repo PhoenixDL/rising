@@ -1,16 +1,16 @@
-name: Unittests Linux
+name: NotebookTests Linux
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
-        os: [ubuntu-latest]
         python-version: [3.6, 3.7, 3.8]
-
+    env:
+      TEST_ENV: TRUE
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -22,17 +22,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -U pip wheel;
         pip install -r requirements/install.txt;
-        pip install -r requirements/install_async.txt;
         pip install -r requirements/unittests.txt;
+        pip install -r requirements/notebooks.txt;
         pip install --no-deps .
-    - name: Run Tests
+    - name: Run Notebooks
       run: |
-        coverage run -m unittest
-        coverage xml # convert .coverage file to coverage.xml file
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.0.2
-      with:
-        token: ${{secrets.CODECOV_TOKEN}} #required
-        file: ./coverage.xml #optional
-        flags: unittests #optional
-        name: codecov-rising #optional
+        treon

@@ -11,14 +11,12 @@ augment_axis_callable = Callable[[torch.Tensor, Union[float, Sequence]], Any]
 
 
 class AbstractTransform(torch.nn.Module):
+    """Base class for all transforms"""
+
     def __init__(self, grad: bool = False, **kwargs):
         """
-        Base class for all transforms
-
-        Parameters
-        ----------
-        grad: bool
-            enable gradient computation inside transformation
+        Args:
+            grad: enable gradient computation inside transformation
         """
         super().__init__()
         self.grad = grad
@@ -75,15 +73,12 @@ class AbstractTransform(torch.nn.Module):
         """
         Call super class with correct torch context
 
-        Parameters
-        ----------
-        args:
-            forwarded positional arguments
-        kwargs:
-            forwarded keyword arguments
+        Args:
+            *args: forwarded positional arguments
+            **kwargs: forwarded keyword arguments
 
-        Returns
-        -------
+        Returns:
+            transformed data
 
         """
         if self.grad:
@@ -98,38 +93,30 @@ class AbstractTransform(torch.nn.Module):
         """
         Implement transform functionality here
 
-        Parameters
-        ----------
-        data: dict
-            dict with data
+        Args:
+            **data: dict with data
 
-        Returns
-        -------
-        dict
+        Returns:
             dict with transformed data
         """
         raise NotImplementedError
 
 
 class BaseTransform(AbstractTransform):
+    """Transform to apply a functional interface to given keys"""
+
     def __init__(self, augment_fn: augment_callable, *args,
                  keys: Sequence = ('data',), grad: bool = False,
                  property_names: Sequence[str] = (), **kwargs):
         """
-        Apply augment_fn to keys
-
-        Parameters
-        ----------
-        augment_fn: callable
-            function for augmentation
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        property_names : tuple
-            a tuple containing all the properties to call during forward pass
-        kwargs:
-            keyword arguments passed to augment_fn
+        Args:
+            augment_fn: function for augmentation
+            *args: positional arguments passed to augment_fn
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            property_names : a tuple containing all the properties to call
+                during forward pass
+            **kwargs: keyword arguments passed to augment_fn
         """
         self.augment_fn = augment_fn
         self.keys = keys
@@ -144,14 +131,10 @@ class BaseTransform(AbstractTransform):
         """
         Apply transformation
 
-        Parameters
-        ----------
-        data: dict
-            dict with tensors
+        Args:
+            data: dict with tensors
 
-        Returns
-        -------
-        dict
+        Returns:
             dict with augmented data
         """
         kwargs = {}
@@ -166,20 +149,18 @@ class BaseTransform(AbstractTransform):
 
 
 class PerSampleTransform(BaseTransform):
+    """
+    Apply transformation to each sample in batch individually
+    :param:`augment_fn` must be callable with option :param:`out`
+    where results are saved in
+    """
+
     def forward(self, **data) -> dict:
         """
-        Apply transformation to each sample in batch individually
-        :param:`augment_fn` must be callable with option :param:`out`
-        where results are saved in
+        Args:
+            data: dict with tensors
 
-        Parameters
-        ----------
-        data: dict
-            dict with tensors
-
-        Returns
-        -------
-        dict
+        Returns:
             dict with augmented data
         """
         kwargs = {}
@@ -196,24 +177,18 @@ class PerSampleTransform(BaseTransform):
 
 
 class PerChannelTransform(BaseTransform):
+    """Apply transformation per channel (but still to whole batch)"""
+
     def __init__(self, augment_fn: augment_callable, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False,
                  property_names: Tuple[str] = (), **kwargs):
         """
-        Apply transformation per channel (but still to whole batch)
-
-        Parameters
-        ----------
-        augment_fn: callable
-            function for augmentation
-        per_channel: bool
-            enable transformation per channel
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        kwargs:
-            keyword arguments passed to augment_fn
+        Args:
+            augment_fn: function for augmentation
+            per_channel: enable transformation per channel
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            kwargs: keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=augment_fn, keys=keys, grad=grad,
                          property_names=property_names, **kwargs)
@@ -223,14 +198,10 @@ class PerChannelTransform(BaseTransform):
         """
         Apply transformation
 
-        Parameters
-        ----------
-        data: dict
-            dict with tensors
+        Args:
+            data: dict with tensors
 
-        Returns
-        -------
-        dict
+        Returns:
             dict with augmented data
         """
         if self.per_channel:

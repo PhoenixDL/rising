@@ -11,18 +11,11 @@ class CenterCrop(BaseTransform):
                  keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
         """
-        Apply augment_fn to keys
-
-        Parameters
-        ----------
-        size: Union[int, Sequence[int]]
-            size of crop
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        kwargs:
-            keyword arguments passed to augment_fn
+        Args:
+            size: size of crop
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to augment_fn
         """
 
         super().__init__(augment_fn=center_crop, keys=keys,
@@ -35,20 +28,12 @@ class RandomCrop(BaseTransform):
                  dist: Union[int, Sequence, AbstractParameter] = 0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
-        Apply augment_fn to keys
-
-        Parameters
-        ----------
-        size: Union[int, Sequence[int]]
-            size of crop
-        dist: Union[int, Sequence[int]]
-            minimum distance to border. By default zero
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        kwargs:
-            keyword arguments passed to augment_fn
+        Args:
+            size: size of crop
+            dist: minimum distance to border. By default zero
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=random_crop,
                          keys=keys, size=size, dist=dist, grad=grad,
