@@ -30,7 +30,7 @@ class AbstractParameter(ABC, torch.nn.Module):
         """
         if not isinstance(size, torch.Size):
             size = torch.Size(size)
-        return size.numel() # TODO: check this?
+        return size.numel()  # TODO: check this?
 
     @abstractmethod
     def sample(self, n_samples: int) -> Union[torch.Tensor, list]:

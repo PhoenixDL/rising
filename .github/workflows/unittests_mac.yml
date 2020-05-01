@@ -1,16 +1,16 @@
-name: NotebookTests
+name: Unittests MacOS
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       matrix:
+        os: [macos-latest]
         python-version: [3.6, 3.7, 3.8]
-    env:
-      TEST_ENV: TRUE
+
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -23,8 +23,8 @@ jobs:
         pip install -U pip wheel;
         pip install -r requirements/install.txt;
         pip install -r requirements/unittests.txt;
-        pip install -r requirements/notebooks.txt;
         pip install --no-deps .
-    - name: Run Notebooks
+    - name: Run Tests
       run: |
-        treon
+        coverage run -m unittest
+        coverage xml # convert .coverage file to coverage.xml file
