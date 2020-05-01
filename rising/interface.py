@@ -5,6 +5,7 @@ class AbstractMixin(object):
     to existing classes with multiple inheritance from this class as backup
     for handling additional arguments.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Args:

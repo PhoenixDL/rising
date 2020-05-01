@@ -258,6 +258,7 @@ class RandomValuePerChannel(RandomProcess, PerChannelTransform):
 
 class RandomAddValue(RandomValuePerChannel):
     """Increase values additively"""
+
     def __init__(self, random_mode: str, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
@@ -276,6 +277,7 @@ class RandomAddValue(RandomValuePerChannel):
 
 class RandomScaleValue(RandomValuePerChannel):
     """Scale Values"""
+
     def __init__(self, random_mode, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """

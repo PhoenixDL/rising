@@ -7,6 +7,7 @@ class MapToSeq(AbstractTransform):
     """
     Convert dict to sequence
     """
+
     def __init__(self, *keys, grad: bool = False, **kwargs):
         """
         Args:
@@ -34,6 +35,7 @@ class MapToSeq(AbstractTransform):
 
 class SeqToMap(AbstractTransform):
     """Convert sequence to dict"""
+
     def __init__(self, *keys, grad: bool = False, **kwargs):
         """
         Args:

@@ -11,6 +11,7 @@ __all__ = ["ToTensor", "ToDevice", "TensorOp", "Permute"]
 
 class ToTensor(BaseTransform):
     """Transform Input Collection to Collection of :class:`torch.Tensor`"""
+
     def __init__(self, keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -23,6 +24,7 @@ class ToTensor(BaseTransform):
 
 class ToDevice(BaseTransform):
     """Push data to device"""
+
     def __init__(self, device: Union[torch.device, str],
                  non_blocking: bool = False, copy: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -43,6 +45,7 @@ class ToDevice(BaseTransform):
 
 class TensorOp(BaseTransform):
     """Apply function which are supported by the `torch.Tensor` class"""
+
     def __init__(self, op_name: str, *args, keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
         """
@@ -58,6 +61,7 @@ class TensorOp(BaseTransform):
 
 class Permute(BaseTransform):
     """Permute dimensions of tensor"""
+
     def __init__(self, dims: Dict[str, Sequence[int]], grad: bool = False, **kwargs):
         """
         Args:

@@ -159,6 +159,7 @@ class PerChannelTransform(BaseTransform):
 
 class RandomDimsTransform(AbstractTransform):
     """Randomly choose axes to perform augmentation on"""
+
     def __init__(self, augment_fn: augment_axis_callable, dims: Sequence, keys: Sequence = ('data',),
                  prob: Union[float, Sequence] = 0.5, grad: bool = False, **kwargs):
         """
@@ -204,6 +205,7 @@ class RandomProcess(AbstractMixin):
     Saves specified function to generate random values to current class.
     Function is saved inside :param:`random_fn`.
     """
+
     def __init__(self, *args, random_mode: str,
                  random_args: Union[Sequence, Sequence[Sequence]] = (),
                  random_module: str = "random", rand_seq: bool = True,

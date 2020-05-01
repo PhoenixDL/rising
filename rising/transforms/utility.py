@@ -9,6 +9,7 @@ __all__ = ["DoNothing", "SegToBox", "BoxToSeg", "InstanceToSemantic", "PopKeys",
 
 class DoNothing(AbstractTransform):
     """Transform that returns the input as is"""
+
     def __init__(self, grad: bool = False, **kwargs):
         """
         Args:
@@ -32,6 +33,7 @@ class DoNothing(AbstractTransform):
 
 class SegToBox(AbstractTransform):
     """Convert instance segmentation to bounding boxes"""
+
     def __init__(self, keys: Mapping[Hashable, Hashable], grad: bool = False, **kwargs):
         """
         Args:
@@ -60,6 +62,7 @@ class SegToBox(AbstractTransform):
 
 class BoxToSeg(AbstractTransform):
     """Convert bounding boxes to instance segmentation"""
+
     def __init__(self, keys: Mapping[Hashable, Hashable], shape: Sequence[int],
                  dtype: torch.dtype, device: Union[torch.device, str],
                  grad: bool = False, **kwargs):
@@ -100,6 +103,7 @@ class BoxToSeg(AbstractTransform):
 
 class InstanceToSemantic(AbstractTransform):
     """Convert an instance segmentation to a semantic segmentation"""
+
     def __init__(self, keys: Mapping[str, str], cls_key: Hashable, grad: bool = False, **kwargs):
         """
         Args:
@@ -132,6 +136,7 @@ class InstanceToSemantic(AbstractTransform):
 
 class PopKeys(AbstractTransform):
     """Pops keys from a given data dict"""
+
     def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
         """
         Args:
@@ -153,6 +158,7 @@ class PopKeys(AbstractTransform):
 
 class FilterKeys(AbstractTransform):
     """Filters keys from a given data dict"""
+
     def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
         """
         Args:

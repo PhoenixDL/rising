@@ -420,6 +420,7 @@ class Rotate(BaseAffine):
     The transformation will be applied to all the dict-entries specified
     in :attr:`keys`.
     """
+
     def __init__(self,
                  rotation: AffineParamType,
                  keys: Sequence = ('data',),
@@ -495,6 +496,7 @@ class Translate(BaseAffine):
     The transformation will be applied to all the dict-entries specified
     in :attr:`keys`.
     """
+
     def __init__(self,
                  translation: AffineParamType,
                  keys: Sequence = ('data',),

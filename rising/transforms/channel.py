@@ -13,6 +13,7 @@ class OneHot(BaseTransform):
     which results in shape N x NumClasses x [same as input] while input is expected to
     have shape N x 1 x [arbitrary additional dimensions]
     """
+
     def __init__(self, num_classes: int, keys: Sequence = ('seg',),
                  grad: bool = False, **kwargs):
         """

@@ -7,6 +7,7 @@ __all__ = ["CenterCrop", "RandomCrop", "CenterCropRandomSize", "RandomCropRandom
 
 class CenterCrop(BaseTransform):
     """Crop from image center"""
+
     def __init__(self, size: Union[int, Sequence[int]],
                  keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
@@ -23,6 +24,7 @@ class CenterCrop(BaseTransform):
 
 class RandomCrop(BaseTransform):
     """Perform a random crop"""
+
     def __init__(self, size: Union[int, Sequence[int]],
                  dist: Union[int, Sequence[int]] = 0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -40,6 +42,7 @@ class RandomCrop(BaseTransform):
 
 class CenterCropRandomSize(RandomProcess, BaseTransform):
     """Crop a random sized part out of the image center"""
+
     def __init__(self, random_args: Union[Sequence, Sequence[Sequence]],
                  random_mode: str = "randrange", keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
@@ -74,6 +77,7 @@ class CenterCropRandomSize(RandomProcess, BaseTransform):
 
 class RandomCropRandomSize(RandomProcess, BaseTransform):
     """Crop a random sized part of the image out of a random location"""
+
     def __init__(self, random_args: Union[Sequence, Sequence[Sequence]],
                  random_mode: str = "randrange", dist: Union[int, Sequence[int]] = 0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
