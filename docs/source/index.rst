@@ -6,14 +6,11 @@ rising Documentation
    :name: start
    :caption: Start Here
 
-
     get_started
-
 .. toctree::
    :maxdepth: 2
    :name: docs
    :caption: Python API
-
 
    loading
    ops
@@ -26,7 +23,6 @@ rising Documentation
    :name: Tutorials & Examples
    :caption: Tutorials
 
-
    Using external transformations <https://github.com/PhoenixDL/rising/blob/master/notebooks/external_augmentation.ipynb>
    An Overview on rising transformsations <https://github.com/PhoenixDL/rising/blob/master/notebooks/transformations.ipynb>
 
@@ -34,7 +30,6 @@ rising Documentation
    :maxdepth: 1
    :name: community
    :caption: Community
-
 
    CODE_OF_CONDUCT.md
    CONTRIBUTING.md
@@ -46,3 +41,9 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. This is here to make sphinx aware of the modules but not throw an error/warning
+.. toctree::
+   :hidden:
+
+   rising._version
