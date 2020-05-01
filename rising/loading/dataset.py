@@ -2,10 +2,17 @@ import logging
 import os
 import pathlib
 from functools import partial
-from typing import Any, Sequence, Callable, Union, List, Iterator
+from multiprocessing import cpu_count, Pool as MPPool
+from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator, Generator, Optional
+from warnings import warn
 
-import dill
-from torch.multiprocessing import Pool, cpu_count
+try:
+    import dill
+    DILL_AVAILABLE = True
+except ImportError:
+    DILL_AVAILABLE = False
+
+from torch.multiprocessing import Pool
 from torch.utils.data import Dataset as TorchDset, Subset
 from tqdm import tqdm
 
@@ -17,17 +24,17 @@ __all__ = ["Dataset", "AsyncDataset"]
 def dill_helper(payload: Any) -> Any:
     """
     Load single sample from data serialized by dill
+    Args:
+        payload: data which is loaded with dill
 
-    Parameters
-    ----------
-    payload : Any
-        data which is loaded with dill
-
-    Returns
-    -------
-    Any
+    Returns:
         loaded data
+
     """
+    if not DILL_AVAILABLE:
+        raise RuntimeError('dill is not installed. For async loading '
+                           'please install it')
+
     fn, args, kwargs = dill.loads(payload)
     return fn(*args, **kwargs)
 
@@ -36,95 +43,91 @@ def load_async(pool: Pool, fn: Callable, *args, callback: Callable = None, **kwa
     """
     Load data asynchronously and serialize data via dill
 
-    Parameters
-    ----------
-    pool : multiprocessing.Pool
-        multiprocessing pool to use for :func:`apply_async`
-    fn : Callable
-        function to load a single sample
-    callback : Callable, optional
-        optional callback, by default None
+    Args:
+        pool: multiprocessing pool to use for :func:`apply_async`
+        fn: function to load a single sample
+        *args: positional arguments to dump with dill
+        callback: optional callback. defaults to None.
+        **kwargs: keyword arguments to dump with dill
 
-    Returns
-    -------
-    Any
+    Returns:
         reference to obtain data with :func:`get`
+
     """
+
+    if not DILL_AVAILABLE:
+        raise RuntimeError('dill is not installed. For async loading '
+                           'please install it')
+
     payload = dill.dumps((fn, args, kwargs))
     return pool.apply_async(dill_helper, (payload,), callback=callback)
 
 
 class Dataset(TorchDset):
     """
-    Extension of PyTorch's Datasets by a ``get_subset`` method which returns a
-    sub-dataset.
+    Extension of :class:`torch.utils.data.Dataset` by a ``get_subset`` method
+    which returns a sub-dataset.
     """
 
-    def __iter__(self) -> Any:
+    def __iter__(self) -> Generator:
         """
-        Simple iterator over dataset
+        Yields:
+            sample: dataset sample
 
-        Returns
-        -------
-        Any
-            data contained inside dataset
         """
+
         for i in range(len(self)):
             yield self[i]
 
     def get_subset(self, indices: Sequence[int]) -> Subset:
         """
-        Returns a Subset of the current dataset based on given indices
+        Returns a :class:`torch.utils.data.Subset` of the current dataset
+        based on given indices
 
-        Parameters
-        ----------
-        indices : iterable
-            valid indices to extract subset from current dataset
+        Args:
+            indices: valid indices to extract subset from current dataset
 
-        Returns
-        -------
-        :class:`SubsetDataset`
-            the subset
+        Returns:
+            the subset of the current dataset
+
         """
+
         subset = Subset(self, indices)
         subset.__iter__ = self.__iter__
         return subset
 
 
 class AsyncDataset(Dataset):
+    """
+    A dataset to preload all the data and cache it for the entire
+    lifetime of this class.
+    """
+
     def __init__(self,
                  data_path: Union[pathlib.Path, str, list],
                  load_fn: Callable, mode: str = "append",
-                 num_workers: int = 0, verbose=False,
+                 num_workers: Optional[int] = 0, verbose: bool = False,
                  **load_kwargs):
         """
-        A dataset to preload all the data and cache it for the entire
-        lifetime of this class.
 
-        Parameters
-        ----------
-        data_path : str, Path or list
-            the path(s) containing the actual data samples
-        load_fn : function
-            function to load the actual data
-        mode : str
-            whether to append the sample to a list or to extend the list by
-            it. Supported modes are: :param:`append` and :param:`extend`.
-            Default: ``append``
-        num_workers : int, optional
-            the number of workers to use for preloading. ``0`` means, all the
-            data will be loaded in the main process, while ``None`` means,
-            the number of processes will default to the number of logical
-            cores.
-        verbose : bool
-            whether to show the loading progress.
-        **load_kwargs :
-            additional keyword arguments. Passed directly to :param:`load_fn`
+        Args:
+            data_path: the path(s) containing the actual data samples
+            load_fn: function to load the actual data
+            mode: whether to append the sample to a list or to extend the list
+                by it. Supported modes are: :param:`append` and :param:`extend`.
+                Default: ``append``
+            num_workers: the number of workers to use for preloading.
+                ``0`` means, all the data will be loaded in the main process,
+                while ``None`` means, the number of processes will default to
+                the number of logical cores.
+            verbose: whether to show the loading progress.
+            **load_kwargs: additional keyword arguments.
+                Passed directly to :param:`load_fn`
 
-        Warnings
-        --------
-        if using multiprocessing to load data, there are some restrictions to which
-        :func:`load_fn` are supported, please refer to the dill or pickle documentation
+        Warnings:
+            if using multiprocessing to load data, there are some restrictions
+            to which :func:`load_fn` are supported, please refer to the
+            :module:`dill` or :module:`pickle` documentation
         """
         super().__init__()
 
@@ -139,19 +142,15 @@ class AsyncDataset(Dataset):
         """
         Function to build the entire dataset
 
-        Parameters
-        ----------
-        path : str, Path or list
-            the path(s) containing the data samples
-        mode : str
-            whether to append or extend the dataset by the loaded sample
+        Args:
+            path: the path(s) containing the data samples
+            mode: whether to append or extend the dataset by the loaded sample
 
-        Returns
-        -------
-        list
+        Returns:
             the loaded data
 
         """
+
         data = []
         if not isinstance(path, list):
             assert os.path.isdir(path), '%s is not a valid directory' % path
@@ -177,18 +176,15 @@ class AsyncDataset(Dataset):
         """
         Helper function to load dataset with single process
 
-        Parameters
-        ----------
-        load_fn : Callable
-            function to load a linge sample
-        path : Sequence
-            a sequence of paths whih should be loaded
+        Args:
+            load_fn: function to load a single sample
+            path: a sequence of paths which should be loaded
 
-        Returns
-        -------
-        Iterator
+        Returns:
             iterator of loaded data
+
         """
+
         if self._verbosity:
             path = tqdm(path, unit='samples', desc="Loading Samples")
 
@@ -198,18 +194,15 @@ class AsyncDataset(Dataset):
         """
         Helper function to load dataset with multiple processes
 
-        Parameters
-        ----------
-        load_fn : Callable
-            function to load a linge sample
-        path : Sequence
-            a sequence of paths whih should be loaded
+        Args:
+            load_fn:  function to load a single sample
+            path:  a sequence of paths which should be loaded
 
-        Returns
-        -------
-        List
-            list of loaded data
+        Returns:
+            loaded data
+
         """
+
         _processes = cpu_count() if self._num_workers is None else self._num_workers
 
         if self._verbosity:
@@ -233,16 +226,16 @@ class AsyncDataset(Dataset):
         Adds items to the given data list. The actual way of adding these
         items depends on :param:`mode`
 
-        Parameters
-        ----------
-        data : list
-            the list containing the already loaded data
-        item : Any
-            the current item which will be added to the list
-        mode : str
-            the string specifying the mode of how the item should be added.
+        Args:
+            data: the list containing the already loaded data
+            item: the current item which will be added to the list
+            mode: the string specifying the mode of how the item should be
+                added.
 
+        Raises:
+            TypeError: No known mode detected
         """
+
         _mode = mode.lower()
 
         if _mode == 'append':
@@ -252,31 +245,26 @@ class AsyncDataset(Dataset):
         else:
             raise TypeError(f"Unknown mode detected: {mode} not supported.")
 
-    def __getitem__(self, index: int) -> Any:
+    def __getitem__(self, index: int) -> Union[Any, dict]:
         """
         Making the whole Dataset indexeable.
 
-        Parameters
-        ----------
-        index : int
-            the integer specifying which sample to return
+        Args:
+            index: the integer specifying which sample to return
 
-        Returns
-        -------
-        Any, Dict
+        Returns:
             can be any object containing a single sample, but in practice is
             often a dict
 
         """
+
         return self.data[index]
 
     def __len__(self) -> int:
         """
         Length of dataset
 
-        Returns
-        -------
-        int
+        Returns:
             number of elements
         """
         return len(self.data)

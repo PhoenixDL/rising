@@ -17,19 +17,18 @@ def numpy_collate(batch: Any) -> Any:
     function to collate the samples to a whole batch of numpy arrays.
     PyTorch Tensors, scalar values and sequences will be casted to arrays
     automatically.
+    Args:
+        batch: a batch of samples. In most cases either sequence,
+            mapping or mixture of them
 
-    Parameters
-    ----------
-    batch : Any
-        a batch of samples. In most cases this is either a sequence,
-        a mapping or a mixture of them
+    Returns:
+        collated batch with optionally converted type
+            (to :class:`numpy.ndarray`)
 
-    Returns
-    -------
-    Any
-        collated batch with optionally converted type (to numpy array)
-
+    Raises:
+        TypeError: When batch could not be collated automatically
     """
+
     elem = batch[0]
     if isinstance(elem, np.ndarray):
         return np.stack(batch, 0)
@@ -52,16 +51,13 @@ def numpy_collate(batch: Any) -> Any:
 
 def do_nothing_collate(batch: Any) -> Any:
     """
-    Return batch
+    Returns the batch as is (with out any collation
+    Args:
+        batch: input batch (typically a sequence, mapping or mixture of those).
 
-    Parameters
-    ----------
-    batch : Any
-        input
+    Returns:
+        the batch as given to this function
 
-    Returns
-    -------
-    Any
-        input
     """
+
     return batch

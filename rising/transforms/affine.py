@@ -1,12 +1,12 @@
+from typing import Sequence, Union, Iterable, Any, Optional
+
 import torch
-from typing import Sequence, Union, Iterable
 
 from rising.transforms.abstract import BaseTransform
 from rising.transforms.functional.affine import affine_image_transform, \
     AffineParamType, parametrize_matrix
 from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
 from rising.utils.checktype import check_scalar
-
 
 __all__ = [
     'Affine',
@@ -19,11 +19,18 @@ __all__ = [
 
 
 class Affine(BaseTransform):
+    """
+    Class Performing an Affine Transformation on a given sample dict.
+    The transformation will be applied to all the dict-entries specified
+    in :attr:`keys`.
+    """
+
     def __init__(self,
-                 matrix: Union[torch.Tensor, Sequence[Sequence[float]]] = None,
+                 matrix: Optional[Union[torch.Tensor,
+                                        Sequence[Sequence[float]]]] = None,
                  keys: Sequence = ('data',),
                  grad: bool = False,
-                 output_size: tuple = None,
+                 output_size: Optional[tuple] = None,
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
@@ -31,46 +38,35 @@ class Affine(BaseTransform):
                  reverse_order: bool = False,
                  **kwargs):
         """
-        Class Performing an Affine Transformation on a given sample dict.
-        The transformation will be applied to all the dict-entries specified
-        in :attr:`keys`.
-
-        Parameters
-        ----------
-        matrix : torch.Tensor, optional
-            if given, overwrites the parameters for :param:`scale`,
-            :param:rotation` and :param:`translation`.
-            Should be a matrix of shape [(BATCHSIZE,) NDIM, NDIM(+1)]
-            This matrix represents the whole transformation matrix
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        output_size : Iterable
-            if given, this will be the resulting image size.
-            Defaults to ``None``
-        adjust_size : bool
-            if True, the resulting image size will be calculated dynamically
-            to ensure that the whole image fits.
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+        Args:
+            matrix: if given, overwrites the parameters for :param:`scale`,
+                :param:rotation` and :param:`translation`.
+                Should be a matrix of shape [(BATCHSIZE,) NDIM, NDIM(+1)]
+                This matrix represents the whole transformation matrix
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            output_size: if given, this will be the resulting image size.
+                Defaults to ``None``
+            adjust_size: if True, the resulting image size will be calculated
+                dynamically to ensure that the whole image fits.
+            interpolation_mode: interpolation mode to calculate output values
+                ``'bilinear'`` | ``'nearest'``. Default: ``'bilinear'``
+            padding_mode:padding mode for outside grid values
+                ``'zeros``' | ``'border'`` | ``'reflection'``.
+                Default: ``'zeros'``
+            align_corners: Geometrically, we consider the pixels of the
+                input as squares rather than points. If set to True,
+                the extrema (-1 and 1)  are considered as referring to the
+                center points of the input’s corner pixels. If set to False,
+                they are instead considered as referring to the corner points
+                of the input’s corner pixels, making the sampling more
+                resolution agnostic.
+            reverse_order: reverses the coordinate order of the
+                transformation to conform to the pytorch convention:
+                transformation params order [W,H(,D)] and
+                batch order [(D,)H,W]
+            **kwargs: additional keyword arguments passed to the
+                affine transform
         """
         super().__init__(augment_fn=affine_image_transform,
                          keys=keys,
@@ -89,16 +85,12 @@ class Affine(BaseTransform):
         Assembles the matrix (and takes care of batching and having it on the
         right device and in the correct dtype and dimensionality).
 
-        Parameters
-        ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        Args:
+            **data: the data to be transformed. Will be used to determine
+                batchsize, dimensionality, dtype and device
 
-        Returns
-        -------
-        torch.Tensor
-            the (batched) transformation matrix
+        Returns:
+             the (batched) transformation matrix
         """
         if self.matrix is None:
             raise ValueError("Matrix needs to be initialized or overwritten.")
@@ -129,14 +121,10 @@ class Affine(BaseTransform):
         """
         Assembles the matrix and applies it to the specified sample-entities.
 
-        Parameters
-        ----------
-        **data :
-            the data to transform
+        Args:
+            **data: the data to transform
 
-        Returns
-        -------
-        dict
+        Returns:
             dictionary containing the transformed data
         """
         matrix = self.assemble_matrix(**data)
@@ -155,19 +143,15 @@ class Affine(BaseTransform):
 
         return data
 
-    def __add__(self, other):
+    def __add__(self, other: Any) -> BaseTransform:
         """
         Makes ``trafo + other_trafo work``
         (stacks them for dynamic assembling)
 
-        Parameters
-        ----------
-        other : torch.Tensor, Affine
-            the other transformation
+        Args:
+            other: the other transformation
 
-        Returns
-        -------
-        StackedAffine
+        Returns:
             a stacked affine transformation
         """
         if not isinstance(other, Affine):
@@ -191,14 +175,10 @@ class Affine(BaseTransform):
         Makes ``other_trafo + trafo`` work
         (stacks them for dynamic assembling)
 
-        Parameters
-        ----------
-        other : torch.Tensor, Affine
-            the other transformation
+        Args:
+            other: the other transformation
 
-        Returns
-        -------
-        StackedAffine
+        Returns:
             a stacked affine transformation
         """
         if not isinstance(other, Affine):
@@ -219,13 +199,18 @@ class Affine(BaseTransform):
 
 
 class StackedAffine(Affine):
+    """
+    Class to stack multiple affines with dynamic ensembling by matrix
+    multiplication to avoid multiple interpolations.
+    """
+
     def __init__(
             self,
             *transforms: Union[Affine, Sequence[
                 Union[Sequence[Affine], Affine]]],
             keys: Sequence = ('data',),
             grad: bool = False,
-            output_size: tuple = None,
+            output_size: Optional[tuple] = None,
             adjust_size: bool = False,
             interpolation_mode: str = 'bilinear',
             padding_mode: str = 'zeros',
@@ -233,47 +218,37 @@ class StackedAffine(Affine):
             reverse_order: bool = False,
             **kwargs):
         """
-        Class Performing an Affine Transformation on a given sample dict.
-        The transformation will be applied to all the dict-entries specified
-        in :attr:`keys`.
-
-        Parameters
-        ----------
-        transforms : sequence of Affines
-            the transforms to stack. Each transform must have a function
-            called ``assemble_matrix``, which is called to dynamically
-            assemble stacked matrices. Afterwards these transformations are
-            stacked by matrix-multiplication to only perform a single
-            interpolation
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        output_size : Iterable
-            if given, this will be the resulting image size.
-            Defaults to ``None``
-        adjust_size : bool
-            if True, the resulting image size will be calculated dynamically
-            to ensure that the whole image fits.
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+        Args:
+            transforms: the transforms to stack.
+                Each transform must have a function
+                called ``assemble_matrix``, which is called to dynamically
+                assemble stacked matrices. Afterwards these transformations
+                are stacked by matrix-multiplication to only perform a single
+                interpolation
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            output_size: if given, this will be the resulting image size.
+                Defaults to ``None``
+            adjust_size: if True, the resulting image size will be calculated
+                dynamically to ensure that the whole image fits.
+            interpolation_mode: interpolation mode to calculate output values
+                ``'bilinear'`` | ``'nearest'``. Default: ``'bilinear'``
+            padding_mode: padding mode for outside grid values
+                ``'zeros'`` | ``'border'`` | ``'reflection'``.
+                Default: ``'zeros'``
+            align_corners: Geometrically, we consider the pixels of the
+                input as squares rather than points. If set to True,
+                the extrema (-1 and 1)  are considered as referring to the
+                center points of the input’s corner pixels. If set to False,
+                they are instead considered as referring to the corner points
+                of the input’s corner pixels, making the sampling more
+                resolution agnostic.
+            reverse_order: reverses the coordinate order of the
+                transformation to conform to the pytorch convention:
+                transformation params order [W,H(,D)] and
+                batch order [(D,)H,W]
+            **kwargs: additional keyword arguments passed to the
+                affine transform
         """
         if isinstance(transforms, (tuple, list)):
             if isinstance(transforms[0], (tuple, list)):
@@ -298,15 +273,12 @@ class StackedAffine(Affine):
         """
         Handles the matrix assembly and stacking
 
-        Parameters
-        ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        Args:
+            **data: the data to be transformed.
+                Will be used to determine batchsize,
+                dimensionality, dtype and device
 
-        Returns
-        -------
-        torch.Tensor
+        Returns:
             the (batched) transformation matrix
 
         """
@@ -321,15 +293,20 @@ class StackedAffine(Affine):
 
 
 class BaseAffine(Affine):
+    """
+    Class performing a basic Affine Transformation on a given sample dict.
+    The transformation will be applied to all the dict-entries specified
+    in :attr:`keys`."""
+
     def __init__(self,
-                 scale: AffineParamType = None,
-                 rotation: AffineParamType = None,
-                 translation: AffineParamType = None,
+                 scale: Optional[AffineParamType] = None,
+                 rotation: Optional[AffineParamType] = None,
+                 translation: Optional[AffineParamType] = None,
                  degree: bool = False,
                  image_transform: bool = True,
                  keys: Sequence = ('data',),
                  grad: bool = False,
-                 output_size: tuple = None,
+                 output_size: Optional[tuple] = None,
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
@@ -338,81 +315,70 @@ class BaseAffine(Affine):
                  **kwargs,
                  ):
         """
-        Class performing a basic Affine Transformation on a given sample dict.
-        The transformation will be applied to all the dict-entries specified
-        in :attr:`keys`.
-
-        Parameters
-        ----------
-        scale : torch.Tensor, int, float, optional
-            the scale factor(s). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
+        Args:
+            scale: the scale factor(s). Supported are:
+                * a single parameter (as float or int), which will be
+                    replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
                     replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                     batch samples
                 * a parameter per sampler per dimension
-            None will be treated as a scaling factor of 1
-        rotation : torch.Tensor, int, float, optional
-            the rotation factor(s). The rotation is performed in
-             consecutive order axis0 -> axis1 (-> axis 2). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
+                * None will be treated as a scaling factor of 1
+            rotation: the rotation factor(s). The rotation is performed in
+                consecutive order axis0 -> axis1 (-> axis 2). Supported are:
+                * a single parameter (as float or int), which will be
+                    replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
                     replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                     batch samples
                 * a parameter per sampler per dimension
-            None will be treated as a rotation factor of 1
-        translation : torch.Tensor, int, float
-            the translation offset(s) relative to image (should be in the
-            range [0, 1]). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
+                * None will be treated as a rotation factor of 1
+            translation : torch.Tensor, int, float
+                the translation offset(s) relative to image (should be in the
+                range [0, 1]). Supported are:
+                * a single parameter (as float or int), which will be
+                    replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
                     replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                     batch samples
                 * a parameter per sampler per dimension
-            None will be treated as a translation offset of 0
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        degree : bool
-            whether the given rotation(s) are in degrees.
-            Only valid for rotation parameters, which aren't passed as full
-            transformation matrix.
-        output_size : Iterable
-            if given, this will be the resulting image size.
-            Defaults to ``None``
-        adjust_size : bool
-            if True, the resulting image size will be calculated dynamically
-            to ensure that the whole image fits.
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+                * None will be treated as a translation offset of 0
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            degree: whether the given rotation(s) are in degrees.
+                Only valid for rotation parameters, which aren't passed
+                as full transformation matrix.
+            output_size: if given, this will be the resulting image size.
+                Defaults to ``None``
+            adjust_size: if True, the resulting image size will be
+                calculated dynamically to ensure that the whole image fits.
+            interpolation_mode: interpolation mode to calculate output values
+                ``'bilinear'`` | ``'nearest'``. Default: ``'bilinear'``
+            padding_mode: padding mode for outside grid values
+                ``'zeros'`` | ``'border'`` | ``'reflection'``.
+                Default: ``'zeros'``
+            align_corners: Geometrically, we consider the pixels of the
+                input as squares rather than points. If set to True,
+                the extrema (-1 and 1)  are considered as referring to the
+                center points of the input’s corner pixels. If set to False,
+                they are instead considered as referring to the corner points
+                of the input’s corner pixels, making the sampling more
+                resolution agnostic.
+            reverse_order: reverses the coordinate order of the
+                transformation to conform to the pytorch convention:
+                transformation params order [W,H(,D)] and
+                batch order [(D,)H,W]
+            **kwargs: additional keyword arguments passed to the
+                affine transform
         """
         super().__init__(keys=keys, grad=grad, output_size=output_size,
-                         adjust_size=adjust_size, interpolation_mode=interpolation_mode,
-                         padding_mode=padding_mode, align_corners=align_corners,
+                         adjust_size=adjust_size,
+                         interpolation_mode=interpolation_mode,
+                         padding_mode=padding_mode,
+                         align_corners=align_corners,
                          reverse_order=reverse_order,
                          **kwargs)
         self.scale = scale
@@ -426,15 +392,11 @@ class BaseAffine(Affine):
         Assembles the matrix (and takes care of batching and having it on the
         right device and in the correct dtype and dimensionality).
 
-        Parameters
-        ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        Args:
+            **data: the data to be transformed. Will be used to determine
+                batchsize, dimensionality, dtype and device
 
-        Returns
-        -------
-        torch.Tensor
+        Returns:
             the (batched) transformation matrix
         """
         batchsize = data[self.keys[0]].shape[0]
@@ -443,19 +405,28 @@ class BaseAffine(Affine):
         dtype = data[self.keys[0]].dtype
 
         self.matrix = parametrize_matrix(
-            scale=self.scale, rotation=self.rotation, translation=self.translation,
+            scale=self.scale, rotation=self.rotation,
+            translation=self.translation,
             batchsize=batchsize, ndim=ndim, degree=self.degree,
             device=device, dtype=dtype, image_transform=self.image_transform)
         return self.matrix
 
 
 class Rotate(BaseAffine):
+    """
+    Class Performing a Rotation-OnlyAffine Transformation on a given
+    sample dict. The rotation is applied in consecutive order:
+    rot axis 0 -> rot axis 1 -> rot axis 2
+    The transformation will be applied to all the dict-entries specified
+    in :attr:`keys`.
+    """
+
     def __init__(self,
                  rotation: AffineParamType,
                  keys: Sequence = ('data',),
                  grad: bool = False,
                  degree: bool = False,
-                 output_size: tuple = None,
+                 output_size: Optional[tuple] = None,
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
@@ -463,57 +434,44 @@ class Rotate(BaseAffine):
                  reverse_order: bool = False,
                  **kwargs):
         """
-        Class Performing a Rotation-OnlyAffine Transformation on a given
-        sample dict. The rotation is applied in consecutive order:
-        rot axis 0 -> rot axis 1 -> rot axis 2
-        The transformation will be applied to all the dict-entries specified
-        in :attr:`keys`.
-
-        Parameters
-        ----------
-        rotation : torch.Tensor, int, float, optional
-            the rotation factor(s). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
+        Args:
+            rotation: the rotation factor(s). The rotation is performed in
+                consecutive order axis0 -> axis1 (-> axis 2). Supported are:
+                * a single parameter (as float or int), which will be
+                    replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
                     replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                     batch samples
                 * a parameter per sampler per dimension
-            None will be treated as a rotation factor of 1
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        degree : bool
-            whether the given rotation(s) are in degrees.
-            Only valid for rotation parameters, which aren't passed as full
-            transformation matrix.
-        output_size : Iterable
-            if given, this will be the resulting image size.
-            Defaults to ``None``
-        adjust_size : bool
-            if True, the resulting image size will be calculated dynamically
-            to ensure that the whole image fits.
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+                * None will be treated as a rotation factor of 1
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            degree: whether the given rotation(s) are in degrees.
+                Only valid for rotation parameters, which aren't passed
+                as full transformation matrix.
+            output_size: if given, this will be the resulting image size.
+                Defaults to ``None``
+            adjust_size: if True, the resulting image size will be
+                calculated dynamically to ensure that the whole image fits.
+            interpolation_mode: interpolation mode to calculate output values
+                ``'bilinear'`` | ``'nearest'``. Default: ``'bilinear'``
+            padding_mode: padding mode for outside grid values
+                ``'zeros'`` | ``'border'`` | ``'reflection'``.
+                Default: ``'zeros'``
+            align_corners: Geometrically, we consider the pixels of the
+                input as squares rather than points. If set to True,
+                the extrema (-1 and 1)  are considered as referring to the
+                center points of the input’s corner pixels. If set to False,
+                they are instead considered as referring to the corner points
+                of the input’s corner pixels, making the sampling more
+                resolution agnostic.
+            reverse_order: reverses the coordinate order of the
+                transformation to conform to the pytorch convention:
+                transformation params order [W,H(,D)] and
+                batch order [(D,)H,W]
+            **kwargs: additional keyword arguments passed to the
+                affine transform
         """
         super().__init__(scale=None,
                          rotation=rotation,
@@ -532,11 +490,18 @@ class Rotate(BaseAffine):
 
 
 class Translate(BaseAffine):
+    """
+    Class Performing an Translation-Only
+    Affine Transformation on a given sample dict.
+    The transformation will be applied to all the dict-entries specified
+    in :attr:`keys`.
+    """
+
     def __init__(self,
                  translation: AffineParamType,
                  keys: Sequence = ('data',),
                  grad: bool = False,
-                 output_size: tuple = None,
+                 output_size: Optional[tuple] = None,
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
@@ -545,58 +510,42 @@ class Translate(BaseAffine):
                  reverse_order: bool = False,
                  **kwargs):
         """
-        Class Performing an Translation-Only
-        Affine Transformation on a given sample dict.
-        The transformation will be applied to all the dict-entries specified
-        in :attr:`keys`.
-
-        Parameters
-        ----------
-        translation : torch.Tensor, int, float
-            the translation offset(s). The translation unit can be specified.
-            Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
+        Args:
+            translation : torch.Tensor, int, float
+                the translation offset(s) relative to image (should be in the
+                range [0, 1]). Supported are:
+                * a single parameter (as float or int), which will be
+                    replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
                     replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                     batch samples
                 * a parameter per sampler per dimension
-            None will be treated as a translation offset of 0
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        output_size : Iterable
-            if given, this will be the resulting image size.
-            Defaults to ``None``
-        adjust_size : bool
-            if True, the resulting image size will be calculated dynamically
-            to ensure that the whole image fits.
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode : str
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        unit: str
-            defines the unit of the translation parameter.
-            'pixel': define number of pixels to translate | 'relative':
-            translation should be in the range [0, 1] and is scaled
-            with the image size
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+                * None will be treated as a translation offset of 0
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            output_size: if given, this will be the resulting image size.
+                Defaults to ``None``
+            adjust_size: if True, the resulting image size will be
+                calculated dynamically to ensure that the whole image fits.
+            interpolation_mode: interpolation mode to calculate output values
+                ``'bilinear'`` | ``'nearest'``. Default: ``'bilinear'``
+            padding_mode: padding mode for outside grid values
+                ``'zeros'`` | ``'border'`` | ``'reflection'``.
+                Default: ``'zeros'``
+            align_corners: Geometrically, we consider the pixels of the
+                input as squares rather than points. If set to True,
+                the extrema (-1 and 1)  are considered as referring to the
+                center points of the input’s corner pixels. If set to False,
+                they are instead considered as referring to the corner points
+                of the input’s corner pixels, making the sampling more
+                resolution agnostic.
+            reverse_order: reverses the coordinate order of the
+                transformation to conform to the pytorch convention:
+                transformation params order [W,H(,D)] and
+                batch order [(D,)H,W]
+            **kwargs: additional keyword arguments passed to the
+                affine transform
         """
         super().__init__(scale=None,
                          rotation=None,
@@ -619,15 +568,11 @@ class Translate(BaseAffine):
         Assembles the matrix (and takes care of batching and having it on the
         right device and in the correct dtype and dimensionality).
 
-        Parameters
-        ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        Args:
+            **data: the data to be transformed. Will be used to determine
+                batchsize, dimensionality, dtype and device
 
-        Returns
-        -------
-        torch.Tensor
+        Returns:
             the (batched) transformation matrix [N, NDIM, NDIM]
         """
         matrix = super().assemble_matrix(**data)
@@ -642,7 +587,7 @@ class Scale(BaseAffine):
                  scale: AffineParamType,
                  keys: Sequence = ('data',),
                  grad: bool = False,
-                 output_size: tuple = None,
+                 output_size: Optional[tuple] = None,
                  adjust_size: bool = False,
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',

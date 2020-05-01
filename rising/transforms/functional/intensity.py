@@ -1,6 +1,6 @@
 import torch
 
-from typing import Union, Sequence
+from typing import Union, Sequence, Optional
 
 from rising.utils import check_scalar
 
@@ -9,26 +9,19 @@ __all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_s
 
 
 def norm_range(data: torch.Tensor, min: float, max: float,
-               per_channel: bool = True, out: torch.Tensor = None) -> torch.Tensor:
+               per_channel: bool = True,
+               out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Scale range of tensor
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data. Per channel option supports [C,H,W] and [C,H,W,D].
-    min: float
-        minimal value
-    max: float
-        maximal value
-    per_channel: bool
-        range is normalized per channel
-    out: torch.Tensor
-        if provided, result is saved in here
+    Args:
+        data: input data. Per channel option supports [C,H,W] and [C,H,W,D].
+        min: minimal value
+        max: maximal value
+        per_channel: range is normalized per channel
+        out: if provided, result is saved in here
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         normalized data
     """
     if out is None:
@@ -41,22 +34,16 @@ def norm_range(data: torch.Tensor, min: float, max: float,
 
 
 def norm_min_max(data: torch.Tensor, per_channel: bool = True,
-                 out: torch.Tensor = None) -> torch.Tensor:
+                 out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Scale range to [0,1]
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data. Per channel option supports [C,H,W] and [C,H,W,D].
-    per_channel: bool
-        range is normalized per channel
-    out: torch.Tensor
-        if provided, result is saved in here
+    Args:
+        data: input data. Per channel option supports [C,H,W] and [C,H,W,D].
+        per_channel: range is normalized per channel
+        out:  if provided, result is saved in here
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         scaled data
     """
     if out is None:
@@ -76,22 +63,16 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True,
 
 
 def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
-                            out: torch.Tensor = None) -> torch.Tensor:
+                            out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Normalize mean to zero and std to one
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data. Per channel option supports [C,H,W] and [C,H,W,D].
-    per_channel: bool
-        range is normalized per channel
-    out: torch.Tensor
-        if provided, result is saved in here
+    Args:
+        data: input data. Per channel option supports [C,H,W] and [C,H,W,D].
+        per_channel: range is normalized per channel
+        out: if provided, result is saved in here
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         normalized data
     """
     if out is None:
@@ -106,27 +87,21 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
     return out
 
 
-def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[float, Sequence],
-                  per_channel: bool = True, out: torch.Tensor = None) -> torch.Tensor:
+def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence],
+                  std: Union[float, Sequence],
+                  per_channel: bool = True,
+                  out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Normalize mean and std with provided values
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data. Per channel option supports [C,H,W] and [C,H,W,D].
-    mean: float or Sequence
-        used for mean normalization
-    std: float or Sequence
-        used for std normalization
-    per_channel: bool
-        range is normalized per channel
-    out: torch.Tensor
-        if provided, result is saved into out
+    Args:
+        data:input data. Per channel option supports [C,H,W] and [C,H,W,D].
+        mean: used for mean normalization
+        std: used for std normalization
+        per_channel: range is normalized per channel
+        out: if provided, result is saved into out
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         normalized data
     """
     if out is None:
@@ -145,30 +120,22 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence], std: Union[f
     return out
 
 
-def add_noise(data: torch.Tensor, noise_type: str, out: torch.Tensor = None,
-              **kwargs) -> torch.Tensor:
+def add_noise(data: torch.Tensor, noise_type: str,
+              out: Optional[torch.Tensor] = None, **kwargs) -> torch.Tensor:
     """
     Add noise to input
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data
-    noise_type: str
-        supports all inplace functions of a pytorch tensor
-    out: torch.Tensor
-        if provided, result is saved in here
-    kwargs:
-        keyword arguments passed to generating function
+    Args:
+        data: input data
+        noise_type: supports all inplace functions of a pytorch tensor
+        out: if provided, result is saved in here
+        kwargs: keyword arguments passed to generating function
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         data with added noise
 
-    See Also
-    --------
-    :func:`torch.Tensor.normal_`, :func:`torch.Tensor.exponential_`
+    See Also:
+        :func:`torch.Tensor.normal_`, :func:`torch.Tensor.exponential_`
     """
     if not noise_type.endswith('_'):
         noise_type = noise_type + '_'
@@ -183,61 +150,46 @@ def gamma_correction(data: torch.Tensor, gamma: float) -> torch.Tensor:
     (currently this functions is intended as an interface in case
     additional functionality should be added to transform)
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data
-    gamma: float
-        gamma for correction
+    Args:
+        data: input data
+        gamma: gamma for correction
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
+        gamma corrected data
     """
     return data.pow(gamma)
 
 
-def add_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -> torch.Tensor:
+def add_value(data: torch.Tensor, value: float, out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Increase brightness additively by value
     (currently this functions is intended as an interface in case
     additional functionality should be added to transform)
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data
-    value: float
-        additive value
-    out: torch.Tensor
-        if provided, result is saved in here
+    Args:
+        data: input data
+        value: additive value
+        out: if provided, result is saved in here
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         augmented data
     """
     return torch.add(data, value, out=out)
 
 
-def scale_by_value(data: torch.Tensor, value: float, out: torch.Tensor = None) -> torch.Tensor:
+def scale_by_value(data: torch.Tensor, value: float,
+                   out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Increase brightness scaled by value
     (currently this functions is intended as an interface in case
     additional functionality should be added to transform)
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input data
-    value: float
-        scaling value
-    out: torch.Tensor
-        if provided, result is saved in here
+    Args:
+        data: input data
+        value: scaling value
+        out: if provided, result is saved in here
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         augmented data
     """
     return torch.mul(data, value, out=out)

@@ -2,22 +2,18 @@ import torch
 import itertools
 
 from math import pi
-from typing import Union
+from typing import Union, Optional
 
 
 def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
     """
     Transforms points from cartesian to homogeneous coordinates
 
-    Parameters
-    ----------
-    batch : torch.Tensor
-        the batch of points to transform. Should be of shape
-        BATCHSIZE x NUMPOINTS x DIM.
+    Args:
+        batch: the batch of points to transform. Should be of shape
+            BATCHSIZE x NUMPOINTS x DIM.
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         the batch of points in homogeneous coordinates
 
     """
@@ -31,14 +27,10 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
     Transforms a given transformation matrix to a homogeneous
     transformation matrix.
 
-    Parameters
-    ----------
-    batch : torch.Tensor
-        the batch of matrices to convert [N, dim, dim]
+    Args:
+        batch: the batch of matrices to convert [N, dim, dim]
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         the converted batch of matrices
 
     """
@@ -61,18 +53,14 @@ def matrix_to_cartesian(batch: torch.Tensor, keep_square: bool = False
     Transforms a matrix for a homogeneous transformation back to cartesian
     coordinates.
 
-    Parameters
-    ----------
-    batch : torch.Tensor
-        the batch oif matrices to convert back
-    keep_square : bool
-        if False: returns a NDIM x NDIM+1 matrix to keep the translation part
+    Args:
+    batch: the batch oif matrices to convert back
+    keep_square: if False: returns a NDIM x NDIM+1 matrix to keep the
+        translation part
         if True: returns a NDIM x NDIM matrix but looses the translation part
         defaults to False.
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         the given matrix in cartesian coordinates
 
     """
@@ -88,15 +76,11 @@ def points_to_cartesian(batch: torch.Tensor) -> torch.Tensor:
     Transforms a batch of points in homogeneous coordinates back to cartesian
     coordinates.
 
-    Parameters
-    ----------
-    batch : torch.Tensor
-        batch of points in homogeneous coordinates. Should be of shape
-        BATCHSIZE x NUMPOINTS x NDIM+1
+    Args:
+        batch: batch of points in homogeneous coordinates. Should be of shape
+            BATCHSIZE x NUMPOINTS x NDIM+1
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         the batch of points in cartesian coordinates
 
     """
@@ -107,14 +91,12 @@ def points_to_cartesian(batch: torch.Tensor) -> torch.Tensor:
 def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
     """
     Reverts the coordinate order of a matrix (e.g. from xyz to zyx).
-    Parameters
-    ----------
-    batch : torch.Tensor
-        the batched transformation matrices; Should be of shape
-        BATCHSIZE x NDIM x NDIM
-    Returns
-    -------
-    torch.Tensor
+
+    Args:
+        batch: the batched transformation matrices; Should be of shape
+            BATCHSIZE x NDIM x NDIM
+
+    Returns:
         the matrix performing the same transformation on vectors with a
         reversed coordinate order
     """
@@ -124,22 +106,21 @@ def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
 
 
 def get_batched_eye(batchsize: int, ndim: int,
-                    device: Union[torch.device, str] = None,
-                    dtype: Union[torch.dtype, str] = None) -> torch.Tensor:
+                    device: Optional[Union[torch.device, str]] = None,
+                    dtype: Optional[Union[torch.dtype, str]] = None) -> torch.Tensor:
     """
     Produces a batched matrix containing 1s on the diagonal
 
-    Parameters
-    ----------
-    batchsize : int
-        the batchsize (first dimension)
-    ndim : int
-        the dimensionality of the eyes (second and third dimension)
-    device : torch.device, str, optional
-        the device to put the resulting tensor to. Defaults to the default
-        device
-    dtype : torch.dtype, str, optional
-        the dtype of the resulting trensor. Defaults to the default dtype
+    Args:
+        batchsize : int
+            the batchsize (first dimension)
+        ndim : int
+            the dimensionality of the eyes (second and third dimension)
+        device : torch.device, str, optional
+            the device to put the resulting tensor to. Defaults to the default
+            device
+        dtype : torch.dtype, str, optional
+            the dtype of the resulting trensor. Defaults to the default dtype
 
     Returns
     -------
@@ -156,34 +137,25 @@ def deg_to_rad(angles: Union[torch.Tensor, float, int]
     """
     Converts from degree to radians.
 
-    Parameters
-    ----------
-    angles : torch.Tensor, float, int
-        the (vectorized) angles to convert
+    Args:
+        angles: the (vectorized) angles to convert
 
-    Returns
-    -------
-    torch.Tensor, int, float
+    Returns:
         the transformed (vectorized) angles
 
     """
     return angles * pi / 180
 
 
-def unit_box(n: int, scale: torch.Tensor = None) -> torch.Tensor:
+def unit_box(n: int, scale: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Create a sclaed version of a unit box
 
-    Parameters
-    ----------
-    n: int
-        number of dimensions
-    scale: Tensor
-        scaling of each dimension
+    Args:
+    n: number of dimensions
+    scale: scaling of each dimension
 
-    Returns
-    -------
-    Tensor
+    Returns:
         scaled unit box
     """
     box = torch.tensor(

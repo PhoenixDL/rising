@@ -11,18 +11,12 @@ def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):
     """
     Extract crop from last dimensions of data
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input tensor
-    corner: Sequence[int]
-        top left corner point
-    size: Sequence[int]
-        size of patch
+    Args:
+    data: input tensor
+    corner: top left corner point
+    size: size of patch
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         cropped data
     """
     _slices = []
@@ -38,16 +32,11 @@ def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]]) -> torch.Te
     """
     Crop patch from center
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input tensor
-    size: Union[int, Sequence[int]]
-        size of patch
+    Args:
+    data: input tensor
+    size: size of patch
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         output tensor cropped from input tensor
     """
     if check_scalar(size):
@@ -64,18 +53,12 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
     """
     Crop random patch/volume from input tensor
 
-    Parameters
-    ----------
-    data: torch.Tensor
-        input tensor
-    size: Union[int, Sequence[int]]
-        size of patch/volume
-    dist: Union[int, Sequence[int]]
-        minimum distance to border. By default zero
+    Args:
+        data: input tensor
+        size: size of patch/volume
+        dist: minimum distance to border. By default zero
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         cropped output
     """
     if check_scalar(dist):

@@ -67,7 +67,7 @@ class TestCompose(unittest.TestCase):
         self.assertTrue((self.batch["data"] == outp["data"]).all())
 
     def test_dropout_compose_error(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             compose = DropoutCompose(self.transforms, dropout=[1.0])
 
     def test_device_dtype_change(self):

@@ -2,4 +2,4 @@ numpy
 torch
 threadpoolctl
 tqdm
-dill
+
