@@ -23,6 +23,7 @@ jobs:
         pip install -U pip wheel;
         pip install 'torch<1.5' 'torchvision<0.6' -f https://download.pytorch.org/whl/torch_stable.html;  # issue with 1.5 on windows
         pip install -r requirements/install.txt;
+        pip install -r requirements/async.txt;
         pip install -r requirements/unittests.txt;
         pip install --no-deps .
     - name: Run Tests
