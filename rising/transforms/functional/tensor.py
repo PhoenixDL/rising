@@ -1,6 +1,7 @@
+from typing import List, Tuple, Union, Mapping, Hashable
+
 import torch
 from torch import Tensor
-from typing import List, Tuple, Union, Mapping, Hashable
 
 __all__ = ["tensor_op"]
 
