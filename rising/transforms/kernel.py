@@ -1,46 +1,39 @@
 import math
-import torch
 from typing import Sequence, Union, Callable
 
-from .abstract import AbstractTransform
+import torch
+
 from rising.utils import check_scalar
+from .abstract import AbstractTransform
 
 __all__ = ["KernelTransform", "GaussianSmoothing"]
 
 
 class KernelTransform(AbstractTransform):
+    """
+    Baseclass for kernel based transformations (kernel is applied to
+    each channel individually)
+    """
+
     def __init__(self, in_channels: int, kernel_size: Union[int, Sequence], dim: int = 2,
                  stride: Union[int, Sequence] = 1, padding: Union[int, Sequence] = 0,
                  padding_mode: str = 'zero', keys: Sequence = ('data',), grad: bool = False,
                  **kwargs):
         """
-        Baseclass for kernel based transformations (kernel is applied to each channel individually)
+        Args:
+            in_channels: number of input channels
+            kernel_size: size of kernel
+            dim: number of spatial dimensions
+            stride: stride of convolution
+            padding: padding size for input
+            padding_mode: padding mode for input. Supports all modes
+                from :func:`torch.functional.pad` except ``circular``
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            kwargs: keyword arguments passed to superclass
 
-        Parameters
-        ----------
-        in_channels: int
-            number of input channels
-        kernel_size: int or sequence
-            size of kernel
-        dim: int
-            number of spatial dimensions
-        stride: int or sequence
-            stride of convolution
-        padding: int or sequence
-            padding size for input
-        padding_mode: str
-            padding mode for input. Supports all modes from :func:`torch.functional.pad` except
-            `circular`
-        keys: sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        kwargs:
-            keyword arguments passed to superclass
-
-        See Also
-        --------
-        :func:`torch.functional.pad`
+        See Also:
+            :func:`torch.functional.pad`
         """
         super().__init__(grad=grad, **kwargs)
         self.in_channels = in_channels
@@ -70,10 +63,11 @@ class KernelTransform(AbstractTransform):
         """
         Select convolution with regard to dimension
 
-        Parameters
-        ----------
-        dim: int
-            spatial dimension of data
+        Args:
+            dim: spatial dimension of data
+
+        Returns:
+            the suitable convolutional function
         """
         if dim == 1:
             return torch.nn.functional.conv1d
@@ -94,14 +88,10 @@ class KernelTransform(AbstractTransform):
         """
         Apply kernel to selected keys
 
-        Parameters
-        ----------
-        data: dict
-            dict with input data
+        Args:
+            data: input data
 
-        Returns
-        -------
-        dict
+        Returns:
             dict with transformed data
         """
         for key in self.keys:
@@ -111,44 +101,36 @@ class KernelTransform(AbstractTransform):
 
 
 class GaussianSmoothing(KernelTransform):
+    """
+    Perform Gaussian Smoothing.
+    Filtering is performed seperately for each channel in the input using a
+    depthwise convolution.
+    This code is adapted from:
+    'https://discuss.pytorch.org/t/is-there-anyway-to-do-'
+    'gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10'
+    """
+
     def __init__(self, in_channels: int, kernel_size: Union[int, Sequence],
                  std: Union[int, Sequence], dim: int = 2,
                  stride: Union[int, Sequence] = 1, padding: Union[int, Sequence] = 0,
                  padding_mode: str = 'reflect', keys: Sequence = ('data',), grad: bool = False,
                  **kwargs):
         """
-        Perform Gaussian Smoothing.
-        Filtering is performed seperately for each channel in the input using a depthwise convolution.
-        This code is adapted from: ('https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian'
-        '-filtering-for-an-image-2d-3d-in-pytorch/12351/10')
+        Args:
+            in_channels: number of input channels
+            kernel_size: size of kernel
+            std: standard deviation of gaussian
+            dim: number of spatial dimensions
+            stride: stride of convolution
+            padding: padding size for input
+            padding_mode: padding mode for input. Supports all modes from
+                :func:`torch.functional.pad` except ``circular``
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to superclass
 
-        Parameters
-        ----------
-        in_channels: int
-            number of input channels
-        kernel_size: int or sequence
-            size of kernel
-        std: int or sequence
-            standard deviation of gaussian
-        dim: int
-            number of spatial dimensions
-        stride: int or sequence
-            stride of convolution
-        padding: int or sequence
-            padding size for input
-        padding_mode: str
-            padding mode for input. Supports all modes from :func:`torch.functional.pad` except
-            `circular`
-        keys: sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        kwargs:
-            keyword arguments passed to superclass
-
-        See Also
-        --------
-        :func:`torch.functional.pad`
+        See Also:
+            :func:`torch.functional.pad`
         """
         if check_scalar(std):
             std = [std] * dim
