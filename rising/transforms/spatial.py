@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 
 import torch
 import random
@@ -209,7 +209,7 @@ class ProgressiveResize(Resize):
         self.scheduler = scheduler
         self._step = Value('i', 0)
 
-    def reset_step(self) -> ProgressiveResize:
+    def reset_step(self) -> Resize:
         """
         Reset step to 0
 
@@ -222,7 +222,7 @@ class ProgressiveResize(Resize):
             self._step.value = 0
         return self
 
-    def increment(self) -> ProgressiveResize:
+    def increment(self) -> Resize:
         """
         Increment step by 1
 
