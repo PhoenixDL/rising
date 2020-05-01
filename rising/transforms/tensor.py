@@ -69,7 +69,7 @@ class Permute(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to permute function
         """
-        super().__init__(grad=grad)
+        super().__init__(tensor_op, 'permute', grad=grad)
         self.dims = dims
         self.kwargs = kwargs
 
