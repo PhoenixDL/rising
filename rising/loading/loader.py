@@ -1,7 +1,7 @@
 import warnings
 from contextlib import contextmanager
 from functools import partial
-from typing import Callable, Mapping, Sequence, Union, Any, Iterator
+from typing import Callable, Mapping, Sequence, Union, Any, Iterator, Optional, Generator
 
 import torch
 from threadpoolctl import threadpool_limits
@@ -23,18 +23,15 @@ def default_transform_call(batch: Any, transform: Callable) -> Any:
     unpacked during the transform call. Other types are passed
     as a positional argument.
 
-    Parameters
-    ----------
-    batch: Any
-        current batch which is passed to transforms
-    transform: Callable
-        transform to perform
+    Args:
+        batch: current batch which is passed to transforms
+        transform: transform to perform
 
-    Returns
-    -------
-    Any
+    Returns:
         transformed batch
+
     """
+
     if isinstance(batch, Mapping):
         return transform(**batch)
     elif isinstance(batch, Sequence):
@@ -44,120 +41,105 @@ def default_transform_call(batch: Any, transform: Callable) -> Any:
 
 
 class DataLoader(_DataLoader):
-    def __init__(self, dataset: Union[Sequence, Dataset],
-                 batch_size: int = 1, shuffle: bool = False,
-                 batch_transforms: Callable = None,
-                 gpu_transforms: Callable = None,
-                 device: Union[str, torch.device] = None,
-                 sampler: Sampler = None,
-                 batch_sampler: Sampler = None, num_workers: int = 0,
-                 collate_fn: Callable = None,
-                 pin_memory: bool = False, drop_last: bool = False,
-                 timeout: Union[int, float] = 0,
-                 worker_init_fn: Callable = None,
-                 multiprocessing_context=None,
-                 auto_convert: bool = True,
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
-        """
-        A Dataloader introducing batch-transforms, numpy seeds for worker
-        processes and compatibility to the debug mode
+    """
+    A DataLoader introducing batch-transforms, per-sample-transforms,
+    numpy seeds for worker processes outside the dataset
 
-        Note
-        ----
+    Notes:
         For Reproducibility numpy and pytorch must be seeded in the main
-        process, as these frameworks will be used to generate their own seeds
-        for each worker.
+        process, as these frameworks will be used to generate their own
+        seeds for each worker.
 
-        Note
-        ----
+    Notes:
         ``len(dataloader)`` heuristic is based on the length of the sampler
         used. When :attr:`dataset` is an
         :class:`~torch.utils.data.IterableDataset`, an infinite sampler is
         used, whose :meth:`__len__` is not implemented, because the actual
-        length depends on both the iterable as well as multi-process loading
-        configurations. So one should not query this method unless they work
-        with a map-style dataset. See `Dataset Types`_ for more details on
-        these two types of datasets.
+        length depends on both the iterable as well as multi-process
+        loading configurations. So one should not query this method unless
+        they work with a map-style dataset. See `Dataset Types`_ for more
+        details on these two types of datasets.
 
-        Warning
-        -------
+    Warnings:
         If the ``spawn`` start method is used, :attr:`worker_init_fn`
         cannot be an unpicklable object, e.g., a lambda function. See
         :ref:`multiprocessing-best-practices` on more details related
         to multiprocessing in PyTorch.
 
-        Note
-        -------
+    Notes:
         The GPU-Transforms for a batch are always executed in the main
         process after the batch was gathered from subprocesses which apply
         the CPU-Transformations. The desired workflow is as follows:
 
         Disk -> CPU-Transforms -> GPU-Memory -> GPU-Transforms -> Further
         GPU Processing (e.g. training a neural network)
+"""
 
-        Parameters
-        ----------
-        dataset : Dataset
-            dataset from which to load the data
-        batch_size : int, optional
-            how many samples per batch to load (default: ``1``).
-        shuffle : bool, optional
-            set to ``True`` to have the data reshuffled at every epoch
-            (default: ``False``)
-        batch_transforms : callable, optional
-            transforms which can be applied to a whole batch.
-            Usually this accepts either mappings or sequences and returns the
-            same type containing transformed elements
-        gpu_transforms : callable, optional
-            transforms which can be applied to a whole batch (on the GPU).
-            Unlike :param:`batch_transforms` this is not done in multiple
-            processes, but in the main process on the GPU, because GPUs are
-            capable of non-blocking and asynchronous working.
-            Before executing these transforms all data will be moved to
-            :param:`device`. This copy is done in a non-blocking way if
-            :param:`pin_memory` is set to True.
-        device : str, torch.device
-            the device to move the data to for gpu_transforms.
-            If None: the device will be the current device.
-        sampler : torch.utils.data.Sampler, optional
-            defines the strategy to draw samples from
-            the dataset. If specified, :attr:`shuffle` must be ``False``.
-        batch_sampler : torch.utils.data.Sampler, optional
-            like :attr:`sampler`, but returns a batch of
-            indices at a time. Mutually exclusive with :attr:`batch_size`,
-            :attr:`shuffle`, :attr:`sampler`, and :attr:`drop_last`.
-        num_workers : int, optional
-            how many subprocesses to use for data loading.
-            ``0`` means that the data will be loaded in the main process.
-            (default: ``0``)
-        collate_fn : callable, optional
-            merges a list of samples to form a
-            mini-batch of Tensor(s).  Used when using batched loading from a
-            map-style dataset.
-        pin_memory : bool, optional
-            If ``True``, the data loader will copy Tensors
-            into CUDA pinned memory before returning them.  If your data
-            elements are a custom type, or your :attr:`collate_fn` returns a
-            batch that is a custom type, see the example below.
-        drop_last : bool, optional
-            set to ``True`` to drop the last incomplete batch,
-            if the dataset size is not divisible by the batch size.
-            If ``False`` and the size of dataset is not divisible by the batch
-            size, then the last batch will be smaller. (default: ``False``)
-        timeout : numeric, optional
-            if positive, the timeout value for collecting a batch
-            from workers. Should always be non-negative. (default: ``0``)
-        worker_init_fn : callable, optional
-            If not ``None``, this will be called on each
-            worker subprocess with the worker id
-            (an int in ``[0, num_workers - 1]``) as input, after seeding and
-            before data loading. (default: ``None``)
-        auto_convert : bool, optional
-            if set to ``True``, the batches will always be transformed to
-            torch.Tensors, if possible. (default: ``True``)
-        transform_call: Callable[[Any, Callable], Any], optional
-            function which determines how transforms are called. By default
-            Mappings and Sequences are unpacked during the transform.
+    def __init__(self, dataset: Union[Sequence, Dataset],
+                 batch_size: int = 1, shuffle: bool = False,
+                 batch_transforms: Optional[Callable] = None,
+                 gpu_transforms: Optional[Callable] = None,
+                 device: Optional[Union[str, torch.device]] = None,
+                 sampler: Optional[Sampler] = None,
+                 batch_sampler: Optional[Sampler] = None,
+                 num_workers: int = 0,
+                 collate_fn: Optional[Callable] = None,
+                 pin_memory: bool = False,
+                 drop_last: bool = False,
+                 timeout: Union[int, float] = 0,
+                 worker_init_fn: Optional[Callable] = None,
+                 multiprocessing_context=None,
+                 auto_convert: bool = True,
+                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
+        """
+        Args:
+            dataset: dataset from which to load the data
+            batch_size: how many samples per batch to load (default: ``1``).
+            shuffle: set to ``True`` to have the data reshuffled at every epoch
+                (default: ``False``)
+            batch_transforms: transforms which can be applied to a whole
+                batch. Usually this accepts either mappings or sequences and
+                returns the same type containing transformed elements
+            gpu_transforms: transforms which can be applied to a whole batch
+                (on the GPU). Unlike :param:`batch_transforms` this is not
+                done in multiple processes, but in the main process on the
+                GPU, because GPUs are capable of non-blocking and asynchronous
+                working. Before executing these transforms all data will be
+                moved to :param:`device`. This copy is done in a non-blocking
+                way if :param:`pin_memory` is set to True.
+            device: the device to move the data to for gpu_transforms.
+                If None: the device will be the current device.
+            sampler: defines the strategy to draw samples from
+                the dataset. If specified, :attr:`shuffle` must be ``False``.
+            batch_sampler: like :attr:`sampler`, but returns a batch of
+                indices at a time. Mutually exclusive with :attr:`batch_size`,
+                :attr:`shuffle`, :attr:`sampler`, and :attr:`drop_last`.
+            num_workers: how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (default: ``0``)
+            collate_fn: merges a list of samples to form a
+                mini-batch of Tensor(s).  Used when using batched loading from a
+                map-style dataset.
+            pin_memory: If ``True``, the data loader will copy Tensors
+                into CUDA pinned memory before returning them.  If your data
+                elements are a custom type, or your :attr:`collate_fn` returns a
+                batch that is a custom type, see the example below.
+            drop_last: set to ``True`` to drop the last incomplete batch,
+                if the dataset size is not divisible by the batch size.
+                If ``False`` and the size of dataset is not divisible by the batch
+                size, then the last batch will be smaller. (default: ``False``)
+            timeout: if positive, the timeout value for collecting a batch
+                from workers. Should always be non-negative. (default: ``0``)
+            worker_init_fn: If not ``None``, this will be called on each
+                worker subprocess with the worker id
+                (an int in ``[0, num_workers - 1]``) as input, after seeding and
+                before data loading. (default: ``None``)
+            auto_convert: if set to ``True``, the batches will always be
+                transformed to :class:`torch.Tensors`, if possible.
+                (default: ``True``)
+            transform_call: function which determines how transforms are
+                called. By default Mappings and Sequences are unpacked during
+                the transform.
         """
         super().__init__(dataset=dataset, batch_size=batch_size,
                          shuffle=shuffle, sampler=sampler,
@@ -194,6 +176,12 @@ class DataLoader(_DataLoader):
         self.transform_call = transform_call
 
     def get_batch_transformer(self):
+        """
+        A getter function for the :class:`BatchTransformer`
+        Returns:
+            the initialized BatchTransformer
+
+        """
         # this is a function on purpose, since frameworks like ignite parse
         # the class dict to specify what to treat as args during reinit
         return BatchTransformer(
@@ -203,6 +191,14 @@ class DataLoader(_DataLoader):
             transform_call=self.transform_call)
 
     def get_gpu_batch_transformer(self):
+        """
+        A getter function for the :class:`BatchTransformer` holding the
+        GPU-Transforms
+
+        Returns:
+            the initialized BatchTransformer
+
+        """
         # this is a function on purpose, since frameworks like ignite parse
         # the class dict to specify what to treat as args during reinit
         return BatchTransformer(do_nothing_collate,
@@ -215,9 +211,7 @@ class DataLoader(_DataLoader):
         """
         Geneator iterator
 
-        Returns
-        -------
-        Union[_SingleProcessDataLoaderIter,_MultiProcessingDataLoaderIter]
+        Returns:
             iterator to load and augment data (can be either single or multiprocessing based)
         """
         if self.num_workers == 0 or get_debug_mode():
@@ -227,23 +221,19 @@ class DataLoader(_DataLoader):
 
 
 @contextmanager
-def patch_worker_init_fn(loader: DataLoader, new_worker_init: Callable):
+def patch_worker_init_fn(loader: DataLoader, new_worker_init: Callable) -> Generator:
     """
     Patches the loader to temporarily have the correct worker init function.
 
-    Parameters
-    ----------
-    loader : DataLoader
-        the loader to patch
-    new_worker_init : Callable
-        the new worker init function
+    Args:
+        loader: the loader to patch
+        new_worker_init: the new worker init function
 
-    Yields
-    ------
-    DataLoader
+    Yields:
         the patched loader
 
     """
+
     old_init = loader.worker_init_fn
     loader.worker_init_fn = new_worker_init
 
@@ -253,20 +243,14 @@ def patch_worker_init_fn(loader: DataLoader, new_worker_init: Callable):
 
 
 @contextmanager
-def patch_collate_fn(loader: DataLoader):
+def patch_collate_fn(loader: DataLoader) -> Generator:
     """
     Patches the loader to temporarily have the correct collate function
 
-     Parameters
-    ----------
-    loader : DataLoader
-        the loader to patch
-    new_worker_init : Callable
-        the new worker init function
+    Args:
+        loader: the loader to patch
 
-    Yields
-    ------
-    DataLoader
+    Yields:
         the patched loader
 
     """
@@ -285,26 +269,21 @@ class BatchTransformer(object):
     batch-basis.
     """
 
-    def __init__(self, collate_fn: Callable, transforms: Callable = None,
+    def __init__(self, collate_fn: Callable, transforms: Optional[Callable] = None,
                  auto_convert: bool = True,
                  transform_call: Callable[[Any, Callable], Any] = default_transform_call):
         """
-        Parameters
-        ----------
-        collate_fn : callable
-            merges a list of samples to form a
-            mini-batch of Tensor(s).  Used when using batched loading from a
-            map-style dataset.
-        transforms : callable, optional
-            transforms which can be applied to a whole batch.
-            Usually this accepts either mappings or sequences and returns the
-            same type containing transformed elements
-        auto_convert : bool, optional
-            if set to ``True``, the batches will always be transformed to
-            torch.Tensors, if possible. (default: ``True``)
-        transform_call: Callable[[Any, Callable], Any], optional
-            function which determines how transforms are called. By default
-            Mappings and Sequences are unpacked during the transform.
+        Args:
+            collate_fn: merges a list of samples to form a
+                mini-batch of Tensor(s).  Used when using batched loading from a
+                map-style dataset.
+            transforms: transforms which can be applied to a whole batch.
+                Usually this accepts either mappings or sequences and returns the
+                same type containing transformed elements
+            auto_convert: if set to ``True``, the batches will always be transformed to
+                torch.Tensors, if possible. (default: ``True``)
+            transform_call: function which determines how transforms are called. By default
+                Mappings and Sequences are unpacked during the transform.
         """
 
         self._collate_fn = collate_fn
@@ -316,9 +295,11 @@ class BatchTransformer(object):
         """
         Apply batch workflow: collate -> augmentation -> default_convert
 
-        Returns
-        -------
-        Any
+        Args:
+            *args: positional batch arguments
+            **kwargs: keyword batch arguments
+
+        Returns:
             batched and augmented data
         """
         batch = self._collate_fn(*args, **kwargs)
@@ -333,21 +314,22 @@ class BatchTransformer(object):
 
 
 class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
-    # NOTE [ Numpy Seeds ]
-    # This class is a subclass of
-    # ``torch.utils.data.dataloader._MultiProcessingDataLoaderIter``` and only
-    # adds some additional logic to provide differnt seeds for numpy in
-    # each worker. These seeds are based on a base seed, which itself get's
-    # generated by numpy. So to ensure reproducibility, numpy must be seeded
-    # in the main process.
+    """Iterator over Dataloader. Handles the complete multiprocessing
+
+    This class is a subclass of
+    :class:`torch.utils.data.dataloader._MultiProcessingDataLoaderIter` and
+    adds some additional logic for seeding numpy in each worker.
+    These seeds are based on a base seed, which itselfmis generated by numpy.
+    Thus numpy must be seeded in the maine process to ensure reproducibility.
+
+    Additionally this iterator adds functionality for per-sample transforms
+    outside the dataset and per-batch transforms on both, CPU and GPU.
+    """
+
     def __init__(self, loader: DataLoader):
         """
-        Iterator over Dataloader. Handles the complete multiprocessing
-
-        Parameters
-        ----------
-        loader : DataLoader
-            the dataloader instance to iterate over
+        Args:
+            loader: the dataloader instance over which to iterate
         """
         try:
             import numpy as np
@@ -382,9 +364,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
         """
         Get next item from iterator
 
-        Returns
-        -------
-        Any
+        Returns:
             batched and augmented data
         """
         sample = super().__next__()
@@ -392,14 +372,16 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
 
 
 class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
+    """Iterator over Dataloader.
+
+     This iterator adds functionality for per-sample transforms
+    outside the dataset and per-batch transforms on both, CPU and GPU.
+    """
+
     def __init__(self, loader: DataLoader):
         """
-        Iterator over Dataloader
-
-        Parameters
-        ----------
-        loader : DataLoader
-            the dataloader instance to iterate over
+        Args:
+            loader: the dataloader instance over which to iterate
         """
         with patch_collate_fn(loader):
             super().__init__(loader)
@@ -410,9 +392,7 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
         """
         Get next item from iterator
 
-        Returns
-        -------
-        Any
+        Returns:
             batched and augmented data
         """
         sample = super().__next__()
@@ -421,23 +401,19 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
 
 
 def _seed_npy_before_worker_init(worker_id: int, seed: int,
-                                 worker_init_fn: Callable = None):
+                                 worker_init_fn: Optional[Callable] = None):
     """
     Wrapper Function to wrap the existing worker_init_fn and seed numpy before
     calling the actual ``worker_init_fn``
 
-    Parameters
-    ----------
-    worker_id : int
-        the number of the worker
-    seed : int32
-        the base seed in a range of [0, 2**32 - (1 + ``num_workers``)].
-        The range ensures, that the whole seed, which consists of the base
-        seed and the ``worker_id``, can still be represented as a unit32,
-        as it needs to be for numpy seeding
-    worker_init_fn : callable, optional
-        will be called with the ``worker_id`` after seeding numpy if it is not
-        ``None``
+    Args:
+        worker_id: the number of the worker
+        seed: the base seed in a range of [0, 2**32 - (1 + ``num_workers``)].
+            The range ensures, that the whole seed, which consists of the base
+            seed and the ``worker_id``, can still be represented as a unit32,
+            as it needs to be for numpy seeding
+        worker_init_fn: will be called with the ``worker_id`` after seeding
+            numpy if it is not ``None``
     """
     try:
         import numpy as np
