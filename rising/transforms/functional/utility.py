@@ -1,34 +1,32 @@
-from typing import Sequence, List, Tuple, Union, Callable
-from torch import Tensor
+from typing import Sequence, List, Tuple, Union, Callable, Optional
+
 import torch
 
 __all__ = ["box_to_seg", "seg_to_box", "instance_to_semantic", "pop_keys", "filter_keys"]
 
 
-def box_to_seg(boxes: Sequence[Sequence[int]], shape: Sequence[int] = None,
-               dtype: torch.dtype = None, device: torch.device = None,
-               out: Tensor = None) -> Tensor:
+def box_to_seg(boxes: Sequence[Sequence[int]],
+               shape: Optional[Sequence[int]] = None,
+               dtype: Optional[Union[torch.dtype, str]] = None,
+               device: Optional[Union[torch.device, str]] = None,
+               out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Convert a sequence of bounding boxes to a segmentation
 
-    Parameters
-    ----------
-    boxes: Sequence[Sequence[int]]
-        sequence of bounding boxes encoded as
-        (dim0_min, dim1_min, dim0_max, dim1_max, [dim2_min, dim2_max]).
-        Supported bounding boxes for 2D (4 entries per box) and 3d (6 entries per box)
-    shape: Sequence[int]
-        if :param:`out` is not provided, shape of output tensor must be specified
-    dtype: torch.dtype
-        if :param:`out` is not provided, dtype of output tensor must be specified
-    device: torch.device
-        if :param:`out` is not provided, device of output tensor must be specified
-    out: Tensor
-        if :param:`out` is not None, the segmentation will be saved inside this tensor
+    Args:
+        boxes: sequence of bounding boxes encoded as
+            (dim0_min, dim1_min, dim0_max, dim1_max, [dim2_min, dim2_max]).
+            Supported bounding boxes for 2D (4 entries per box)
+            and 3d (6 entries per box)
+        shape: if :param:`out` is not provided, shape of output tensor must
+            be specified
+        dtype: if :param:`out` is not provided,
+            dtype of output tensor must be specified
+        device: if :param:`out` is not provided,
+            device of output tensor must be specified
+        out: if not None, the segmentation will be saved inside this tensor
 
-    Returns
-    -------
-    Tensor
+    Returns:
         bounding boxes encoded as a segmentation
     """
     if out is None:
@@ -44,22 +42,17 @@ def box_to_seg(boxes: Sequence[Sequence[int]], shape: Sequence[int] = None,
     return out
 
 
-def seg_to_box(seg: Tensor, dim: int) -> List[Tensor]:
+def seg_to_box(seg: torch.Tensor, dim: int) -> List[torch.Tensor]:
     """
     Convert instance segmentation to bounding boxes
 
-    Parameters
-    ----------
-    seg: Tensor
-        segmentation of individual classes (index should start from one and be continuous)
-    dim: int
-        number of spatial dimensions
+    Args:
+        seg: segmentation of individual classes
+            (index should start from one and be continuous)
+        dim: number of spatial dimensions
 
-    Returns
-    -------
-    List[Tensor]
+    Returns:
         list of bounding boxes
-    Tensor
         tuple with classes for bounding boxes
     """
     boxes = []
@@ -75,26 +68,22 @@ def seg_to_box(seg: Tensor, dim: int) -> List[Tensor]:
     return boxes
 
 
-def instance_to_semantic(instance: Tensor, cls: Sequence[int]) -> Tensor:
+def instance_to_semantic(instance: torch.Tensor,
+                         cls: Sequence[int]) -> torch.Tensor:
     """
     Convert an instance segmentation to a semantic segmentation
 
-    Parameters
-    ----------
-    instance: Tensor
-        instance segmentation of objects (objects need to start from 1, 0 background)
-    cls: Sequence[int]
-        mapping from indices from instance segmentation to real classes.
+    Args:
+        instance: instance segmentation of objects
+            (objects need to start from 1, 0 background)
+        cls: mapping from indices from instance segmentation to real classes.
 
-    Returns
-    -------
-    Tensor
+    Returns:
         semantic segmentation
 
-    Warnings
-    --------
-    :param:`instance` needs to encode objects starting from 1 and the indices need to be continuous
-    (0 is interpreted as background)
+    Warnings:
+        :param:`instance` needs to encode objects starting from 1 and the
+        indices need to be continuous (0 is interpreted as background)
     """
     seg = torch.zeros_like(instance)
     for idx, c in enumerate(cls, 1):
@@ -102,25 +91,21 @@ def instance_to_semantic(instance: Tensor, cls: Sequence[int]) -> Tensor:
     return seg
 
 
-def pop_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
+def pop_keys(data: dict, keys: Union[Callable, Sequence],
+             return_popped=False) -> Union[dict, Tuple[dict, dict]]:
     """
     Pops keys from a given data dict
 
-    Parameters
-    ----------
-    data : dict
-        the dictionary to pop the keys from
-    keys : Callable or Sequence of Strings
-        if callable it must return a boolean for each key indicating whether it should be popped from the dict.
-        if sequence of strings, the strings shall be the keys to be popped
-    return_popped : bool
-        whether to also return the popped values (default: False)
+    Args:
+        data: the dictionary to pop the keys from
+        keys: if callable it must return a boolean for each key indicating
+            whether it should be popped from the dict.
+            if sequence of strings, the strings shall be the keys to be popped
+        return_popped: whether to also return the popped values
+        (default: False)
 
-    Returns
-    -------
-    dict
+    Returns:
         the data without the popped values
-    dict, optional
         the popped values; only if ``return_popped`` is True
 
     """
@@ -138,25 +123,22 @@ def pop_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -
         return data
 
 
-def filter_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
+def filter_keys(data: dict, keys: Union[Callable, Sequence],
+                return_popped=False) -> Union[dict, Tuple[dict, dict]]:
     """
     Filters keys from a given data dict
 
-    Parameters
-    ----------
-    data : dict
-        the dictionary to pop the keys from
-    keys : Callable or Sequence of Strings
-        if callable it must return a boolean for each key indicating whether it should be retained in the dict.
-        if sequence of strings, the strings shall be the keys to be retained
-    return_popped : bool
-        whether to also return the popped values (default: False)
+    Args:
+        data: the dictionary to pop the keys from
+        keys: if callable it must return a boolean for each key indicating
+            whether it should be retained in the dict.
+            if sequence of strings, the strings shall be the keys to be
+            retained
+        return_popped: whether to also return the popped values
+            (default: False)
 
-    Returns
-    -------
-    dict
+    Returns:
         the data without the popped values
-    dict, optional
         the popped values; only if ``return_popped`` is True
 
     """
