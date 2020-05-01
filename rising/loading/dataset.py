@@ -102,6 +102,7 @@ class AsyncDataset(Dataset):
     A dataset to preload all the data and cache it for the entire
     lifetime of this class.
     """
+
     def __init__(self,
                  data_path: Union[pathlib.Path, str, list],
                  load_fn: Callable, mode: str = "append",
