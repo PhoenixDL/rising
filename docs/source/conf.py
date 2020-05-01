@@ -12,18 +12,17 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import os
-import sys
 import glob
-import shutil
 import inspect
+import os
+import shutil
+import sys
 
 # import m2r
-import builtins
 import pytorch_sphinx_theme
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))
-PATH_ROOT = os.path.join(PATH_HERE, '..', '..')
+PATH_ROOT = os.path.dirname(os.path.dirname(PATH_HERE))
 sys.path.insert(0, os.path.abspath(PATH_ROOT))
 
 import rising  # noqa: E402
@@ -152,7 +151,7 @@ html_theme_options = {
     'logo_only': False,
 }
 
-html_logo = 'images/logos/lightning_logo-name.svg'
+html_logo = 'images/logo/rising_logo.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -242,7 +241,7 @@ intersphinx_mapping = {
     'torch': ('https://pytorch.org/docs/stable/', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'PIL': ('https://pillow.readthedocs.io/en/stable/', None),
-    'dill': ('https://dill.rtfd.io/', None),
+    'dill': ('https://dill.rtfd.io/en/stable', None),
 }
 
 # -- Options for todo extension ----------------------------------------------
@@ -293,7 +292,14 @@ for path_ipynb in glob.glob(os.path.join(PATH_ROOT, 'notebooks', '*.ipynb')):
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
 
 MOCK_REQUIRE_PACKAGES = []
-with open(os.path.join(PATH_ROOT, 'requirements.txt'), 'r') as fp:
+with open(os.path.join(PATH_ROOT, 'requirements', 'install.txt'), 'r') as fp:
+    for ln in fp.readlines():
+        found = [ln.index(ch) for ch in list(',=<>#') if ch in ln]
+        pkg = ln[:min(found)] if found else ln
+        if pkg.rstrip():
+            MOCK_REQUIRE_PACKAGES.append(pkg.rstrip())
+
+with open(os.path.join(PATH_ROOT, 'requirements', 'install_async.txt'), 'r') as fp:
     for ln in fp.readlines():
         found = [ln.index(ch) for ch in list(',=<>#') if ch in ln]
         pkg = ln[:min(found)] if found else ln
