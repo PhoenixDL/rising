@@ -1,6 +1,7 @@
 import unittest
 import torch
 from copy import deepcopy
+from rising.transforms.format import *
 from rising.transforms.utility import *
 
 
