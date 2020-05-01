@@ -66,7 +66,7 @@ setup(
         "Source Code": "https://github.com/PhoenixDL/rising",
     },
     # TODO: Populate classifiers
-    classifiers = [
+    classifiers=[
 
     ]
 )
