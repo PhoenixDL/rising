@@ -22,8 +22,11 @@ def numpy_collate(batch: Any) -> Any:
             mapping or mixture of them
 
     Returns:
-        Any: collated batch with optionally converted type
+        collated batch with optionally converted type
             (to :class:`numpy.ndarray`)
+
+    Raises:
+        TypeError: When batch could not be collated automatically
     """
 
     elem = batch[0]
@@ -53,7 +56,7 @@ def do_nothing_collate(batch: Any) -> Any:
         batch: input batch (typically a sequence, mapping or mixture of those).
 
     Returns:
-        Any: the batch as given to this function
+        the batch as given to this function
 
     """
 
