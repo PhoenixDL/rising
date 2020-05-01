@@ -158,7 +158,7 @@ class DropoutCompose(Compose):
     """
     Compose multiple transforms to one and randomly apply them
     """
-    
+
     def __init__(self, *transforms,
                  dropout: Union[float, Sequence[float]] = 0.5,
                  random_sampler: ContinuousParameter = None,

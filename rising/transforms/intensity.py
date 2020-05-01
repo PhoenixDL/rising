@@ -20,7 +20,7 @@ class Clamp(BaseTransform):
                  max: Union[float, AbstractParameter],
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
-        
+
 
         Args:
             min: lower bound of clipping
@@ -67,6 +67,7 @@ class NormMinMax(PerSampleTransform):
         """
         super().__init__(augment_fn=norm_min_max, keys=keys, grad=grad,
                          per_channel=per_channel, **kwargs)
+
 
 class NormZeroMeanUnitStd(PerSampleTransform):
     """Normalize mean to zero and std to one"""
@@ -206,10 +207,10 @@ class RandomValuePerChannel(PerChannelTransform):
     def forward(self, **data) -> dict:
         """
         Perform Augmentation.
-        
+
         Args:
             data: dict with data
-        
+
         Returns:
             augmented data
         """

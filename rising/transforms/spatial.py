@@ -42,6 +42,7 @@ class Mirror(BaseTransform):
 
 class Rot90(AbstractTransform):
     """Randomly rotate 90 degree around dims"""
+
     def __init__(self, dims: Union[Sequence[int], DiscreteParameter],
                  keys: Sequence[str] = ('data',),
                  prob: float = 0.5, grad: bool = False, **kwargs):
@@ -114,6 +115,7 @@ class Zoom(BaseTransform):
     """
     Apply zoom transformation
     """
+
     def __init__(self, scale_factor: Union[Sequence, AbstractParameter] = (0.75, 1.25),
                  mode: str = 'nearest', align_corners: bool = None,
                  preserve_range: bool = False, keys: Sequence = ('data',),

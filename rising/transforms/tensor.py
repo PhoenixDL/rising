@@ -23,7 +23,7 @@ class ToTensor(BaseTransform):
 
 class ToDeviceDtype(BaseTransform):
     """Push data to device and convert to tdype"""
-    
+
     def __init__(self, device: Optional[Union[torch.device, str]],
                  dtype: Optional[Union[torch.device, str]],
                  non_blocking: bool = False, copy: bool = False,
@@ -32,7 +32,7 @@ class ToDeviceDtype(BaseTransform):
         Args:
             device: target device
             dtype: target dtype
-            non_blocking: if True and this copy is between CPU and GPU, the 
+            non_blocking: if True and this copy is between CPU and GPU, the
                 copy may occur asynchronously with respect to the host. For other
                 cases, this argument has no effect.
             copy: create copy of data
@@ -67,7 +67,7 @@ class ToDevice(ToDeviceDtype):
 
 class ToDtype(ToDeviceDtype):
     """Convert data to dtype"""
-    
+
     def __init__(self, dtype: Optional[Union[torch.dtype, str]],
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
