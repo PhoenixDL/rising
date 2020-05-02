@@ -12,7 +12,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import glob
 import inspect
 import os
 import shutil
@@ -255,23 +254,23 @@ PACKAGES = [
 ]
 
 
-def run_apidoc(_):
-    for pkg in PACKAGES:
-        argv = ['-e', '-o', PATH_HERE, os.path.join(PATH_HERE, PATH_ROOT, pkg),
-                '**/test_*', '--force', '--private', '--module-first']
-        try:
-            # Sphinx 1.7+
-            from sphinx.ext import apidoc
-            apidoc.main(argv)
-        except ImportError:
-            # Sphinx 1.6 (and earlier)
-            from sphinx import apidoc
-            argv.insert(0, apidoc.__file__)
-            apidoc.main(argv)
-
-
-def setup(app):
-    app.connect('builder-inited', run_apidoc)
+# def run_apidoc(_):
+#     for pkg in PACKAGES:
+#         argv = ['-e', '-o', PATH_HERE, os.path.join(PATH_HERE, PATH_ROOT, pkg),
+#                 '**/test_*', '--force', '--private', '--module-first']
+#         try:
+#             # Sphinx 1.7+
+#             from sphinx.ext import apidoc
+#             apidoc.main(argv)
+#         except ImportError:
+#             # Sphinx 1.6 (and earlier)
+#             from sphinx import apidoc
+#             argv.insert(0, apidoc.__file__)
+#             apidoc.main(argv)
+#
+#
+# def setup(app):
+#     app.connect('builder-inited', run_apidoc)
 
 
 # copy all notebooks to local folder

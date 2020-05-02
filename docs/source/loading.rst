@@ -5,6 +5,7 @@ Loading - rising.loading
 ========================
 
 .. automodule:: rising.loading
+
 .. currentmodule:: rising.loading
 
 DataLoader
@@ -23,7 +24,7 @@ DataLoader
 :hidden:`default_transform_call`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunc:: default_transform_call
+.. autofunction:: default_transform_call
 
 :hidden:`BatchTransformer`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,12 +37,12 @@ DataLoader
 :hidden:`patch_worker_init_fn`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunc:: patch_worker_init_fn
+.. autofunction:: patch_worker_init_fn
 
 :hidden:`patch_collate_fn`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunc:: patch_collate_fn
+.. autofunction:: patch_collate_fn
 
 Dataset
 -------
@@ -67,12 +68,12 @@ Dataset
 :hidden:`dill_helper`
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunc:: dill_hepler
+.. autofunction:: dill_helper
 
 :hidden:`load_async`
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autofunc:: load_async
+.. autofunction:: load_async
 
 Collation
 ---------
@@ -82,10 +83,10 @@ Collation
 
 .. currentmodule:: rising.loading.collate
 
-.. autofunc:: numpy_collate
+.. autofunction:: numpy_collate
 
 :hidden:`do_nothing_collate`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunc:: do_nothing_collate
+.. autofunction:: do_nothing_collate
 
