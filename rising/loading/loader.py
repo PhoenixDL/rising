@@ -22,6 +22,8 @@ except ImportError:
 from rising.loading.collate import do_nothing_collate
 from rising.transforms import ToDevice, Compose
 
+__all__ = ['DataLoader', 'default_transform_call']
+
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:
     """
