@@ -2,12 +2,12 @@ import logging
 import os
 import pathlib
 from functools import partial
-from multiprocessing import cpu_count, Pool as MPPool
-from typing import Any, Sequence, Callable, Union, List, Hashable, Dict, Iterator, Generator, Optional
-from warnings import warn
+from multiprocessing import cpu_count
+from typing import Any, Sequence, Callable, Union, List, Iterator, Generator, Optional
 
 try:
     import dill
+
     DILL_AVAILABLE = True
 except ImportError:
     DILL_AVAILABLE = False
