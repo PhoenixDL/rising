@@ -13,11 +13,11 @@ rising Documentation
    :name: docs
    :caption: Python API
 
-   rising.loading
-   rising.ops
-   rising.transforms
-   rising.utils
-   rising.interface
+    loading
+    ops
+    transforms
+    utils
+    interface
 
 .. toctree::
    :maxdepth: 1
@@ -33,7 +33,6 @@ rising Documentation
    :caption: Community
 
    contributing.md
-   pull_request_template.md
 
 Indices and tables
 ------------------
@@ -46,4 +45,4 @@ Indices and tables
 .. toctree::
    :hidden:
 
-   rising._version
+   modules

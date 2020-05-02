@@ -19,7 +19,7 @@ import shutil
 import sys
 
 # import m2r
-import pytorch_sphinx_theme
+import rising_sphinx_theme
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 PATH_ROOT = os.path.dirname(os.path.dirname(PATH_HERE))
@@ -45,8 +45,6 @@ import rising  # noqa: E402
 # with open('readme.md', 'w') as fp:
 #     fp.write(readme)
 
-for md in glob.glob(os.path.join(PATH_ROOT, '.github', '*.md')):
-    shutil.copy(md, os.path.join(PATH_HERE, os.path.basename(md)))
 for md in ['CONTRIBUTING.md']:
     shutil.copy(os.path.join(PATH_ROOT, md), os.path.join(PATH_HERE, md.lower()))
 
@@ -130,8 +128,10 @@ pygments_style = None
 # http://www.sphinx-doc.org/en/master/usage/theming.html#builtin-themes
 # html_theme = 'bizstyle'
 # https://sphinx-themes.org
-html_theme = 'pytorch_sphinx_theme'
-html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
+# html_theme = 'pytorch_sphinx_theme'
+# html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
+html_theme = 'rising_sphinx_theme'
+html_theme_path = [rising_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
