@@ -24,8 +24,8 @@ class ToTensor(BaseTransform):
 class ToDeviceDtype(BaseTransform):
     """Push data to device and convert to tdype"""
 
-    def __init__(self, device: Optional[Union[torch.device, str]],
-                 dtype: Optional[Union[torch.device, str]],
+    def __init__(self, device: Optional[Union[torch.device, str]] = None,
+                 dtype: Optional[Union[torch.device, str]] = None,
                  non_blocking: bool = False, copy: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
