@@ -104,6 +104,9 @@ class BatchTransformerTest(unittest.TestCase):
         output = transformer(0)
         self.assertTrue((output == torch.tensor([0, 1])).all())
 
+class SampleTransformerTest(unittest.TestCase):
+    pass #TODO:
+
 
 class DefaultTransformCallTest(unittest.TestCase):
     def check_transform_call(self, inp, outp=0, fn=default_transform_call) -> unittest.mock.Mock:
