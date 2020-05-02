@@ -1,3 +1,4 @@
+import collections
 import warnings
 from contextlib import contextmanager
 from functools import partial
@@ -11,8 +12,17 @@ from torch.utils.data.dataloader import \
     _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter, \
     _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
 
+try:
+    import numpy as np
+
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+
 from rising.loading.collate import do_nothing_collate
 from rising.transforms import ToDevice, Compose
+
+__all__ = ['DataLoader', 'default_transform_call']
 
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:
@@ -77,6 +87,8 @@ class DataLoader(_DataLoader):
                  batch_size: int = 1, shuffle: bool = False,
                  batch_transforms: Optional[Callable] = None,
                  gpu_transforms: Optional[Callable] = None,
+                 sample_transforms: Optional[Callable] = None,
+                 pseudo_batch_dim: bool = False,
                  device: Optional[Union[str, torch.device]] = None,
                  sampler: Optional[Sampler] = None,
                  batch_sampler: Optional[Sampler] = None,
@@ -105,6 +117,13 @@ class DataLoader(_DataLoader):
                 working. Before executing these transforms all data will be
                 moved to :param:`device`. This copy is done in a non-blocking
                 way if :param:`pin_memory` is set to True.
+            sample_transforms: transforms applied to each sample (on CPU).
+                These are the first transforms applied to the data, since they
+                are applied on sample retrieval from dataset before batching
+                occurs.
+            pseudo_batch_dim: whether the :param:`sample_transforms` work on
+                batches and thus need a pseudo batch dim of 1 to work
+                correctly.
             device: the device to move the data to for gpu_transforms.
                 If None: the device will be the current device.
             sampler: defines the strategy to draw samples from
@@ -169,6 +188,8 @@ class DataLoader(_DataLoader):
             gpu_transforms = Compose(to_gpu_trafo, gpu_transforms)
             gpu_transforms = gpu_transforms.to(device)
 
+        self.sample_transforms = sample_transforms
+        self.pseudo_batch_dim = pseudo_batch_dim and sample_transforms is not None
         self.gpu_transforms = gpu_transforms
         self.auto_convert = auto_convert
         self.transform_call = transform_call
@@ -204,6 +225,12 @@ class DataLoader(_DataLoader):
                                 auto_convert=self.auto_convert,
                                 transform_call=self.transform_call
                                 )
+
+    def get_sample_transformer(self):
+        # this is a function on purpose, since frameworks like ignite parse
+        # the class dict to specify what to treat as args during reinit
+        return SampleTransformer(self.dataset, self.sample_transforms,
+                                 self.pseudo_batch_dim, self.transform_call)
 
     def __iter__(self) -> Iterator:
         """
@@ -261,6 +288,32 @@ def patch_collate_fn(loader: DataLoader) -> Generator:
     loader.collate_fn = old_collate_fn
 
 
+@contextmanager
+def patch_dataset(loader: DataLoader) -> Generator:
+    """
+    Patches the loader to temporarily replace the dataset by a wrapped dataset
+    with transforms.
+
+    Args:
+        loader: the dataloader whose dataset should be wrapped
+
+    Yields:
+        the patched loader
+
+    """
+    old_dset = loader.dataset
+
+    loader._DataLoader__initialized = False
+    loader.dataset = loader.get_sample_transformer()
+    loader._DataLoader__initialized = True
+
+    yield loader
+
+    loader._DataLoader__initialized = False
+    loader.dataset = old_dset
+    loader._DataLoader__initialized = True
+
+
 class BatchTransformer(object):
     """
     A callable wrapping the collate_fn to enable transformations on a
@@ -311,6 +364,91 @@ class BatchTransformer(object):
         return batch
 
 
+class SampleTransformer(object):
+    """
+    A dataset wrapper applying transforms to each retrieved sample of the
+    dataset
+    """
+
+    def __init__(self, dataset: Dataset,
+                 transforms: Optional[Callable] = None,
+                 pseudo_batch_dim: bool = False,
+                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
+        """
+
+        Args:
+            dataset: the dataset holding the samples to wrap
+            transforms: the transforms to apply to the dataset
+            pseudo_batch_dim: whether the transforms work on batches or samples
+            transform_call: function which determines how transforms are called. By default
+                Mappings and Sequences are unpacked during the transform.
+        """
+        self.dataset = dataset
+        self.transforms = transforms
+        self.pseudo_batch_dim = pseudo_batch_dim
+        self.transform_call = transform_call
+
+    def __getitem__(self, item: int) -> Any:
+        """
+        Returns transformed samples of the dataset
+
+        Args:
+            item: the index specifying the sample to retrieve
+
+        Returns:
+            the transformed sample
+
+        """
+        sample = self.dataset[item]
+
+        if self.pseudo_batch_dim:
+            sample = self._change_pseudo_batch_dim(sample, add=True)
+
+        if self.transforms is not None:
+            sample = self.transform_call(sample, self.transforms)
+
+        if self.pseudo_batch_dim:
+            sample = self._change_pseudo_batch_dim(sample, add=False)
+
+        return sample
+
+    def __len__(self) -> int:
+        return len(self.dataset)
+
+    def _change_pseudo_batch_dim(self, sample: Any, add: bool):
+        """
+        Adds or removes the pseudo batch size
+        Args:
+            sample: the sample to add the batchsize to
+            add: whether to add or remove the pseudo batchsize
+
+        Returns:
+            sample with added or removed pseudo batchsize
+
+        """
+        if isinstance(sample, torch.Tensor) or (NUMPY_AVAILABLE and isinstance(sample, np.ndarray)):
+            if add:
+                return sample[None]
+            else:
+                return sample[0]
+
+        elif isinstance(sample, (float, str, int)):
+            # don't add pseudo batchsize for these types since you"d have to convert.
+            return sample
+        elif isinstance(sample, collections.abc.Mapping):
+            return {key: self._change_pseudo_batch_dim(sample[key], add=add)
+                    for key in sample}
+        elif isinstance(sample, tuple) and hasattr(sample, '_fields'):  # namedtuple
+            return type(sample)(*[self._change_pseudo_batch_dim(_sample,
+                                                                add=add)
+                                  for _sample in sample])
+        elif isinstance(sample, collections.abc.Sequence):
+            return type(sample)([self._change_pseudo_batch_dim(elem, add=add)
+                                 for elem in sample])
+
+        return sample
+
+
 class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
     """Iterator over Dataloader. Handles the complete multiprocessing
 
@@ -351,10 +489,11 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
                                          seed=npy_seed,
                                          worker_init_fn=old_worker_init)
 
-        with patch_worker_init_fn(loader, new_worker_init_fn):
-            with patch_collate_fn(loader):
-                with threadpool_limits(limits=1, user_api='blas'):
-                    super().__init__(loader)
+        with patch_dataset(loader) as loader:
+            with patch_worker_init_fn(loader, new_worker_init_fn) as loader:
+                with patch_collate_fn(loader) as loader:
+                    with threadpool_limits(limits=1, user_api='blas'):
+                        super().__init__(loader)
 
         self._gpu_transforms = loader.get_gpu_batch_transformer()
 
@@ -381,8 +520,9 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
         Args:
             loader: the dataloader instance over which to iterate
         """
-        with patch_collate_fn(loader):
-            super().__init__(loader)
+        with patch_dataset(loader) as loader:
+            with patch_collate_fn(loader) as loader:
+                super().__init__(loader)
 
         self._gpu_transforms = loader.get_gpu_batch_transformer()
 
