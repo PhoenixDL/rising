@@ -110,6 +110,7 @@ class BatchTransformerTest(unittest.TestCase):
 class SampleTransformerTest(unittest.TestCase):
     def setUp(self) -> None:
         import numpy as np
+
         class DummyDset(Dataset):
             def __init__(self, num_samples=10):
                 super().__init__()
