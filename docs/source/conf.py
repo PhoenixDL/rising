@@ -47,6 +47,8 @@ import rising  # noqa: E402
 
 for md in glob.glob(os.path.join(PATH_ROOT, '.github', '*.md')):
     shutil.copy(md, os.path.join(PATH_HERE, os.path.basename(md)))
+for md in ['CONTRIBUTING.md']:
+    shutil.copy(os.path.join(PATH_ROOT, md), os.path.join(PATH_HERE, md.lower()))
 
 # -- Project information -----------------------------------------------------
 
@@ -89,14 +91,6 @@ extensions = [
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-
-# https://berkeley-stat159-f17.github.io/stat159-f17/lectures/14-sphinx..html#conf.py-(cont.)
-# https://stackoverflow.com/questions/38526888/embed-ipython-notebook-in-sphinx-document
-# I execute the notebooks manually in advance. If notebooks test the code,
-# they should be run at build time.
-nbsphinx_execute = 'always'
-nbsphinx_allow_errors = True
-nbsphinx_requirejs_path = ''
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -281,12 +275,12 @@ def setup(app):
 
 
 # copy all notebooks to local folder
-path_nbs = os.path.join(PATH_HERE, 'notebooks')
-if not os.path.isdir(path_nbs):
-    os.mkdir(path_nbs)
-for path_ipynb in glob.glob(os.path.join(PATH_ROOT, 'notebooks', '*.ipynb')):
-    path_ipynb2 = os.path.join(path_nbs, os.path.basename(path_ipynb))
-    shutil.copy(path_ipynb, path_ipynb2)
+# path_nbs = os.path.join(PATH_HERE, 'notebooks')
+# if not os.path.isdir(path_nbs):
+#     os.mkdir(path_nbs)
+# for path_ipynb in glob.glob(os.path.join(PATH_ROOT, 'notebooks', '*.ipynb')):
+#     path_ipynb2 = os.path.join(path_nbs, os.path.basename(path_ipynb))
+#     shutil.copy(path_ipynb, path_ipynb2)
 
 # Ignoring Third-party packages
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule

@@ -2,21 +2,22 @@ rising Documentation
 ====================
 
 .. toctree::
-   :maxdepth: 1
-   :name: start
-   :caption: Start Here
+   :maxdepth: 2
+   :name: introduction
+   :caption: Getting Started
 
-    get_started
+   getting_started
+
 .. toctree::
    :maxdepth: 2
    :name: docs
    :caption: Python API
 
-   loading
-   ops
-   transforms
-   utils
-   interface
+   rising.loading
+   rising.ops
+   rising.transforms
+   rising.utils
+   rising.interface
 
 .. toctree::
    :maxdepth: 1
@@ -31,9 +32,8 @@ rising Documentation
    :name: community
    :caption: Community
 
-   CODE_OF_CONDUCT.md
-   CONTRIBUTING.md
-   PULL_REQUEST_TEMPLATE.md
+   contributing.md
+   pull_request_template.md
 
 Indices and tables
 ------------------
