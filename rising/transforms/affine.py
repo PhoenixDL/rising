@@ -588,6 +588,7 @@ class Scale(BaseAffine):
     The transformation will be applied to all the dict-entries specified
     in :attr:`keys`.
     """
+
     def __init__(self,
                  scale: AffineParamType,
                  keys: Sequence = ('data',),
