@@ -432,8 +432,9 @@ class SampleTransformer(object):
             return {key: self._change_pseudo_batch_dim(sample[key], add=add)
                     for key in sample}
         elif isinstance(sample, tuple) and hasattr(sample, '_fields'):  # namedtuple
-            return type(sample)(*self._change_pseudo_batch_dim(sample,
-                                                               add=add))
+            return type(sample)(*[self._change_pseudo_batch_dim(_sample,
+                                                                add=add)
+                                  for _sample in sample])
         elif isinstance(sample, collections.abc.Sequence):
             return type(sample)([self._change_pseudo_batch_dim(elem, add=add)
                                  for elem in sample])
