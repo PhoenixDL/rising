@@ -1,3 +1,8 @@
+"""
+Provides the Augmentations and Transforms used by the
+:class:`rising.loading.DataLoader`.
+"""
+
 from rising.transforms.abstract import *
 from rising.transforms.channel import *
 from rising.transforms.compose import *
