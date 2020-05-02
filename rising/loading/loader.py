@@ -302,11 +302,16 @@ def patch_dataset(loader: DataLoader) -> Generator:
 
     """
     old_dset = loader.dataset
+
+    loader._DataLoader__initialized = False
     loader.dataset = loader.get_sample_transformer()
+    loader._DataLoader__initialized = True
 
     yield loader
 
+    loader._DataLoader__initialized = False
     loader.dataset = old_dset
+    loader._DataLoader__initialized = True
 
 
 class BatchTransformer(object):
