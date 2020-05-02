@@ -10,7 +10,7 @@ def torch_one_hot(target: torch.Tensor, num_classes: Optional[int] = None) -> to
 
     Args:
         target: tensor to be converted
-        num_classes: number of classes. If :param:`num_classes` is None,
+        num_classes: number of classes. If :attr:`num_classes` is None,
             the maximum of target is used
 
     Returns:

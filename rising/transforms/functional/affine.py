@@ -63,24 +63,24 @@ def create_scale(scale: AffineParamType,
     Formats the given scale parameters to a homogeneous transformation matrix
 
     Args:
-    scale : the scale factor(s). Supported are:
-        * a single parameter (as float or int), which will be replicated
+        scale : the scale factor(s). Supported are:
+            * a single parameter (as float or int), which will be replicated
             for all dimensions and batch samples
-        * a parameter per sample, which will be
+            * a parameter per sample, which will be
             replicated for all dimensions
-        * a parameter per dimension, which will be replicated for all
+            * a parameter per dimension, which will be replicated for all
             batch samples
-        * a parameter per sampler per dimension
-        * None will be treated as a scaling factor of 1
-    batchsize: the number of samples per batch
-    ndim: the dimensionality of the transform
-    device: the device to put the resulting tensor to.
-        Defaults to the torch default device
-    dtype: the dtype of the resulting trensor.
-        Defaults to the torch default dtype
-    image_transform:  inverts the scale matrix to match expected behavior
-        when applied to an image, e.g. scale>1 increases the size of an
-        image but decrease the size of an grid
+            * a parameter per sampler per dimension
+            * None will be treated as a scaling factor of 1
+        batchsize: the number of samples per batch
+        ndim: the dimensionality of the transform
+        device: the device to put the resulting tensor to.
+            Defaults to the torch default device
+        dtype: the dtype of the resulting trensor.
+            Defaults to the torch default dtype
+        image_transform:  inverts the scale matrix to match expected behavior
+            when applied to an image, e.g. scale>1 increases the size of an
+            image but decrease the size of an grid
 
     Returns:
         the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
@@ -111,11 +111,11 @@ def create_translation(offset: AffineParamType,
     Args:
         offset: the translation offset(s). Supported are:
             * a single parameter (as float or int), which will be replicated
-                for all dimensions and batch samples
+            for all dimensions and batch samples
             * a parameter per sample, which will be
-                replicated for all dimensions
+            replicated for all dimensions
             * a parameter per dimension, which will be replicated for all
-                batch samples
+            batch samples
             * a parameter per sampler per dimension
             * None will be treated as a translation offset of 0
         batchsize: the number of samples per batch
@@ -157,13 +157,13 @@ def create_rotation(rotation: AffineParamType,
     Args:
         rotation: the rotation factor(s). Supported are:
             * a single parameter (as float or int), which will be replicated
-                for all dimensions and batch samples
+            for all dimensions and batch samples
             * a parameter per sample, which will be
-                replicated for all dimensions
+            replicated for all dimensions
             * a parameter per dimension, which will be replicated for all
-                batch samples
+            batch samples
             * a parameter per sampler per dimension
-            * None will be treated as a rotation factor of 0
+            * None will be treated as a rotation angle of 0
         batchsize: the number of samples per batch
         ndim : the dimensionality of the transform
         degree: whether the given rotation(s) are in degrees.
@@ -294,29 +294,29 @@ def parametrize_matrix(scale: AffineParamType,
     Args:
         scale: the scale factor(s). Supported are:
             * a single parameter (as float or int), which will be replicated
-                for all dimensions and batch samples
+            for all dimensions and batch samples
             * a parameter per sample, which will be
-                replicated for all dimensions
+            replicated for all dimensions
             * a parameter per dimension, which will be replicated for all
-                batch samples
+            batch samples
             * a parameter per sampler per dimension
             * None will be treated as a scaling factor of 1
         rotation: the rotation factor(s). Supported are:
             * a single parameter (as float or int), which will be replicated
-                for all dimensions and batch samples
+            for all dimensions and batch samples
             * a parameter per sample, which will be
-                replicated for all dimensions
+            replicated for all dimensions
             * a parameter per dimension, which will be replicated for all
-                batch samples
+            batch samples
             * a parameter per sampler per dimension
             * None will be treated as a rotation factor of 1
         translation: the translation offset(s). Supported are:
             * a single parameter (as float or int), which will be replicated
-                for all dimensions and batch samples
+            for all dimensions and batch samples
             * a parameter per sample, which will be
-                replicated for all dimensions
+            replicated for all dimensions
             * a parameter per dimension, which will be replicated for all
-                batch samples
+            batch samples
             * a parameter per sampler per dimension
             * None will be treated as a translation offset of 0
         batchsize: the number of samples per batch
@@ -360,7 +360,7 @@ def affine_point_transform(point_batch: torch.Tensor,
             ``NDIM`` is the number of spatial dimensions
         matrix_batch : torch.Tensor
             a batch of affine matrices with shape [N, NDIM, NDIM + 1],
-                N is the batch size and NDIM is the number of spatial dimensions
+            N is the batch size and NDIM is the number of spatial dimensions
 
     Returns:
         the batch of transformed points in cartesian coordinates)
@@ -414,7 +414,7 @@ def affine_image_transform(image_batch: torch.Tensor,
         resolutions (that is, after being upsampled or downsampled).
 
     Notes:
-        :param:`output_size` and :param:`adjust_size` are mutually exclusive.
+        :attr:`output_size` and :attr:`adjust_size` are mutually exclusive.
         If None of them is set, the resulting image will have the same size
         as the input image.
     """

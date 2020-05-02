@@ -39,8 +39,8 @@ class Affine(BaseTransform):
                  **kwargs):
         """
         Args:
-            matrix: if given, overwrites the parameters for :param:`scale`,
-                :param:rotation` and :param:`translation`.
+            matrix: if given, overwrites the parameters for :attr:`scale`,
+                :attr:rotation` and :attr:`translation`.
                 Should be a matrix of shape [(BATCHSIZE,) NDIM, NDIM(+1)]
                 This matrix represents the whole transformation matrix
             keys: keys which should be augmented
@@ -318,32 +318,32 @@ class BaseAffine(Affine):
         Args:
             scale: the scale factor(s). Supported are:
                 * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
+                replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
-                    replicated for all dimensions
+                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
-                    batch samples
+                batch samples
                 * a parameter per sampler per dimension
                 * None will be treated as a scaling factor of 1
             rotation: the rotation factor(s). The rotation is performed in
                 consecutive order axis0 -> axis1 (-> axis 2). Supported are:
                 * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
+                replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
-                    replicated for all dimensions
+                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
-                    batch samples
+                batch samples
                 * a parameter per sampler per dimension
-                * None will be treated as a rotation factor of 1
+                * None will be treated as a rotation angle of 0
             translation : torch.Tensor, int, float
                 the translation offset(s) relative to image (should be in the
                 range [0, 1]). Supported are:
                 * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
+                replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
-                    replicated for all dimensions
+                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
-                    batch samples
+                batch samples
                 * a parameter per sampler per dimension
                 * None will be treated as a translation offset of 0
             keys: keys which should be augmented
@@ -438,13 +438,13 @@ class Rotate(BaseAffine):
             rotation: the rotation factor(s). The rotation is performed in
                 consecutive order axis0 -> axis1 (-> axis 2). Supported are:
                 * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
+                replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
-                    replicated for all dimensions
+                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
-                    batch samples
+                batch samples
                 * a parameter per sampler per dimension
-                * None will be treated as a rotation factor of 1
+                * ``None`` will be treated as a rotation angle of 0
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
             degree: whether the given rotation(s) are in degrees.
@@ -515,11 +515,11 @@ class Translate(BaseAffine):
                 the translation offset(s) relative to image (should be in the
                 range [0, 1]). Supported are:
                 * a single parameter (as float or int), which will be
-                    replicated for all dimensions and batch samples
+                replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
-                    replicated for all dimensions
+                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
-                    batch samples
+                batch samples
                 * a parameter per sampler per dimension
                 * None will be treated as a translation offset of 0
             keys: keys which should be augmented
@@ -583,6 +583,11 @@ class Translate(BaseAffine):
 
 
 class Scale(BaseAffine):
+    """Class Performing a Scale-Only Affine Transformation on a given
+    sample dict.
+    The transformation will be applied to all the dict-entries specified
+    in :attr:`keys`.
+    """
     def __init__(self,
                  scale: AffineParamType,
                  keys: Sequence = ('data',),
@@ -595,56 +600,50 @@ class Scale(BaseAffine):
                  reverse_order: bool = False,
                  **kwargs):
         """
-        Class Performing a Scale-Only Affine Transformation on a given
-        sample dict.
-        The transformation will be applied to all the dict-entries specified
-        in :attr:`keys`.
-
-        Parameters
-        ----------
-        scale : torch.Tensor, int, float, optional
-            the scale factor(s). Supported are:
-                * a single parameter (as float or int), which will be replicated
-                    for all dimensions and batch samples
+        Args:
+            scale : torch.Tensor, int, float, optional
+                the scale factor(s). Supported are:
+                * a single parameter (as float or int), which will be
+                replicated for all dimensions and batch samples
                 * a parameter per sample, which will be
-                    replicated for all dimensions
-                * a parameter per dimension, which will be replicated for all
-                    batch samples
+                replicated for all dimensions
+                * a parameter per dimension, which will be replicated for
+                all batch samples
                 * a parameter per sampler per dimension
-            None will be treated as a scaling factor of 1
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        degree : bool
-            whether the given rotation(s) are in degrees.
-            Only valid for rotation parameters, which aren't passed as full
-            transformation matrix.
-        output_size : Iterable
-            if given, this will be the resulting image size.
-            Defaults to ``None``
-        adjust_size : bool
-            if True, the resulting image size will be calculated dynamically
-            to ensure that the whole image fits.
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+                * None will be treated as a scaling factor of 1
+            keys: Sequence
+                keys which should be augmented
+            grad: bool
+                enable gradient computation inside transformation
+            degree : bool
+                whether the given rotation(s) are in degrees.
+                Only valid for rotation parameters, which aren't passed as full
+                transformation matrix.
+            output_size : Iterable
+                if given, this will be the resulting image size.
+                Defaults to ``None``
+            adjust_size : bool
+                if True, the resulting image size will be calculated
+                dynamically to ensure that the whole image fits.
+            interpolation_mode : str
+                interpolation mode to calculate output values
+                'bilinear' | 'nearest'. Default: 'bilinear'
+            padding_mode :
+                padding mode for outside grid values
+                'zeros' | 'border' | 'reflection'. Default: 'zeros'
+            align_corners : bool
+                Geometrically, we consider the pixels of the input as
+                squares rather than points. If set to True, the extrema
+                (-1 and 1) are considered as referring to the center points of
+                the input’s corner pixels. If set to False, they are instead
+                considered as referring to the corner points of the input’s
+                corner pixels, making the sampling more resolution agnostic.
+            reverse_order: bool
+                reverses the coordinate order of the transformation to conform
+                to the pytorch convention: transformation params order
+                [W,H(,D)] and batch order [(D,)H,W]
+            **kwargs :
+                additional keyword arguments passed to the affine transform
         """
         super().__init__(scale=scale,
                          rotation=None,

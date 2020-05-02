@@ -121,7 +121,7 @@ class Resize(BaseTransform):
 class Zoom(RandomProcess, BaseTransform):
     """Apply augment_fn to keys. By default the scaling factor is sampled
        from a uniform distribution with the range specified by
-       :param:`random_args`
+       :attr:`random_args`
     """
 
     def __init__(self, random_args: Union[Sequence, Sequence[Sequence]] = (0.75, 1.25),
@@ -181,16 +181,16 @@ class ProgressiveResize(Resize):
             scheduler: scheduler which determined the current size.
                 The scheduler is called with the current iteration of the
                 transform
-        mode: one of ``nearest``, ``linear``, ``bilinear``, ``bicubic``,
-                ``trilinear``, ``area`` (for more inforamtion see
-                :func:`torch.nn.functional.interpolate`)
-        align_corners: input and output tensors are aligned by the center
-            points of their corners pixels, preserving the values at the
-            corner pixels.
-        preserve_range: output tensor has same range as input tensor
-        keys: keys which should be augmented
-        grad: enable gradient computation inside transformation
-        **kwargs: keyword arguments passed to augment_fn
+            mode: one of ``nearest``, ``linear``, ``bilinear``, ``bicubic``,
+                    ``trilinear``, ``area`` (for more inforamtion see
+                    :func:`torch.nn.functional.interpolate`)
+            align_corners: input and output tensors are aligned by the center
+                points of their corners pixels, preserving the values at the
+                corner pixels.
+            preserve_range: output tensor has same range as input tensor
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to augment_fn
 
         Warnings:
             When this transformations is used in combination with

@@ -18,11 +18,11 @@ def box_to_seg(boxes: Sequence[Sequence[int]],
             (dim0_min, dim1_min, dim0_max, dim1_max, [dim2_min, dim2_max]).
             Supported bounding boxes for 2D (4 entries per box)
             and 3d (6 entries per box)
-        shape: if :param:`out` is not provided, shape of output tensor must
+        shape: if :attr:`out` is not provided, shape of output tensor must
             be specified
-        dtype: if :param:`out` is not provided,
+        dtype: if :attr:`out` is not provided,
             dtype of output tensor must be specified
-        device: if :param:`out` is not provided,
+        device: if :attr:`out` is not provided,
             device of output tensor must be specified
         out: if not None, the segmentation will be saved inside this tensor
 
@@ -82,7 +82,7 @@ def instance_to_semantic(instance: torch.Tensor,
         semantic segmentation
 
     Warnings:
-        :param:`instance` needs to encode objects starting from 1 and the
+        :attr:`instance` needs to encode objects starting from 1 and the
         indices need to be continuous (0 is interpreted as background)
     """
     seg = torch.zeros_like(instance)

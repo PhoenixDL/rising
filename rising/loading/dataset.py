@@ -114,7 +114,7 @@ class AsyncDataset(Dataset):
             data_path: the path(s) containing the actual data samples
             load_fn: function to load the actual data
             mode: whether to append the sample to a list or to extend the list
-                by it. Supported modes are: :param:`append` and :param:`extend`.
+                by it. Supported modes are: ``append`` and ``extend``.
                 Default: ``append``
             num_workers: the number of workers to use for preloading.
                 ``0`` means, all the data will be loaded in the main process,
@@ -122,12 +122,12 @@ class AsyncDataset(Dataset):
                 the number of logical cores.
             verbose: whether to show the loading progress.
             **load_kwargs: additional keyword arguments.
-                Passed directly to :param:`load_fn`
+                Passed directly to :attr:`load_fn`
 
         Warnings:
             if using multiprocessing to load data, there are some restrictions
             to which :func:`load_fn` are supported, please refer to the
-            :module:`dill` or :module:`pickle` documentation
+            :mod:`dill` or :mod:`pickle` documentation
         """
         super().__init__()
 
@@ -224,14 +224,13 @@ class AsyncDataset(Dataset):
     def _add_item(data: list, item: Any, mode: str) -> None:
         """
         Adds items to the given data list. The actual way of adding these
-        items depends on :param:`mode`
+        items depends on :attr:`mode`
 
         Args:
             data: the list containing the already loaded data
             item: the current item which will be added to the list
             mode: the string specifying the mode of how the item should be
-                added.
-
+                added.F
         Raises:
             TypeError: No known mode detected
         """

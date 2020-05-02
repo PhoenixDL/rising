@@ -46,8 +46,8 @@ def resize(data: torch.Tensor,
            mode: str = 'nearest', align_corners: Optional[bool] = None,
            preserve_range: bool = False):
     """
-    Down/up-sample sample to either the given :param:`size` or the given
-    :param:`scale_factor`
+    Down/up-sample sample to either the given :attr:`size` or the given
+    :attr:`scale_factor`
     The modes available for resizing are: nearest, linear (3D-only), bilinear,
     bicubic (4D-only), trilinear (5D-only), area
 
