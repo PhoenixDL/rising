@@ -13,11 +13,10 @@ rising Documentation
    :name: docs
    :caption: Python API
 
-    loading
-    ops
-    transforms
-    utils
-    interface
+   loading
+   ops
+   transforms
+   utils
 
 .. toctree::
    :maxdepth: 1
