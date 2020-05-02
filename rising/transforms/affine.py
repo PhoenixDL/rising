@@ -1,4 +1,4 @@
-from typing import Sequence, Union, Iterable, Any, Optional
+from typing import Sequence, Union, Iterable, Any, Optional, Tuple
 
 import torch
 
@@ -73,7 +73,7 @@ class Affine(BaseTransform):
                          grad=grad,
                          **kwargs)
         self.matrix = matrix
-        self.output_size = output_size
+        self.register_sampler('output_size', output_size)
         self.adjust_size = adjust_size
         self.interpolation_mode = interpolation_mode
         self.padding_mode = padding_mode
@@ -260,7 +260,8 @@ class StackedAffine(Affine):
              for trafo in transforms])
 
         super().__init__(keys=keys, grad=grad,
-                         output_size=output_size, adjust_size=adjust_size,
+                         output_size=output_size,
+                         adjust_size=adjust_size,
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
@@ -406,7 +407,8 @@ class BaseAffine(Affine):
         dtype = data[self.keys[0]].dtype
 
         self.matrix = parametrize_matrix(
-            scale=self.scale, rotation=self.rotation,
+            scale=self.scale,
+            rotation=self.rotation,
             translation=self.translation,
             batchsize=batchsize, ndim=ndim, degree=self.degree,
             device=device, dtype=dtype, image_transform=self.image_transform)
@@ -665,7 +667,7 @@ class Scale(BaseAffine):
 
 class Resize(Scale):
     def __init__(self,
-                 size: Union[int, Iterable],
+                 size: Union[int, Tuple[int]],
                  keys: Sequence = ('data',),
                  grad: bool = False,
                  interpolation_mode: str = 'bilinear',
@@ -748,7 +750,6 @@ class Resize(Scale):
         if was_scalar:
             self.output_size = [self.output_size] * len(curr_img_size)
 
-        # TODO: Figure out a way to bypass the scale parameter
         self.scale = [self.output_size[i] / curr_img_size[-i]
                       for i in range(len(curr_img_size))]
 

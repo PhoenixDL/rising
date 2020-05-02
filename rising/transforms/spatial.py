@@ -72,8 +72,8 @@ class Rot90(AbstractTransform):
             dict with augmented data
         """
         if torch.rand(1) < self.prob:
-            num_rots = self.num_rots.__get__(self)
-            rand_dims = self.dims.__get__(self)
+            num_rots = self.num_rots
+            rand_dims = self.dims
 
             for key in self.keys:
                 data[key] = rot90(data[key], k=num_rots, dims=rand_dims)

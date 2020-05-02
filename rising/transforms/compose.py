@@ -216,7 +216,7 @@ class DropoutCompose(Compose):
         assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
 
-        rand = self.prob.__get__(self)
+        rand = self.prob
         for idx in self.transform_order:
             if rand[idx] > self.dropout[idx]:
                 data = self.transform_call(data, self.transforms[idx])

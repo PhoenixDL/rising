@@ -219,13 +219,13 @@ class RandomValuePerChannel(PerChannelTransform):
                 torch.manual_seed(seed)
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    rand_value = self.random_sampler.__get__(self)
+                    rand_value = self.random_sampler
                     out[:, _i] = self.augment_fn(
                         data[_key][:, _i], value=rand_value, out=out[:, _i],
                         **self.kwargs)
                 data[_key] = out
         else:
-            rand_value = self.random_sampler.__get__(self)
+            rand_value = self.random_sampler
             for _key in self.keys:
                 data[_key] = self.augment_fn(data[_key], value=rand_value, **self.kwargs)
         return data

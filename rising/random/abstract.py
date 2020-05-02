@@ -1,6 +1,8 @@
 import torch
 from abc import abstractmethod, ABC
 from typing import Union, Sequence, Optional
+from functools import partial
+
 from rising.utils.shape import reshape
 
 __all__ = [
@@ -54,7 +56,7 @@ class AbstractParameter(ABC, torch.nn.Module):
                 size: Optional[Union[Sequence, torch.Size]] = None,
                 device: Union[torch.device, str] = None,
                 dtype: Union[torch.dtype, str] = None,
-                tensor_like: torch.Tensor = None) -> Union[list, torch.Tensor]:
+                tensor_like: torch.Tensor = None) -> Union[None, list, torch.Tensor]:
         """
         Forward function (will also be called if the module is called).
         Calculates the number of samples from the given shape, performs the
@@ -87,6 +89,8 @@ class AbstractParameter(ABC, torch.nn.Module):
         """
         n_samples = self._get_n_samples(size if size is not None else (1,))
         samples = self.sample(n_samples)
+        if all([s is None for s in samples]):
+            return None
 
         if not isinstance(samples, torch.Tensor):
             try:

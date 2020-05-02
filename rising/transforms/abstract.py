@@ -20,6 +20,7 @@ class AbstractTransform(torch.nn.Module):
         """
         super().__init__()
         self.grad = grad
+        self._registered_samplers = []
         for key, item in kwargs.items():
             setattr(self, key, item)
 
@@ -42,8 +43,8 @@ class AbstractTransform(torch.nn.Module):
             additional positional arguments (will be forwarded to sampler call)
         **kwargs :
             additional keyword arguments (will be forwarded to sampler call)
-
         """
+        self._registered_samplers.append(name)
         if hasattr(self, name):
             raise NameError('Name %s already exists' % name)
         if not isinstance(sampler, (tuple, list)):
@@ -54,7 +55,7 @@ class AbstractTransform(torch.nn.Module):
             if not isinstance(_sampler, AbstractParameter):
                 _sampler = DiscreteParameter([_sampler], replacement=True)
             new_sampler.append(_sampler)
-        sampler = tuple(new_sampler)
+        sampler = new_sampler
 
         def sample(self):
             """
@@ -68,6 +69,24 @@ class AbstractTransform(torch.nn.Module):
                 return sample_result
 
         setattr(self, name, property(sample))
+
+    def __getattribute__(self, item) -> Any:
+        """
+        Automatically dereference registered samplers
+
+        Args:
+            item: name of attribute
+
+        Returns:
+            Any: attribute
+        """
+        res = super().__getattribute__(item)
+        if isinstance(res, property) and item in self._registered_samplers:
+            # by first checking the type we reduce the lookup
+            # time for all non property objects
+            return res.__get__(self)
+        else:
+            return res
 
     def __call__(self, *args, **kwargs) -> Any:
         """
@@ -118,14 +137,15 @@ class BaseTransform(AbstractTransform):
                 during forward pass
             **kwargs: keyword arguments passed to augment_fn
         """
+        sampler_vals = [kwargs.pop(name) for name in property_names]
+        super().__init__(grad=grad, **kwargs)
         self.augment_fn = augment_fn
         self.keys = keys
         self.property_names = property_names
         self.args = args
         self.kwargs = kwargs
-        for name in property_names:
-            self.register_sampler(name, kwargs.pop(name))
-        super().__init__(grad=grad, **kwargs)
+        for name, val in zip(property_names, sampler_vals):
+            self.register_sampler(name, val)
 
     def forward(self, **data) -> dict:
         """
@@ -139,7 +159,7 @@ class BaseTransform(AbstractTransform):
         """
         kwargs = {}
         for k in self.property_names:
-            kwargs[k] = getattr(self, k).__get__(self)
+            kwargs[k] = getattr(self, k)
 
         kwargs.update(self.kwargs)
 
@@ -165,7 +185,7 @@ class PerSampleTransform(BaseTransform):
         """
         kwargs = {}
         for k in self.property_names:
-            kwargs[k] = getattr(self, k).__get__(self)
+            kwargs[k] = getattr(self, k)
 
         kwargs.update(self.kwargs)
         for _key in self.keys:
@@ -207,7 +227,7 @@ class PerChannelTransform(BaseTransform):
         if self.per_channel:
             kwargs = {}
             for k in self.property_names:
-                kwargs[k] = getattr(self, k).__get__(self)
+                kwargs[k] = getattr(self, k)
 
             kwargs.update(self.kwargs)
             for _key in self.keys:
