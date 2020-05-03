@@ -13,6 +13,7 @@ class AbstractParameter(torch.nn.Module):
     """
     Abstract Parameter class to inject randomness to transforms
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
