@@ -91,14 +91,12 @@ class AbstractParameter(torch.nn.Module):
         """
         n_samples = self._get_n_samples(size if size is not None else (1,))
         samples = self.sample(n_samples)
-        if all([s is None for s in samples]):
+
+        if any([s is None for s in samples]):
             return None
 
         if not isinstance(samples, torch.Tensor):
-            try:
-                samples = torch.tensor(samples).flatten()
-            except TypeError:
-                pass
+            samples = torch.tensor(samples).flatten()
 
         if size is not None:
             samples = reshape(samples, size)

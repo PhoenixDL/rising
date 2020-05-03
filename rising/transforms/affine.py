@@ -10,6 +10,7 @@ from rising.utils.checktype import check_scalar
 
 __all__ = [
     'Affine',
+    'BaseAffine',
     'StackedAffine',
     'Rotate',
     'Scale',
@@ -504,7 +505,7 @@ class Translate(BaseAffine):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
-                 unit: str = 'relative',
+                 unit: str = 'pixel',
                  reverse_order: bool = False,
                  **kwargs):
         """
@@ -535,6 +536,8 @@ class Translate(BaseAffine):
                 they are instead considered as referring to the corner points
                 of the input’s corner pixels, making the sampling more
                 resolution agnostic.
+            unit: defines the unit of the translation. Either ```relative'``
+                to the image size or in ```pixel'``
             reverse_order: reverses the coordinate order of the
                 transformation to conform to the pytorch convention:
                 transformation params order [W,H(,D)] and

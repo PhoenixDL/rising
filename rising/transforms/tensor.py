@@ -25,7 +25,7 @@ class ToDeviceDtype(BaseTransform):
     """Push data to device and convert to tdype"""
 
     def __init__(self, device: Optional[Union[torch.device, str]] = None,
-                 dtype: Optional[Union[torch.device, str]] = None,
+                 dtype: Optional[torch.dtype] = None,
                  non_blocking: bool = False, copy: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
@@ -68,7 +68,7 @@ class ToDevice(ToDeviceDtype):
 class ToDtype(ToDeviceDtype):
     """Convert data to dtype"""
 
-    def __init__(self, dtype: Optional[Union[torch.dtype, str]],
+    def __init__(self, dtype: torch.dtype,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:

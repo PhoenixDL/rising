@@ -93,20 +93,21 @@ class MyTestCase(unittest.TestCase):
         comp_diff = (outp["data"] - self.batch_dict["data"]).mean().item()
         self.assertTrue(comp_diff > min_diff)
 
-    # def test_per_channel_transform_per_channel_true(self):
-    #     # TODO: check why sometimes an overflow occurs
-    #     mock = Mock(return_value=0)
-    #
-    #     def augment_fn(inp, *args, **kwargs):
-    #         return mock(inp)
-    #
-    #     trafo = RandomValuePerChannel(
-    #         augment_fn, random_sampler=DiscreteParameter((1,)), per_channel=True, keys=('label',))
-    #     self.batch_dict["label"] = self.batch_dict["label"][None]
-    #     output = trafo(**self.batch_dict)
-    #     calls = [call(torch.tensor([0])), call(torch.tensor([1])),
-    #              call(torch.tensor([2])), ]
-    #     mock.assert_has_calls(calls)
+    def test_per_channel_transform_per_channel_true(self):
+        # TODO: check why sometimes an overflow occurs
+        mock = Mock(return_value=0)
+
+        def augment_fn(inp, *args, **kwargs):
+            return mock(inp)
+
+        trafo = RandomValuePerChannel(
+            augment_fn, random_sampler=DiscreteParameter((1,)),
+            per_channel=True, keys=('label',))
+        self.batch_dict["label"] = self.batch_dict["label"][None]
+        output = trafo(**self.batch_dict)
+        calls = [call(torch.tensor([0])), call(torch.tensor([1])),
+                 call(torch.tensor([2])), ]
+        mock.assert_has_calls(calls)
 
     def test_random_add_value(self):
         trafo = RandomAddValue(DiscreteParameter((2,)))

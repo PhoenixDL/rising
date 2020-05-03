@@ -31,7 +31,6 @@ class Mirror(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to superclass
         """
-
         super().__init__(augment_fn=mirror, dims=dims, keys=keys, grad=grad,
                          property_names=('dims',), **kwargs)
 

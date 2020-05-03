@@ -215,9 +215,9 @@ class RandomValuePerChannel(PerChannelTransform):
             augmented data
         """
         if self.per_channel:
-            seed = torch.random.seed()
+            seed = torch.random.get_rng_state()
             for _key in self.keys:
-                torch.manual_seed(seed)
+                torch.random.set_rng_state(seed)
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
                     rand_value = self.random_sampler

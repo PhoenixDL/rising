@@ -1,8 +1,7 @@
 import unittest
 from rising.transforms.affine import Affine, StackedAffine, Translate, Rotate, \
-    Scale, Resize
+    Scale, Resize, BaseAffine
 import torch
-from copy import deepcopy
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 
 
@@ -109,17 +108,35 @@ class AffineTestCase(unittest.TestCase):
         sample = {'data': torch.rand(1, 3, 25, 30)}
 
         trafos = [
+            BaseAffine(),
+            BaseAffine(adjust_size=True),
+            Scale(5, adjust_size=True),
             Scale([5, 3], adjust_size=True),
+            Scale(5, adjust_size=False),
+            Scale([5, 3], adjust_size=False),
             Resize(50),
             Resize((50, 90)),
             Rotate([90], adjust_size=True, degree=True),
+            Rotate([90], adjust_size=False, degree=True),
+            Translate(10, adjust_size=True, unit="pixel"),
+            Translate(10, adjust_size=False, unit="pixel"),
+            Translate([5, 10], adjust_size=False, unit="pixel"),
         ]
 
         expected_sizes = [
+            (25, 30),
+            (25, 30),
+            (5, 6),
             (5, 10),
+            (25, 30),
+            (25, 30),
             (50, 50),
             (50, 90),
             (30, 25),
+            (25, 30),
+            (25, 30),
+            (25, 30),
+            (25, 30),
         ]
 
         for trafo, expected_size in zip(trafos, expected_sizes):
