@@ -171,7 +171,7 @@ class BaseTransform(AbstractTransform):
 class PerSampleTransform(BaseTransform):
     """
     Apply transformation to each sample in batch individually
-    :param:`augment_fn` must be callable with option :param:`out`
+    :attr:`augment_fn` must be callable with option :attr:`out`
     where results are saved in
     """
 

@@ -9,7 +9,7 @@ from rising.random import AbstractParameter, DiscreteParameter
 from rising.transforms.abstract import AbstractTransform, BaseTransform
 from rising.transforms.functional.spatial import *
 
-__all__ = ["Mirror", "Rot90", "Resize",
+__all__ = ["Mirror", "Rot90", "ResizeNative",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
 scheduler_type = Callable[[int], Union[int, Sequence[int]]]
@@ -81,7 +81,7 @@ class Rot90(AbstractTransform):
         return data
 
 
-class Resize(BaseTransform):
+class ResizeNative(BaseTransform):
     """Resize data to given size"""
 
     def __init__(self, size: Union[int, Sequence[int]], mode: str = 'nearest',
@@ -102,14 +102,15 @@ class Resize(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=resize, size=size, mode=mode,
+        super().__init__(augment_fn=resize_native, size=size, mode=mode,
                          align_corners=align_corners, preserve_range=preserve_range,
                          keys=keys, grad=grad, **kwargs)
 
 
 class Zoom(BaseTransform):
-    """
-    Apply zoom transformation
+    """Apply augment_fn to keys. By default the scaling factor is sampled
+       from a uniform distribution with the range specified by
+       :attr:`random_args`
     """
 
     def __init__(self, scale_factor: Union[Sequence, AbstractParameter] = (0.75, 1.25),
@@ -142,7 +143,9 @@ class Zoom(BaseTransform):
                          property_names=('scale_factor',), **kwargs)
 
 
-class ProgressiveResize(Resize):
+class ProgressiveResize(ResizeNative):
+    """Resize data to sizes specified by scheduler"""
+
     def __init__(self, scheduler: scheduler_type, mode: str = 'nearest',
                  align_corners: bool = None, preserve_range: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -175,7 +178,7 @@ class ProgressiveResize(Resize):
         self.scheduler = scheduler
         self._step = Value('i', 0)
 
-    def reset_step(self) -> Resize:
+    def reset_step(self) -> ResizeNative:
         """
         Reset step to 0
 
@@ -186,7 +189,7 @@ class ProgressiveResize(Resize):
             self._step.value = 0
         return self
 
-    def increment(self) -> Resize:
+    def increment(self) -> ResizeNative:
         """
         Increment step by 1
 

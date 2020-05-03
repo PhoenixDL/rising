@@ -67,14 +67,15 @@ class BoxToSeg(AbstractTransform):
                  dtype: torch.dtype, device: Union[torch.device, str],
                  grad: bool = False, **kwargs):
         """
-        keys: the key specifies which item to use as the bounding boxes and
-            the item specifies where the save the bounding boxes
-        shape: spatial shape of output tensor (batchsize is derived from
-            bounding boxes and has one channel)
-        dtype: dtype of segmentation
-        device: device of segmentation
-        grad: enable gradient computation inside transformation
-        **kwargs: Additional keyword arguments forwarded to the Base Class
+        Args:
+            keys: the key specifies which item to use as the bounding boxes and
+                the item specifies where the save the bounding boxes
+            shape: spatial shape of output tensor (batchsize is derived from
+                bounding boxes and has one channel)
+            dtype: dtype of segmentation
+            device: device of segmentation
+            grad: enable gradient computation inside transformation
+            **kwargs: Additional keyword arguments forwarded to the Base Class
         """
         super().__init__(grad=grad, **kwargs)
         self.keys = keys

@@ -4,7 +4,7 @@ import unittest
 
 from tests.transforms import chech_data_preservation
 from rising.transforms.spatial import *
-from rising.transforms.functional.spatial import resize
+from rising.transforms.functional.spatial import resize_native
 from rising.loading import DataLoader
 from rising.random import UniformParameter
 
@@ -40,7 +40,7 @@ class TestSpatialTransforms(unittest.TestCase):
         self.assertTrue((outp["data"] == data_orig).all())
 
     def test_resize_transform(self):
-        trafo = Resize((2, 2))
+        trafo = ResizeNative((2, 2))
         out = trafo(**self.batch_dict)
         expected = torch.tensor([[1, 2], [4, 5]])
         self.assertTrue((out["data"] == expected).all())
@@ -54,8 +54,7 @@ class TestSpatialTransforms(unittest.TestCase):
         torch.manual_seed(0)
         out = trafo(**self.batch_dict)
 
-        expected = resize(self.batch_dict["data"], mode="nearest",
-                          scale_factor=scale_factor)
+        expected = resize_native(self.batch_dict["data"], mode="nearest", scale_factor=scale_factor)
         self.assertTrue((out["data"] == expected).all())
 
     def test_progressive_resize(self):

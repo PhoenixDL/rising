@@ -54,11 +54,11 @@ def matrix_to_cartesian(batch: torch.Tensor, keep_square: bool = False
     coordinates.
 
     Args:
-    batch: the batch oif matrices to convert back
-    keep_square: if False: returns a NDIM x NDIM+1 matrix to keep the
-        translation part
-        if True: returns a NDIM x NDIM matrix but looses the translation part
-        defaults to False.
+        batch: the batch oif matrices to convert back
+        keep_square: if False: returns a NDIM x NDIM+1 matrix to keep the
+            translation part
+            if True: returns a NDIM x NDIM matrix but looses the translation
+            part. defaults to False.
 
     Returns:
         the given matrix in cartesian coordinates
@@ -122,9 +122,7 @@ def get_batched_eye(batchsize: int, ndim: int,
         dtype : torch.dtype, str, optional
             the dtype of the resulting trensor. Defaults to the default dtype
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         batched eye matrix
 
     """
@@ -152,8 +150,8 @@ def unit_box(n: int, scale: Optional[torch.Tensor] = None) -> torch.Tensor:
     Create a sclaed version of a unit box
 
     Args:
-    n: number of dimensions
-    scale: scaling of each dimension
+        n: number of dimensions
+        scale: scaling of each dimension
 
     Returns:
         scaled unit box

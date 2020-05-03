@@ -15,8 +15,8 @@ class ToTensor(BaseTransform):
         """
         Args:
             keys: keys which should be transformed
-        grad: enable gradient computation inside transformation
-        **kwargs: keyword arguments passed to augment_fn
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=default_convert, keys=keys, grad=grad, **kwargs)
 

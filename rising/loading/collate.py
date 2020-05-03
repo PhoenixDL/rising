@@ -1,11 +1,10 @@
-import numpy as np
-import torch
 import collections.abc
 from typing import Any
 
+import numpy as np
+import torch
 
 __all__ = ["numpy_collate", "do_nothing_collate"]
-
 
 default_collate_err_msg_format = (
     "default_collate: batch must contain tensors, numpy arrays, numbers, "
@@ -17,6 +16,7 @@ def numpy_collate(batch: Any) -> Any:
     function to collate the samples to a whole batch of numpy arrays.
     PyTorch Tensors, scalar values and sequences will be casted to arrays
     automatically.
+
     Args:
         batch: a batch of samples. In most cases either sequence,
             mapping or mixture of them

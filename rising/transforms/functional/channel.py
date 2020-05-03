@@ -14,7 +14,7 @@ def one_hot_batch(target: torch.Tensor, num_classes: Optional[int] = None) -> to
     Args:
         target: tensor to be converted
         num_classes: number of classes.
-            If :param:`num_classes` is None, the maximum of target is used
+            If :attr:`num_classes` is None, the maximum of target is used
 
     Returns:
         one hot encoded tensor

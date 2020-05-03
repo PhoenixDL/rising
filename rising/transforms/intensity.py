@@ -23,9 +23,9 @@ class Clamp(BaseTransform):
 
 
         Args:
-            min: lower bound of clipping
-            max: upper bound of clipping
-            dims: axes which should be mirrored
+            min: minimal value
+            max: maximal value
+            keys: the keys corresponding to the values to clamp
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
@@ -180,7 +180,7 @@ class GammaCorrection(BaseTransform):
 class RandomValuePerChannel(PerChannelTransform):
     """
     Apply augmentations which take random values as input by keyword
-    :param:`value`
+    :attr:`value`
     """
 
     def __init__(self, augment_fn: callable,

@@ -3,7 +3,7 @@ from typing import Sequence, Union, Optional
 
 from rising.utils import check_scalar
 
-__all__ = ["mirror", "rot90", "resize"]
+__all__ = ["mirror", "rot90", "resize_native"]
 
 
 def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:
@@ -40,14 +40,14 @@ def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
     return torch.rot90(data, int(k), dims)
 
 
-def resize(data: torch.Tensor,
-           size: Optional[Union[int, Sequence[int]]] = None,
-           scale_factor: Optional[Union[float, Sequence[float]]] = None,
-           mode: str = 'nearest', align_corners: Optional[bool] = None,
-           preserve_range: bool = False):
+def resize_native(data: torch.Tensor,
+                  size: Optional[Union[int, Sequence[int]]] = None,
+                  scale_factor: Optional[Union[float, Sequence[float]]] = None,
+                  mode: str = 'nearest', align_corners: Optional[bool] = None,
+                  preserve_range: bool = False):
     """
-    Down/up-sample sample to either the given :param:`size` or the given
-    :param:`scale_factor`
+    Down/up-sample sample to either the given :attr:`size` or the given
+    :attr:`scale_factor`
     The modes available for resizing are: nearest, linear (3D-only), bilinear,
     bicubic (4D-only), trilinear (5D-only), area
 

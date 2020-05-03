@@ -58,13 +58,14 @@ class Compose(AbstractTransform):
     def __init__(self, *transforms, shuffle: bool = False,
                  transform_call: Callable[[Any, Callable], Any] = dict_call):
         """
-        Args
+        Args:
             transforms: one or multiple transformations which are applied
                 in consecutive order
             shuffle: apply transforms in random order
             transform_call: function which determines how transforms are
                 called. By default Mappings and Sequences are unpacked
                 during the transform.
+
         """
         super().__init__(grad=True)
         if isinstance(transforms[0], Sequence):
@@ -170,7 +171,7 @@ class DropoutCompose(Compose):
                 onsecutive order
             dropout: if provided as float, each transform is skipped with the
                 given probability
-                if :param:`dropout` is a sequence, it needs to specify the
+                if :attr:`dropout` is a sequence, it needs to specify the
                 dropout probability for each given transform
             random_sampler : a continuous parameter sampler. Samples a
                 random value for each

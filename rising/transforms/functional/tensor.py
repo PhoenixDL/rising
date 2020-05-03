@@ -13,11 +13,11 @@ def tensor_op(data: data_type, fn: str, *args, **kwargs) -> data_type:
     Invokes a function form a tensor
 
     Args:
-    data: data which should be pushed to device. Sequence and mapping items
-        are mapping individually to gpu
-    fn: tensor function
-    *args: positional arguments passed to tensor function
-    **kwargs: keyword arguments passed to tensor function
+        data: data which should be pushed to device. Sequence and mapping items
+            are mapping individually to gpu
+        fn: tensor function
+        *args: positional arguments passed to tensor function
+        **kwargs: keyword arguments passed to tensor function
 
     Returns:
         data which was pushed to device

@@ -65,8 +65,7 @@ class DataLoader(_DataLoader):
         used, whose :meth:`__len__` is not implemented, because the actual
         length depends on both the iterable as well as multi-process
         loading configurations. So one should not query this method unless
-        they work with a map-style dataset. See `Dataset Types`_ for more
-        details on these two types of datasets.
+        they work with a map-style dataset.
 
     Warnings:
         If the ``spawn`` start method is used, :attr:`worker_init_fn`
@@ -111,12 +110,12 @@ class DataLoader(_DataLoader):
                 batch. Usually this accepts either mappings or sequences and
                 returns the same type containing transformed elements
             gpu_transforms: transforms which can be applied to a whole batch
-                (on the GPU). Unlike :param:`batch_transforms` this is not
+                (on the GPU). Unlike :attr:`batch_transforms` this is not
                 done in multiple processes, but in the main process on the
                 GPU, because GPUs are capable of non-blocking and asynchronous
                 working. Before executing these transforms all data will be
-                moved to :param:`device`. This copy is done in a non-blocking
-                way if :param:`pin_memory` is set to True.
+                moved to :attr:`device`. This copy is done in a non-blocking
+                way if :attr:`pin_memory` is set to True.
             sample_transforms: transforms applied to each sample (on CPU).
                 These are the first transforms applied to the data, since they
                 are applied on sample retrieval from dataset before batching
@@ -511,8 +510,9 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
 class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
     """Iterator over Dataloader.
 
-     This iterator adds functionality for per-sample transforms
+    This iterator adds functionality for per-sample transforms
     outside the dataset and per-batch transforms on both, CPU and GPU.
+
     """
 
     def __init__(self, loader: DataLoader):

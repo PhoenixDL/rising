@@ -1,3 +1,23 @@
+"""
+Provides the Augmentations and Transforms used by the
+:class:`rising.loading.DataLoader`.
+
+Implementations include:
+
+* Transformation Base Classes
+* Composed Transforms
+* Affine Transforms
+* Channel Transforms
+* Cropping Transforms
+* Device Transforms
+* Format Transforms
+* Intensity Transforms
+* Kernel Transforms
+* Spatial Transforms
+* Tensor Transforms
+* Utility Transforms
+"""
+
 from rising.transforms.abstract import *
 from rising.transforms.channel import *
 from rising.transforms.compose import *

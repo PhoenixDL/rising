@@ -1,4 +1,4 @@
-![logo](docs/_static/rising_logo.svg "rising")
+![logo](docs/source/images/logo/rising_logo.svg "rising")
 
 ![Project Status](https://img.shields.io/badge/status-alpha-red)
 ![PyPI](https://img.shields.io/pypi/v/rising)
