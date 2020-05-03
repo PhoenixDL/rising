@@ -22,11 +22,11 @@ class Clamp(BaseTransform):
                  grad: bool = False, **kwargs):
         """
         Args:
-        min: minimal value
-        max: maximal value
-        keys: the keys corresponding to the values to clamp
-        grad: enable gradient computation inside transformation
-        **kwargs: keyword arguments passed to augment_fn
+            min: minimal value
+            max: maximal value
+            keys: the keys corresponding to the values to clamp
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to augment_fn
         """
         super().__init__(augment_fn=torch.clamp, keys=keys, grad=grad,
                          min=min, max=max, **kwargs)
@@ -165,11 +165,11 @@ class GammaCorrection(AbstractTransform):
             gamma: if gamma is float it is always applied.
                 if gamma is a sequence it is interpreted as  the minimal and
                 maximal value. If the maximal value is greater than one,
-                the transform chooses gamma <1 in 50% of the cases and
-                gamma >1 in the other cases.
-        keys: keys to normalize
-        grad: enable gradient computation inside transformation
-        **kwargs: keyword arguments passed to superclass
+                the transform chooses gamma < 1 in 50% of the cases and
+                gamma > 1 in the other cases.
+            keys: keys to normalize
+            grad: enable gradient computation inside transformation
+            **kwargs: keyword arguments passed to superclass
         """
         super().__init__(augment_fn=gamma_correction, keys=keys, grad=grad)
         self.kwargs = kwargs
@@ -207,7 +207,7 @@ class GammaCorrection(AbstractTransform):
 class RandomValuePerChannel(RandomProcess, PerChannelTransform):
     """
     Apply augmentations which take random values as input by keyword
-    :param:`value`
+    :attr:`value`
     """
 
     def __init__(self, augment_fn: callable, random_mode: str, random_args: Sequence = (),

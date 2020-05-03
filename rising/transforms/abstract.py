@@ -97,7 +97,7 @@ class BaseTransform(AbstractTransform):
 class PerSampleTransform(BaseTransform):
     """
     Apply transformation to each sample in batch individually
-    :param:`augment_fn` must be callable with option :param:`out`
+    :attr:`augment_fn` must be callable with option :attr:`out`
     where results are saved in
     """
 
@@ -203,7 +203,7 @@ class RandomDimsTransform(AbstractTransform):
 class RandomProcess(AbstractMixin):
     """
     Saves specified function to generate random values to current class.
-    Function is saved inside :param:`random_fn`.
+    Function is saved inside :attr:`random_fn`.
     """
 
     def __init__(self, *args, random_mode: str,
@@ -222,7 +222,7 @@ class RandomProcess(AbstractMixin):
             random_module: module from where function random function
                 should be imported
             rand_seq: if enabled, multiple random values are generated
-                if :param:`random_args` is of type Sequence[Sequence]
+                if :attr:`random_args` is of type Sequence[Sequence]
         """
         super().__init__(*args, **kwargs)
         self.random_module = random_module

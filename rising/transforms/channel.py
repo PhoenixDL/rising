@@ -19,7 +19,7 @@ class OneHot(BaseTransform):
         """
 
         Args:
-            num_classes: number of classes. If :param:`num_classes` is None,
+            num_classes: number of classes. If :attr:`num_classes` is None,
                 the number of classes is automatically determined from the
                 current batch (by using the max of the current batch and
                 assuming a consecutive order from zero)
