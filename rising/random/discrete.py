@@ -1,6 +1,6 @@
 from typing import Sequence
 from random import (sample as sample_without_replacement,
-    choices as sample_with_replacement)
+                    choices as sample_with_replacement)
 
 from functools import partial
 
