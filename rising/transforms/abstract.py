@@ -133,7 +133,7 @@ class BaseTransform(AbstractTransform):
             *args: positional arguments passed to augment_fn
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
-            property_names : a tuple containing all the properties to call
+            property_names: a tuple containing all the properties to call
                 during forward pass
             **kwargs: keyword arguments passed to augment_fn
         """

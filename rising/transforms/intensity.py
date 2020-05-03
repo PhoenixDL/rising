@@ -1,10 +1,10 @@
 import torch
 from typing import Union, Sequence
 
-from rising.transforms.abstract import BaseTransform, PerSampleTransform, \
-    PerChannelTransform
-from rising.transforms.functional.intensity import norm_range, norm_min_max, norm_mean_std, \
-    norm_zero_mean_unit_std, add_noise, gamma_correction, add_value, scale_by_value, clamp
+from rising.transforms.abstract import (BaseTransform, PerSampleTransform, 
+    PerChannelTransform)
+from rising.transforms.functional.intensity import (norm_range, norm_min_max, norm_mean_std, 
+    norm_zero_mean_unit_std, add_noise, gamma_correction, add_value, scale_by_value, clamp)
 from rising.random import AbstractParameter
 
 __all__ = ["Clamp", "NormRange", "NormMinMax",

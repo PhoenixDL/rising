@@ -14,8 +14,6 @@ class AbstractParameter(torch.nn.Module):
     Abstract Parameter class to inject randomness to transforms
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
     @staticmethod
     def _get_n_samples(size: Union[Sequence, torch.Size] = (1,)):

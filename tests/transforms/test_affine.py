@@ -1,6 +1,6 @@
 import unittest
-from rising.transforms.affine import Affine, StackedAffine, Translate, Rotate, \
-    Scale, Resize, BaseAffine
+from rising.transforms.affine import (Affine, StackedAffine, Translate, Rotate,
+    Scale, Resize, BaseAffine)
 import torch
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 
