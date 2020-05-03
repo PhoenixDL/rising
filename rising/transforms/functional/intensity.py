@@ -181,6 +181,8 @@ def gamma_correction(data: torch.Tensor, gamma: float) -> torch.Tensor:
     Returns:
         gamma corrected data
     """
+    if torch.is_tensor(gamma):
+        gamma = gamma.to(data)
     return data.pow(gamma)
 
 

@@ -1,5 +1,5 @@
 import torch
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from typing import Union, Sequence, Optional
 
 from rising.utils.shape import reshape
@@ -9,10 +9,12 @@ __all__ = [
 ]
 
 
-class AbstractParameter(ABC, torch.nn.Module):
+class AbstractParameter(torch.nn.Module):
     """
     Abstract Parameter class to inject randomness to transforms
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def _get_n_samples(size: Union[Sequence, torch.Size] = (1,)):
@@ -104,7 +106,5 @@ class AbstractParameter(ABC, torch.nn.Module):
             if tensor_like is not None:
                 samples = samples.to(tensor_like)
             else:
-                _device = device if device is not None else self.device
-                _dtype = dtype if dtype is not None else self.dtype
-                samples = samples.to(device=_device, dtype=_dtype)
+                samples = samples.to(device=device, dtype=dtype)
         return samples
