@@ -39,7 +39,7 @@ class ContinuousParameter(AbstractParameter):
         torch.Tensor
 
         """
-        return self.dist.sample_n(n_samples)
+        return self.dist.sample((n_samples,))
 
 
 class NormalParameter(ContinuousParameter):

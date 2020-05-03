@@ -1,7 +1,6 @@
 import torch
 from abc import abstractmethod, ABC
 from typing import Union, Sequence, Optional
-from functools import partial
 
 from rising.utils.shape import reshape
 
@@ -32,7 +31,7 @@ class AbstractParameter(ABC, torch.nn.Module):
         """
         if not isinstance(size, torch.Size):
             size = torch.Size(size)
-        return size.numel()  # TODO: check this?
+        return size.numel()
 
     @abstractmethod
     def sample(self, n_samples: int) -> Union[torch.Tensor, list]:
@@ -105,5 +104,7 @@ class AbstractParameter(ABC, torch.nn.Module):
             if tensor_like is not None:
                 samples = samples.to(tensor_like)
             else:
-                samples = samples.to(device=device, dtype=dtype)
+                _device = device if device is not None else self.device
+                _dtype = dtype if dtype is not None else self.dtype
+                samples = samples.to(device=_device, dtype=_dtype)
         return samples
