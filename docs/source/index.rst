@@ -1,5 +1,10 @@
+:github_url: https://github.com/PhoenixDL/rising
+
 rising Documentation
 ====================
+
+``rising`` is a highly performant, ``PyTorch`` only, framework for efficient data augmentation with native
+support for volumetric data
 
 .. toctree::
    :maxdepth: 2
@@ -9,13 +14,14 @@ rising Documentation
    getting_started
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :name: docs
    :caption: Python API
 
    loading
    ops
    transforms
+   transforms.functional
    utils
 
 .. toctree::

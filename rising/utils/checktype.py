@@ -9,7 +9,4 @@ def check_scalar(x):
     Returns:
         True if input is scalar
     """
-    if isinstance(x, (int, float)):
-        return True
-    else:
-        return False
+    return isinstance(x, (int, float))

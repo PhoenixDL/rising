@@ -58,6 +58,8 @@ version = rising.__version__
 # The full version, including alpha/beta/rc tags
 release = rising.__version__
 
+
+IS_REALESE = not ('+' in version or 'dirty' in version or len(version.split('.')) > 3)
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -67,10 +69,10 @@ needs_sphinx = '2.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
 extensions = [
     'sphinx.ext.autodoc',
-    # 'sphinxcontrib.mockautodoc',  # raises error: directive 'automodule' is already registered ...
-    # 'sphinxcontrib.fulltoc',  # breaks pytorch-theme with unexpected kw argument 'titles_only'
+    'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
@@ -78,16 +80,24 @@ extensions = [
     'sphinx.ext.linkcode',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'sphinxcontrib.katex',
     'recommonmark',
     'sphinx.ext.autosectionlabel',
-    # 'm2r',
     'nbsphinx',
     'sphinx_autodoc_typehints',
     'sphinx_paramlinks',
+    'javasphinx'
 ]
 
+katex_prerender = True
+
+napoleon_use_ivar = True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+if IS_REALESE:
+    templates_path = ['_templates_stable']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -118,7 +128,7 @@ exclude_patterns = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -141,7 +151,7 @@ html_theme_options = {
     'canonical_url': rising.__homepage__,
     'collapse_navigation': False,
     'display_version': True,
-    'logo_only': False,
+    'logo_only': True,
 }
 
 html_logo = 'images/logo/rising_logo.svg'
@@ -149,7 +159,7 @@ html_logo = 'images/logo/rising_logo.svg'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images', '_templates']
+html_static_path = ['images']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -242,6 +252,9 @@ intersphinx_mapping = {
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
+# Disable docstring inheritance
+autodoc_inherit_docstrings = True
+
 # https://github.com/rtfd/readthedocs.org/issues/1139
 # I use sphinx-apidoc to auto-generate API documentation for my project.
 # Right now I have to commit these auto-generated files to my repository
@@ -253,6 +266,17 @@ PACKAGES = [
     rising.__name__,
 ]
 
+# -- A patch that prevents Sphinx from cross-referencing ivar tags -------
+# See http://stackoverflow.com/a/41184353/3343043
+
+from docutils import nodes
+from sphinx.util.docfields import TypedField
+from sphinx import addnodes
+import sphinx.ext.doctest
+
+# Without this, doctest adds any example with a `>>>` as a test
+doctest_test_doctest_blocks = ''
+doctest_default_flags = sphinx.ext.doctest.doctest.ELLIPSIS
 
 # def run_apidoc(_):
 #     for pkg in PACKAGES:
@@ -383,3 +407,47 @@ html_add_permalinks = "¶"
 #  Useful for avoiding ambiguity when the same section heading appears in different documents.
 # http://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html
 autosectionlabel_prefix_document = True
+
+def patched_make_field(self, types, domain, items, **kw):
+    # `kw` catches `env=None` needed for newer sphinx while maintaining
+    #  backwards compatibility when passed along further down!
+
+    # type: (List, unicode, Tuple) -> nodes.field
+    def handle_item(fieldarg, content):
+        par = nodes.paragraph()
+        par += addnodes.literal_strong('', fieldarg)  # Patch: this line added
+        # par.extend(self.make_xrefs(self.rolename, domain, fieldarg,
+        #                           addnodes.literal_strong))
+        if fieldarg in types:
+            par += nodes.Text(' (')
+            # NOTE: using .pop() here to prevent a single type node to be
+            # inserted twice into the doctree, which leads to
+            # inconsistencies later when references are resolved
+            fieldtype = types.pop(fieldarg)
+            if len(fieldtype) == 1 and isinstance(fieldtype[0], nodes.Text):
+                typename = u''.join(n.astext() for n in fieldtype)
+                typename = typename.replace('int', 'python:int')
+                typename = typename.replace('long', 'python:long')
+                typename = typename.replace('float', 'python:float')
+                typename = typename.replace('type', 'python:type')
+                par.extend(self.make_xrefs(self.typerolename, domain, typename,
+                                           addnodes.literal_emphasis, **kw))
+            else:
+                par += fieldtype
+            par += nodes.Text(')')
+        par += nodes.Text(' -- ')
+        par += content
+        return par
+
+    fieldname = nodes.field_name('', self.label)
+    if len(items) == 1 and self.can_collapse:
+        fieldarg, content = items[0]
+        bodynode = handle_item(fieldarg, content)
+    else:
+        bodynode = self.list_type()
+        for fieldarg, content in items:
+            bodynode += nodes.list_item('', handle_item(fieldarg, content))
+    fieldbody = nodes.field_body('', bodynode)
+    return nodes.field('', fieldname, fieldbody)
+
+TypedField.make_field = patched_make_field

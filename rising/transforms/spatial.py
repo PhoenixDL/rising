@@ -10,7 +10,7 @@ from torch.multiprocessing import Value
 from .abstract import RandomDimsTransform, AbstractTransform, BaseTransform, RandomProcess
 from .functional.spatial import *
 
-__all__ = ["Mirror", "Rot90", "Resize",
+__all__ = ["Mirror", "Rot90", "ResizeNative",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
 scheduler_type = Callable[[int], Union[int, Sequence[int]]]
@@ -92,7 +92,7 @@ class Rot90(AbstractTransform):
         self._permutations = tuple(permutations(dims, 2))
 
 
-class Resize(BaseTransform):
+class ResizeNative(BaseTransform):
     """Resize data to given size"""
 
     def __init__(self, size: Union[int, Sequence[int]], mode: str = 'nearest',
@@ -113,7 +113,7 @@ class Resize(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=resize, size=size, mode=mode,
+        super().__init__(augment_fn=resize_native, size=size, mode=mode,
                          align_corners=align_corners, preserve_range=preserve_range,
                          keys=keys, grad=grad, **kwargs)
 
@@ -151,7 +151,7 @@ class Zoom(RandomProcess, BaseTransform):
         See Also:
             :func:`random.uniform`, :func:`torch.nn.functional.interpolate`
         """
-        super().__init__(augment_fn=resize, random_args=random_args,
+        super().__init__(augment_fn=resize_native, random_args=random_args,
                          random_mode=random_mode, mode=mode,
                          align_corners=align_corners, preserve_range=preserve_range,
                          keys=keys, grad=grad, **kwargs)
@@ -170,7 +170,7 @@ class Zoom(RandomProcess, BaseTransform):
         return super().forward(**data)
 
 
-class ProgressiveResize(Resize):
+class ProgressiveResize(ResizeNative):
     """Resize data to sizes specified by scheduler"""
 
     def __init__(self, scheduler: scheduler_type, mode: str = 'nearest',
@@ -205,7 +205,7 @@ class ProgressiveResize(Resize):
         self.scheduler = scheduler
         self._step = Value('i', 0)
 
-    def reset_step(self) -> Resize:
+    def reset_step(self) -> ResizeNative:
         """
         Reset step to 0
 
@@ -216,7 +216,7 @@ class ProgressiveResize(Resize):
             self._step.value = 0
         return self
 
-    def increment(self) -> Resize:
+    def increment(self) -> ResizeNative:
         """
         Increment step by 1
 

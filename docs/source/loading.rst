@@ -1,15 +1,17 @@
 .. role:: hidden
     :class: hidden-section
 
-Loading - rising.loading
-========================
+rising.loading
+===============
 
 .. automodule:: rising.loading
 
 .. currentmodule:: rising.loading
 
 DataLoader
-----------
+-----------
+
+.. automodule:: rising.loading.loader
 
 :hidden:`DataLoader`
 ~~~~~~~~~~~~~~~~~~~~
@@ -45,7 +47,9 @@ DataLoader
 .. autofunction:: patch_collate_fn
 
 Dataset
--------
+-----------
+
+.. automodule:: rising.loading.dataset
 
 :hidden:`Dataset`
 ~~~~~~~~~~~~~~~~~
@@ -76,7 +80,9 @@ Dataset
 .. autofunction:: load_async
 
 Collation
----------
+-----------
+
+.. automodule:: rising.loading.collate
 
 :hidden:`numpy_collate`
 ~~~~~~~~~~~~~~~~~~~~~~~

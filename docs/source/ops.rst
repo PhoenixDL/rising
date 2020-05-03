@@ -1,15 +1,15 @@
 .. role:: hidden
     :class: hidden-section
 
-Operators
-=========
+rising.ops
+=========================
 
 .. automodule:: rising.ops
 
 .. currentmodule:: rising.ops
 
 On Tensors
-----------
+------------------------
 
 :hidden:`torch_one_hot`
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,6 +19,6 @@ On Tensors
 .. autofunction:: torch_one_hot
 
 :hidden:`np_one_hot`
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: np_one_hot

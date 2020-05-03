@@ -15,6 +15,7 @@ __all__ = [
     "create_rotation",
     "create_scale",
     "create_translation",
+    "parametrize_matrix"
 ]
 
 AffineParamType = Union[int, float, Sequence, torch.Tensor]
