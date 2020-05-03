@@ -137,7 +137,7 @@ class Zoom(BaseTransform):
         See Also:
             :func:`random.uniform`, :func:`torch.nn.functional.interpolate`
         """
-        super().__init__(augment_fn=resize, scale_factor=scale_factor,
+        super().__init__(augment_fn=resize_native, scale_factor=scale_factor,
                          mode=mode, align_corners=align_corners,
                          preserve_range=preserve_range, keys=keys, grad=grad,
                          property_names=('scale_factor',), **kwargs)
