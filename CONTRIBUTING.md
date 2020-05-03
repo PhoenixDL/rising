@@ -98,8 +98,10 @@ Furthermore, the coverage is always computed and uploaded when you execute `git 
 
 ## Writing documentation
 
-`rising` uses [numpy style](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html)
-for formatting docstrings. Length of line inside docstrings block must be limited to 80 characters to
+`rising` uses an adapted version of [google style](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
+for formatting docstrings. Opposing to the original google style we opted to not duplicate the typing from the function 
+signature to the docstrings.
+Length of line inside docstrings block must be limited to 80 characters to
 fit into Jupyter documentation popups.
 
 [this repo]: https://github.com/PhoenixDL/rising
