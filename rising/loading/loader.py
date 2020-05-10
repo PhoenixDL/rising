@@ -120,7 +120,7 @@ class DataLoader(_DataLoader):
                 These are the first transforms applied to the data, since they
                 are applied on sample retrieval from dataset before batching
                 occurs.
-            pseudo_batch_dim: whether the :param:`sample_transforms` work on
+            pseudo_batch_dim: whether the :attr:`sample_transforms` work on
                 batches and thus need a pseudo batch dim of 1 to work
                 correctly.
             device: the device to move the data to for gpu_transforms.
