@@ -17,7 +17,6 @@ import os
 import shutil
 import sys
 
-# import m2r
 import rising_sphinx_theme
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))
@@ -25,24 +24,6 @@ PATH_ROOT = os.path.dirname(os.path.dirname(PATH_HERE))
 sys.path.insert(0, os.path.abspath(PATH_ROOT))
 
 import rising  # noqa: E402
-
-# -- Project documents -------------------------------------------------------
-
-# # export the documentation
-# with open('intro.rst', 'w') as fp:
-#     intro = pytorch_lightning.__doc__.replace(os.linesep + ' ', '')
-#     fp.write(m2r.convert(intro))
-#     # fp.write(pytorch_lightning.__doc__)
-
-# # export the READme
-# with open(os.path.join(PATH_ROOT, 'README.md'), 'r') as fp:
-#     readme = fp.read()
-# # replace all paths to relative
-# for ndir in (os.path.basename(p) for p in glob.glob(os.path.join(PATH_ROOT, '*'))
-#              if os.path.isdir(p)):
-#     readme = readme.replace('](%s/' % ndir, '](%s/%s/' % (PATH_ROOT, ndir))
-# with open('readme.md', 'w') as fp:
-#     fp.write(readme)
 
 for md in ['CONTRIBUTING.md']:
     shutil.copy(os.path.join(PATH_ROOT, md), os.path.join(PATH_HERE, md.lower()))
@@ -71,6 +52,7 @@ needs_sphinx = '2.0'
 # ones.
 
 extensions = [
+    'nbsphinx',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
@@ -81,18 +63,13 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.katex',
     'recommonmark',
     'sphinx.ext.autosectionlabel',
-    'nbsphinx',
     'sphinx_autodoc_typehints',
-    'sphinx_paramlinks',
-    'javasphinx'
+    'sphinx.ext.mathjax'
 ]
 
-katex_prerender = True
-
-napoleon_use_ivar = True
+# napoleon_use_ivar = True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -108,7 +85,7 @@ source_suffix = {
     '.rst': 'restructuredtext',
     '.txt': 'markdown',
     '.md': 'markdown',
-    '.ipynb': 'nbsphinx',
+#    '.ipynb': 'nbsphinx',
 }
 
 # The master toctree document.
@@ -128,7 +105,7 @@ exclude_patterns = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+# pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -266,8 +243,21 @@ PACKAGES = [
     rising.__name__,
 ]
 
-# -- A patch that prevents Sphinx from cross-referencing ivar tags -------
-# See http://stackoverflow.com/a/41184353/3343043
+nbsphinx_execute = 'never'
+nbsphinx_prolog = """
+<a href="https://github.com/PhoenixDL/rising"><img src="_static/img/github.svg" /></a>
+<a href="https://github.com/PhoenixDL/rising"><img src="_static/img/colab.svg" /></a>
+"""
+
+nb_suffix = 'notebooks'
+nb_doc_path = PATH_HERE # os.path.join(PATH_HERE, nb_suffix)
+os.makedirs(nb_doc_path, exist_ok=True)
+nb_path = os.path.join(PATH_ROOT, nb_suffix)
+
+for item in os.listdir(nb_path):
+    if os.path.isfile(os.path.join(nb_path, item)) and item.endswith('.ipynb'):
+        shutil.copy2(os.path.join(nb_path, item),
+                     os.path.join(nb_doc_path, item))
 
 from docutils import nodes
 from sphinx.util.docfields import TypedField
@@ -277,33 +267,6 @@ import sphinx.ext.doctest
 # Without this, doctest adds any example with a `>>>` as a test
 doctest_test_doctest_blocks = ''
 doctest_default_flags = sphinx.ext.doctest.doctest.ELLIPSIS
-
-# def run_apidoc(_):
-#     for pkg in PACKAGES:
-#         argv = ['-e', '-o', PATH_HERE, os.path.join(PATH_HERE, PATH_ROOT, pkg),
-#                 '**/test_*', '--force', '--private', '--module-first']
-#         try:
-#             # Sphinx 1.7+
-#             from sphinx.ext import apidoc
-#             apidoc.main(argv)
-#         except ImportError:
-#             # Sphinx 1.6 (and earlier)
-#             from sphinx import apidoc
-#             argv.insert(0, apidoc.__file__)
-#             apidoc.main(argv)
-#
-#
-# def setup(app):
-#     app.connect('builder-inited', run_apidoc)
-
-
-# copy all notebooks to local folder
-# path_nbs = os.path.join(PATH_HERE, 'notebooks')
-# if not os.path.isdir(path_nbs):
-#     os.mkdir(path_nbs)
-# for path_ipynb in glob.glob(os.path.join(PATH_ROOT, 'notebooks', '*.ipynb')):
-#     path_ipynb2 = os.path.join(path_nbs, os.path.basename(path_ipynb))
-#     shutil.copy(path_ipynb, path_ipynb2)
 
 # Ignoring Third-party packages
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
@@ -331,15 +294,11 @@ MOCK_MANUAL_PACKAGES = [
     'dill'
 ]
 autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
-# for mod_name in MOCK_REQUIRE_PACKAGES:
-#     sys.modules[mod_name] = mock.Mock()
-
 
 # Options for the linkcode extension
 # ----------------------------------
 github_user = 'PhoenixDL'
 github_repo = project
-
 
 # Resolve function
 # This function is used to populate the (source) links in the API
@@ -400,54 +359,10 @@ autodoc_default_options = {
 # This value determines the text for the permalink; it defaults to "¶". Set it to None or the empty
 #  string to disable permalinks.
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_add_permalinks
-html_add_permalinks = "¶"
+# html_add_permalinks = "¶"
 
 # True to prefix each section label with the name of the document it is in, followed by a colon.
 #  For example, index:Introduction for a section called Introduction that appears in document index.rst.
 #  Useful for avoiding ambiguity when the same section heading appears in different documents.
 # http://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html
 autosectionlabel_prefix_document = True
-
-def patched_make_field(self, types, domain, items, **kw):
-    # `kw` catches `env=None` needed for newer sphinx while maintaining
-    #  backwards compatibility when passed along further down!
-
-    # type: (List, unicode, Tuple) -> nodes.field
-    def handle_item(fieldarg, content):
-        par = nodes.paragraph()
-        par += addnodes.literal_strong('', fieldarg)  # Patch: this line added
-        # par.extend(self.make_xrefs(self.rolename, domain, fieldarg,
-        #                           addnodes.literal_strong))
-        if fieldarg in types:
-            par += nodes.Text(' (')
-            # NOTE: using .pop() here to prevent a single type node to be
-            # inserted twice into the doctree, which leads to
-            # inconsistencies later when references are resolved
-            fieldtype = types.pop(fieldarg)
-            if len(fieldtype) == 1 and isinstance(fieldtype[0], nodes.Text):
-                typename = u''.join(n.astext() for n in fieldtype)
-                typename = typename.replace('int', 'python:int')
-                typename = typename.replace('long', 'python:long')
-                typename = typename.replace('float', 'python:float')
-                typename = typename.replace('type', 'python:type')
-                par.extend(self.make_xrefs(self.typerolename, domain, typename,
-                                           addnodes.literal_emphasis, **kw))
-            else:
-                par += fieldtype
-            par += nodes.Text(')')
-        par += nodes.Text(' -- ')
-        par += content
-        return par
-
-    fieldname = nodes.field_name('', self.label)
-    if len(items) == 1 and self.can_collapse:
-        fieldarg, content = items[0]
-        bodynode = handle_item(fieldarg, content)
-    else:
-        bodynode = self.list_type()
-        for fieldarg, content in items:
-            bodynode += nodes.list_item('', handle_item(fieldarg, content))
-    fieldbody = nodes.field_body('', bodynode)
-    return nodes.field('', fieldname, fieldbody)
-
-TypedField.make_field = patched_make_field
