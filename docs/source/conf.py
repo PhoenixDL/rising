@@ -244,9 +244,13 @@ PACKAGES = [
 ]
 
 nbsphinx_execute = 'never'
-nbsphinx_prolog = """
-<a href="https://github.com/PhoenixDL/rising"><img src="_static/img/github.svg" /></a>
-<a href="https://github.com/PhoenixDL/rising"><img src="_static/img/colab.svg" /></a>
+nbsphinx_prolog = r"""
+.. only:: html
+
+    <a href="https://github.com/PhoenixDL/rising"><img src="_static/img/github.svg" /></a>
+
+    <a href="https://github.com/PhoenixDL/rising"><img src="_static/img/colab.svg" /></a>
+    
 """
 
 nb_suffix = 'notebooks'
