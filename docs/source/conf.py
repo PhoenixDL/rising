@@ -280,7 +280,7 @@ if ENABLE_DOWNLOAD_LINK:
                 <div class="call-to-action-mobile-view">Colab</div>
                 </div>
                 </a>
-                <a href="%s" download="_blank">
+                <a href="%s" download>
                 <div id="download-notebook-link">
                 <img class="call-to-action-notebook-img" src="_static/images/pytorch-download.svg"/>
                 <div class="call-to-action-desktop-view">Download Notebook</div>
