@@ -63,7 +63,7 @@ class Rot90(AbstractTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         if torch.rand(1) < self.prob:
             k = random.randrange(0, 4)
@@ -210,7 +210,7 @@ class ProgressiveResize(ResizeNative):
         Reset step to 0
 
         Returns:
-            returns self to allow chaining
+            ResizeNative: returns self to allow chaining
         """
         with self._step.get_lock():
             self._step.value = 0
@@ -221,7 +221,7 @@ class ProgressiveResize(ResizeNative):
         Increment step by 1
 
         Returns:
-            returns self to allow chaining
+            ResizeNative: returns self to allow chaining
         """
         with self._step.get_lock():
             self._step.value += 1
@@ -233,7 +233,7 @@ class ProgressiveResize(ResizeNative):
         Current step
 
         Returns:
-            number of steps
+            int: number of steps
         """
         return self._step.value
 
@@ -245,7 +245,7 @@ class ProgressiveResize(ResizeNative):
             **data: input batch
 
         Returns:
-            augmented batch
+            dict: augmented batch
         """
         self.kwargs["size"] = self.scheduler(self.step)
         self.increment()
@@ -275,7 +275,7 @@ class SizeStepScheduler:
             step: current step
 
         Returns:
-            current size
+            Union[int, Sequence[int], Sequence[Sequence[int]]]: current size
         """
         for t in self.targets:
             if step >= t[0]:
