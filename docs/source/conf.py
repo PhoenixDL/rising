@@ -41,6 +41,12 @@ release = rising.__version__
 
 
 IS_REALESE = not ('+' in version or 'dirty' in version or len(version.split('.')) > 3)
+
+# Options for the linkcode extension
+# ----------------------------------
+github_user = 'PhoenixDL'
+github_repo = project
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -243,15 +249,13 @@ PACKAGES = [
     rising.__name__,
 ]
 
+# Prolog and epilog to each notebook: https://nbsphinx.readthedocs.io/en/0.7.0/prolog-and-epilog.html
+
+ENABLE_DOWNLOAD_LINK = True
+
+github_path = r'https://github.com/%s/%s/blob/master/notebooks/{{ env.doc2path(env.docname, base=None) }}' % (github_user, github_repo)
+colab_path = github_path.replace('https://github.com', 'https://colab.research.google.com/github')
 nbsphinx_execute = 'never'
-nbsphinx_prolog = r"""
-.. only:: html
-
-    <a href="https://github.com/PhoenixDL/rising"><img src="_static/img/github.svg" /></a>
-
-    <a href="https://github.com/PhoenixDL/rising"><img src="_static/img/colab.svg" /></a>
-    
-"""
 
 nb_suffix = 'notebooks'
 nb_doc_path = PATH_HERE # os.path.join(PATH_HERE, nb_suffix)
@@ -262,6 +266,60 @@ for item in os.listdir(nb_path):
     if os.path.isfile(os.path.join(nb_path, item)) and item.endswith('.ipynb'):
         shutil.copy2(os.path.join(nb_path, item),
                      os.path.join(nb_doc_path, item))
+
+
+if ENABLE_DOWNLOAD_LINK:
+    nbsphinx_prolog = r"""
+    .. raw:: html
+
+            <div class="pytorch-call-to-action-links">
+                <a href="%s">
+                <div id="google-colab-link">
+                <img class="call-to-action-img" src="_static/images/pytorch-colab.svg"/>
+                <div class="call-to-action-desktop-view">Run in Google Colab</div>
+                <div class="call-to-action-mobile-view">Colab</div>
+                </div>
+                </a>
+                <a href="%s" download="_blank">
+                <div id="download-notebook-link">
+                <img class="call-to-action-notebook-img" src="_static/images/pytorch-download.svg"/>
+                <div class="call-to-action-desktop-view">Download Notebook</div>
+                <div class="call-to-action-mobile-view">Notebook</div>
+                </div>
+                </a>
+                <a href="%s" download>
+                <div id="github-view-link">
+                <img class="call-to-action-img" src="_static/images/pytorch-github.svg"/>
+                <div class="call-to-action-desktop-view">View on GitHub</div>
+                <div class="call-to-action-mobile-view">GitHub</div>
+                </div>
+                </a>
+            </div>
+
+    """ % (colab_path, r"{{ env.doc2path(env.docname, base=None) }}", github_path)
+
+else:
+    nbsphinx_prolog = r"""
+
+    .. raw:: html
+
+            <div class="pytorch-call-to-action-links">
+                <a href="%s">
+                <div id="google-colab-link">
+                <img class="call-to-action-img" src="_static/images/pytorch-colab.svg"/>
+                <div class="call-to-action-desktop-view">Run in Google Colab</div>
+                <div class="call-to-action-mobile-view">Colab</div>
+                </div>
+                </a>
+                <a href="%s">
+                <div id="github-view-link">
+                <img class="call-to-action-img" src="_static/images/pytorch-github.svg"/>
+                <div class="call-to-action-desktop-view">View on GitHub</div>
+                <div class="call-to-action-mobile-view">GitHub</div>
+                </div>
+                </a>
+            </div>
+    """ % (colab_path, github_path)
 
 from docutils import nodes
 from sphinx.util.docfields import TypedField
@@ -299,10 +357,6 @@ MOCK_MANUAL_PACKAGES = [
 ]
 autodoc_mock_imports = MOCK_REQUIRE_PACKAGES + MOCK_MANUAL_PACKAGES
 
-# Options for the linkcode extension
-# ----------------------------------
-github_user = 'PhoenixDL'
-github_repo = project
 
 # Resolve function
 # This function is used to populate the (source) links in the API
