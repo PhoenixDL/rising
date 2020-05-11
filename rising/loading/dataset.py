@@ -28,7 +28,7 @@ def dill_helper(payload: Any) -> Any:
         payload: data which is loaded with dill
 
     Returns:
-        loaded data
+        Any: loaded data
 
     """
     if not DILL_AVAILABLE:
@@ -51,7 +51,7 @@ def load_async(pool: Pool, fn: Callable, *args, callback: Callable = None, **kwa
         **kwargs: keyword arguments to dump with dill
 
     Returns:
-        reference to obtain data with :func:`get`
+        Any: reference to obtain data with :func:`get`
 
     """
 
@@ -88,7 +88,7 @@ class Dataset(TorchDset):
             indices: valid indices to extract subset from current dataset
 
         Returns:
-            the subset of the current dataset
+            Subset: the subset of the current dataset
 
         """
 
@@ -147,7 +147,7 @@ class AsyncDataset(Dataset):
             mode: whether to append or extend the dataset by the loaded sample
 
         Returns:
-            the loaded data
+            list: the loaded data
 
         """
 
@@ -181,7 +181,7 @@ class AsyncDataset(Dataset):
             path: a sequence of paths which should be loaded
 
         Returns:
-            iterator of loaded data
+            Iterator: iterator of loaded data
 
         """
 
@@ -199,7 +199,7 @@ class AsyncDataset(Dataset):
             path:  a sequence of paths which should be loaded
 
         Returns:
-            loaded data
+            list: loaded data
 
         """
 
@@ -252,8 +252,8 @@ class AsyncDataset(Dataset):
             index: the integer specifying which sample to return
 
         Returns:
-            can be any object containing a single sample, but in practice is
-            often a dict
+            Union[Any, dict]: can be any object containing a single
+                sample, but in practice is often a dict
 
         """
 
@@ -264,6 +264,6 @@ class AsyncDataset(Dataset):
         Length of dataset
 
         Returns:
-            number of elements
+            int: number of elements
         """
         return len(self.data)
