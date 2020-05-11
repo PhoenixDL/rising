@@ -193,7 +193,7 @@ class DataLoader(_DataLoader):
         self.auto_convert = auto_convert
         self.transform_call = transform_call
 
-    def get_batch_transformer(self) -> BatchTransformer:
+    def get_batch_transformer(self) -> Callable:
         """
         A getter function for the :class:`BatchTransformer`
         Returns:
@@ -208,7 +208,7 @@ class DataLoader(_DataLoader):
             auto_convert=self.auto_convert,
             transform_call=self.transform_call)
 
-    def get_gpu_batch_transformer(self) -> BatchTransformer:
+    def get_gpu_batch_transformer(self) -> Callable:
         """
         A getter function for the :class:`BatchTransformer` holding the
         GPU-Transforms
@@ -225,7 +225,7 @@ class DataLoader(_DataLoader):
                                 transform_call=self.transform_call
                                 )
 
-    def get_sample_transformer(self) -> SampleTransformer:
+    def get_sample_transformer(self) -> Callable:
         """
         A getter function for the :class:`SampleTransformer` holding the
         Per-Sample-Transforms

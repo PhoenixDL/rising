@@ -152,7 +152,7 @@ class Affine(BaseTransform):
             other: the other transformation
 
         Returns:
-            BaseTransform: a stacked affine transformation
+            StackedAffine: a stacked affine transformation
         """
         if not isinstance(other, Affine):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
@@ -170,7 +170,7 @@ class Affine(BaseTransform):
                              padding_mode=self.padding_mode,
                              align_corners=self.align_corners, **self.kwargs)
 
-    def __radd__(self, other) -> StackedAffine:
+    def __radd__(self, other) -> BaseTransform:
         """
         Makes ``other_trafo + trafo`` work
         (stacks them for dynamic assembling)
