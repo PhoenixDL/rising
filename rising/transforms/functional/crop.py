@@ -7,7 +7,7 @@ from rising.utils import check_scalar
 __all__ = ["crop", "center_crop", "random_crop"]
 
 
-def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):
+def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]) -> torch.Tensor:
     """
     Extract crop from last dimensions of data
 
@@ -17,7 +17,7 @@ def crop(data: torch.Tensor, corner: Sequence[int], size: Sequence[int]):
     size: size of patch
 
     Returns:
-        cropped data
+        torch.Tensor: cropped data
     """
     _slices = []
     if len(corner) < data.ndim:
@@ -37,7 +37,7 @@ def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]]) -> torch.Te
     size: size of patch
 
     Returns:
-        output tensor cropped from input tensor
+        torch.Tensor: output tensor cropped from input tensor
     """
     if check_scalar(size):
         size = [size] * (data.ndim - 2)
@@ -59,7 +59,7 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
         dist: minimum distance to border. By default zero
 
     Returns:
-        cropped output
+        torch.Tensor: cropped output
     """
     if check_scalar(dist):
         dist = [dist] * (data.ndim - 2)
