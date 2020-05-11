@@ -90,7 +90,7 @@ class Affine(BaseTransform):
                 batchsize, dimensionality, dtype and device
 
         Returns:
-             the (batched) transformation matrix
+            torch.Tensor: the (batched) transformation matrix
         """
         if self.matrix is None:
             raise ValueError("Matrix needs to be initialized or overwritten.")
@@ -125,7 +125,7 @@ class Affine(BaseTransform):
             **data: the data to transform
 
         Returns:
-            dictionary containing the transformed data
+            dict: dictionary containing the transformed data
         """
         matrix = self.assemble_matrix(**data)
 
@@ -152,7 +152,7 @@ class Affine(BaseTransform):
             other: the other transformation
 
         Returns:
-            a stacked affine transformation
+            BaseTransform: a stacked affine transformation
         """
         if not isinstance(other, Affine):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
@@ -170,7 +170,7 @@ class Affine(BaseTransform):
                              padding_mode=self.padding_mode,
                              align_corners=self.align_corners, **self.kwargs)
 
-    def __radd__(self, other):
+    def __radd__(self, other) -> StackedAffine:
         """
         Makes ``other_trafo + trafo`` work
         (stacks them for dynamic assembling)
@@ -179,7 +179,7 @@ class Affine(BaseTransform):
             other: the other transformation
 
         Returns:
-            a stacked affine transformation
+            StackedAffine: a stacked affine transformation
         """
         if not isinstance(other, Affine):
             other = Affine(matrix=other, keys=self.keys, grad=self.grad,
@@ -279,7 +279,7 @@ class StackedAffine(Affine):
                 dimensionality, dtype and device
 
         Returns:
-            the (batched) transformation matrix
+            torch.Tensor: the (batched) transformation matrix
 
         """
         whole_trafo = None
@@ -397,7 +397,7 @@ class BaseAffine(Affine):
                 batchsize, dimensionality, dtype and device
 
         Returns:
-            the (batched) transformation matrix
+            torch.Tensor: the (batched) transformation matrix
         """
         batchsize = data[self.keys[0]].shape[0]
         ndim = len(data[self.keys[0]].shape) - 2  # channel and batch dim
@@ -573,7 +573,7 @@ class Translate(BaseAffine):
                 batchsize, dimensionality, dtype and device
 
         Returns:
-            the (batched) transformation matrix [N, NDIM, NDIM]
+            torch.Tensor: the (batched) transformation matrix [N, NDIM, NDIM]
         """
         matrix = super().assemble_matrix(**data)
         if self.unit.lower() == 'pixel':
@@ -678,39 +678,30 @@ class Resize(Scale):
         The transformation will be applied to all the dict-entries specified
         in :attr:`keys`.
 
-        Parameters
-        ----------
-        size : int, Iterable
-            the target size. If int, this will be repeated for all the
-            dimensions
-        keys: Sequence
-            keys which should be augmented
-        grad: bool
-            enable gradient computation inside transformation
-        interpolation_mode : str
-            interpolation mode to calculate output values
-            'bilinear' | 'nearest'. Default: 'bilinear'
-        padding_mode :
-            padding mode for outside grid values
-            'zeros' | 'border' | 'reflection'. Default: 'zeros'
-        align_corners : bool
-            Geometrically, we consider the pixels of the input as
-            squares rather than points. If set to True, the extrema (-1 and 1)
-            are considered as referring to the center points of the input’s
-            corner pixels. If set to False, they are instead considered as
-            referring to the corner points of the input’s corner pixels,
-            making the sampling more resolution agnostic.
-        reverse_order: bool
-            reverses the coordinate order of the transformation to conform
-            to the pytorch convention: transformation params order [W,H(,D)] and
-            batch order [(D,)H,W]
-        **kwargs :
-            additional keyword arguments passed to the affine transform
+        Args:
+            size: the target size. If int, this will be repeated for all the
+                dimensions
+            keys: keys which should be augmented
+            grad: enable gradient computation inside transformation
+            interpolation_mode: nterpolation mode to calculate output values
+                'bilinear' | 'nearest'. Default: 'bilinear'
+            padding_mode: padding mode for outside grid values
+                'zeros' | 'border' | 'reflection'. Default: 'zeros'
+            align_corners: Geometrically, we consider the pixels of the input
+                as squares rather than points. If set to True, the extrema
+                (-1 and 1) are considered as referring to the center points of
+                the input’s corner pixels. If set to False, they are instead
+                considered as referring to the corner points of the input’s
+                corner pixels, making the sampling more resolution agnostic.
+            reverse_order: reverses the coordinate order of the transformation
+                to conform to the pytorch convention: transformation params
+                order [W,H(,D)] and batch order [(D,)H,W]
+            **kwargs: additional keyword arguments passed to the affine
+                transform
 
-        Note
-        ----
-        The offsets for shifting back and to origin are calculated on the
-        entry matching the first item iin :attr:`keys` for each batch
+        Notes:
+            The offsets for shifting back and to origin are calculated on the
+            entry matching the first item iin :attr:`keys` for each batch
         """
         super().__init__(output_size=size,
                          scale=None,
@@ -728,16 +719,12 @@ class Resize(Scale):
         Handles the matrix assembly and calculates the scale factors for
         resizing
 
-        Parameters
-        ----------
-        **data :
-            the data to be transformed. Will be used to determine batchsize,
-            dimensionality, dtype and device
+        Args:
+            **data: the data to be transformed. Will be used to determine
+                batchsize, dimensionality, dtype and device
 
-        Returns
-        -------
-        torch.Tensor
-            the (batched) transformation matrix
+        Returns:
+            torch.Tensor: the (batched) transformation matrix
 
         """
         curr_img_size = data[self.keys[0]].shape[2:]
