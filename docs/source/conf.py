@@ -111,7 +111,7 @@ exclude_patterns = [
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.
-# pygments_style = 'sphinx'
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -130,8 +130,8 @@ html_theme_path = [rising_sphinx_theme.get_html_theme_path()]
 # documentation.
 
 html_theme_options = {
-    'pytorch_project': rising.__homepage__,
-    'canonical_url': rising.__homepage__,
+    'pytorch_project': 'docs',
+    'canonical_url': 'https://rising.rtfd.io',
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': True,
@@ -153,7 +153,6 @@ html_static_path = ['images']
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -270,6 +269,7 @@ for item in os.listdir(nb_path):
 
 if ENABLE_DOWNLOAD_LINK:
     nbsphinx_prolog = r"""
+
     .. raw:: html
 
             <div class="pytorch-call-to-action-links">
@@ -287,7 +287,7 @@ if ENABLE_DOWNLOAD_LINK:
                 <div class="call-to-action-mobile-view">Notebook</div>
                 </div>
                 </a>
-                <a href="%s" download>
+                <a href="%s">
                 <div id="github-view-link">
                 <img class="call-to-action-img" src="_static/images/pytorch-github.svg"/>
                 <div class="call-to-action-desktop-view">View on GitHub</div>
@@ -417,10 +417,12 @@ autodoc_default_options = {
 # This value determines the text for the permalink; it defaults to "¶". Set it to None or the empty
 #  string to disable permalinks.
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_add_permalinks
-# html_add_permalinks = "¶"
+html_add_permalinks = "¶"
 
 # True to prefix each section label with the name of the document it is in, followed by a colon.
 #  For example, index:Introduction for a section called Introduction that appears in document index.rst.
 #  Useful for avoiding ambiguity when the same section heading appears in different documents.
 # http://www.sphinx-doc.org/en/master/usage/extensions/autosectionlabel.html
 autosectionlabel_prefix_document = True
+
+html_show_sphinx = False
