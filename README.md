@@ -5,6 +5,7 @@
 [![codecov](https://codecov.io/gh/PhoenixDL/rising/branch/master/graph/badge.svg)](https://codecov.io/gh/PhoenixDL/rising)
 ![PyPI - License](https://img.shields.io/pypi/l/rising)
 [![Chat](https://img.shields.io/badge/Slack-PhoenixDL-orange)](https://join.slack.com/t/phoenixdl/shared_invite/enQtODgwODI0MTE1MjgzLTJkZDE4N2NhM2VmNzVhYTEyMzI3NzFmMDY0NjM3MzJlZWRmMTk5ZWM1YzY2YjY5ZGQ1NWI1YmJmOTdiYTdhYTE)
+[![Documentation Status](https://readthedocs.org/projects/rising/badge/?version=latest)](https://rising.readthedocs.io/en/latest/?badge=latest)
 
 ### :warning: Current release disclaimer :warning:
 This is an alpha release which is highly experimental. All transforms should be stable and tested but there might be some bugs.

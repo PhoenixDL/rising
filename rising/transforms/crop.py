@@ -69,7 +69,7 @@ class CenterCropRandomSize(RandomProcess, BaseTransform):
             **data: input batch
 
         Returns:
-            augmented data
+            dict: augmented data
         """
         self.kwargs["size"] = self.rand()
         return super().forward(**data)
@@ -105,7 +105,7 @@ class RandomCropRandomSize(RandomProcess, BaseTransform):
             data: input batch
 
         Returns:
-            augmented data
+            dict: augmented data
         """
         self.kwargs["size"] = self.rand()
         return super().forward(**data)

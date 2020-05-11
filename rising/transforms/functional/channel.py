@@ -17,7 +17,7 @@ def one_hot_batch(target: torch.Tensor, num_classes: Optional[int] = None) -> to
             If :attr:`num_classes` is None, the maximum of target is used
 
     Returns:
-        one hot encoded tensor
+        torch.Tensor: one hot encoded tensor
     """
     if target.ndim in [0, 1]:
         return torch_one_hot(target, num_classes)

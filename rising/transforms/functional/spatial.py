@@ -15,7 +15,7 @@ def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:
         dims: dimensions to mirror
 
     Returns:
-        tensor with mirrored dimensions
+        torch.Tensor: tensor with mirrored dimensions
     """
     if check_scalar(dims):
         dims = (dims,)
@@ -34,7 +34,7 @@ def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
         dims: dimensions to mirror
 
     Returns:
-        tensor with mirrored dimensions
+        torch.Tensor: tensor with mirrored dimensions
     """
     dims = [d + 2 for d in dims]
     return torch.rot90(data, k, dims)
@@ -64,7 +64,7 @@ def resize_native(data: torch.Tensor,
         preserve_range:  output tensor has same range as input tensor
 
     Returns:
-        interpolated tensor
+        torch.Tensor: interpolated tensor
 
     See Also:
         :func:`torch.nn.functional.interpolate`

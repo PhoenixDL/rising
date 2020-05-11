@@ -187,7 +187,7 @@ class GammaCorrection(AbstractTransform):
             data: dict with tensors
 
         Returns:
-            augmented data
+            dict: augmented data
         """
         if check_scalar(self.gamma):
             _gamma = self.gamma
@@ -238,7 +238,7 @@ class RandomValuePerChannel(RandomProcess, PerChannelTransform):
             data: dict with data
 
         Returns:
-            augmented data
+            dict: augmented data
         """
         if self.per_channel:
             random_seed = random.random()

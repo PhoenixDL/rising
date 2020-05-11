@@ -29,8 +29,8 @@ support for volumetric data
    :name: Tutorials & Examples
    :caption: Tutorials
 
-   Using external transformations <https://github.com/PhoenixDL/rising/blob/master/notebooks/external_augmentation.ipynb>
-   An Overview on rising transformsations <https://github.com/PhoenixDL/rising/blob/master/notebooks/transformations.ipynb>
+   Using external transformations <external_augmentation.ipynb>
+   An Overview on rising transformsations <transformations.ipynb>
 
 .. toctree::
    :maxdepth: 1

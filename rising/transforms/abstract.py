@@ -36,7 +36,7 @@ class AbstractTransform(torch.nn.Module):
             **kwargs: forwarded keyword arguments
 
         Returns:
-            transformed data
+            Any: transformed data
 
         """
         if self.grad:
@@ -55,7 +55,7 @@ class AbstractTransform(torch.nn.Module):
             **data: dict with data
 
         Returns:
-            dict with transformed data
+            dict: dict with transformed data
         """
         raise NotImplementedError
 
@@ -87,7 +87,7 @@ class BaseTransform(AbstractTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         for _key in self.keys:
             data[_key] = self.augment_fn(data[_key], *self.args, **self.kwargs)
@@ -107,7 +107,7 @@ class PerSampleTransform(BaseTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         for _key in self.keys:
             out = torch.empty_like(data[_key])
@@ -142,7 +142,7 @@ class PerChannelTransform(BaseTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         if self.per_channel:
             for _key in self.keys:
@@ -189,7 +189,7 @@ class RandomDimsTransform(AbstractTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         rand_val = torch.rand(len(self.dims), requires_grad=False)
         dims = [_dim for _dim, _prob in zip(self.dims, self.prob) if rand_val[_dim] < _prob]
@@ -238,7 +238,7 @@ class RandomProcess(AbstractMixin):
             **kwargs: keyword arguments passed to the random function
 
         Returns:
-            object generated from function
+            dict: object generated from function
         """
         if (self.rand_seq and len(self.random_args) > 0 and
                 isinstance(self.random_args[0], Sequence)):
@@ -253,7 +253,7 @@ class RandomProcess(AbstractMixin):
         Get random mode
 
         Returns:
-            random mode
+            str: random mode
         """
         return self._random_mode
 

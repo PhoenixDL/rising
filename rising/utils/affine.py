@@ -14,7 +14,7 @@ def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
             BATCHSIZE x NUMPOINTS x DIM.
 
     Returns:
-        the batch of points in homogeneous coordinates
+        torch.Tensor: the batch of points in homogeneous coordinates
 
     """
     return torch.cat([batch,
@@ -31,7 +31,7 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
         batch: the batch of matrices to convert [N, dim, dim]
 
     Returns:
-        the converted batch of matrices
+        torch.Tensor: the converted batch of matrices
 
     """
     if batch.size(-1) == batch.size(-2):
@@ -61,7 +61,7 @@ def matrix_to_cartesian(batch: torch.Tensor, keep_square: bool = False
             part. defaults to False.
 
     Returns:
-        the given matrix in cartesian coordinates
+        torch.Tensor: the given matrix in cartesian coordinates
 
     """
     batch = batch[:, :-1, ...]
@@ -81,7 +81,7 @@ def points_to_cartesian(batch: torch.Tensor) -> torch.Tensor:
             BATCHSIZE x NUMPOINTS x NDIM+1
 
     Returns:
-        the batch of points in cartesian coordinates
+        torch.Tensor: the batch of points in cartesian coordinates
 
     """
 
@@ -97,8 +97,8 @@ def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
             BATCHSIZE x NDIM x NDIM
 
     Returns:
-        the matrix performing the same transformation on vectors with a
-        reversed coordinate order
+        torch.Tensor: the matrix performing the same transformation on vectors with a
+            reversed coordinate order
     """
     batch[:, :-1, :] = batch[:, :-1, :].flip(1).clone()
     batch[:, :-1, :-1] = batch[:, :-1, :-1].flip(2).clone()
@@ -123,7 +123,7 @@ def get_batched_eye(batchsize: int, ndim: int,
             the dtype of the resulting trensor. Defaults to the default dtype
 
     Returns:
-        batched eye matrix
+        torch.Tensor: batched eye matrix
 
     """
     return torch.eye(ndim, device=device, dtype=dtype).view(
@@ -139,7 +139,7 @@ def deg_to_rad(angles: Union[torch.Tensor, float, int]
         angles: the (vectorized) angles to convert
 
     Returns:
-        the transformed (vectorized) angles
+        torch.Tensor: the transformed (vectorized) angles
 
     """
     return angles * pi / 180
@@ -154,7 +154,7 @@ def unit_box(n: int, scale: Optional[torch.Tensor] = None) -> torch.Tensor:
         scale: scaling of each dimension
 
     Returns:
-        scaled unit box
+        torch.Tensor: scaled unit box
     """
     box = torch.tensor(
         [list(i) for i in itertools.product([0, 1], repeat=n)])

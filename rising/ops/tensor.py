@@ -14,7 +14,7 @@ def torch_one_hot(target: torch.Tensor, num_classes: Optional[int] = None) -> to
             the maximum of target is used
 
     Returns:
-        one hot encoded tensor
+        torch.Tensor: one hot encoded tensor
     """
     if num_classes is None:
         num_classes = int(target.max().detach().item() + 1)
@@ -32,7 +32,7 @@ def np_one_hot(target: np.ndarray, num_classes: Optional[int] = None) -> np.ndar
         num_classes: number of classes
 
     Returns:
-        one hot encoded array
+        numpy.ndarray: one hot encoded array
     """
     if num_classes is None:
         num_classes = int(target.max().item() + 1)

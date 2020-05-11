@@ -27,7 +27,7 @@ def box_to_seg(boxes: Sequence[Sequence[int]],
         out: if not None, the segmentation will be saved inside this tensor
 
     Returns:
-        bounding boxes encoded as a segmentation
+        torch.Tensor: bounding boxes encoded as a segmentation
     """
     if out is None:
         out = torch.zeros(*shape, dtype=dtype, device=device)
@@ -52,8 +52,8 @@ def seg_to_box(seg: torch.Tensor, dim: int) -> List[torch.Tensor]:
         dim: number of spatial dimensions
 
     Returns:
-        list of bounding boxes
-        tuple with classes for bounding boxes
+        list: list of bounding boxes tuple with classes for
+            bounding boxes
     """
     boxes = []
     _seg = seg.detach()
@@ -79,7 +79,7 @@ def instance_to_semantic(instance: torch.Tensor,
         cls: mapping from indices from instance segmentation to real classes.
 
     Returns:
-        semantic segmentation
+        torch.Tensor: semantic segmentation
 
     Warnings:
         :attr:`instance` needs to encode objects starting from 1 and the
@@ -105,8 +105,8 @@ def pop_keys(data: dict, keys: Union[Callable, Sequence],
         (default: False)
 
     Returns:
-        the data without the popped values
-        the popped values; only if ``return_popped`` is True
+        dict: the data without the popped values
+        dict: the popped values; only if :attr`return_popped` is True
 
     """
     if callable(keys):
@@ -138,8 +138,8 @@ def filter_keys(data: dict, keys: Union[Callable, Sequence],
             (default: False)
 
     Returns:
-        the data without the popped values
-        the popped values; only if ``return_popped`` is True
+        dict: the data without the popped values
+        dict: the popped values; only if :attr:`return_popped` is True
 
     """
     if callable(keys):
