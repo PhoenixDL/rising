@@ -81,7 +81,7 @@ class Permute(BaseTransform):
         data: batch dict
 
         Returns:
-            augmented data
+            dict: augmented data
         """
         for key, item in self.dims.items():
             data[key] = tensor_op(data[key], "permute", *item, **self.kwargs)
