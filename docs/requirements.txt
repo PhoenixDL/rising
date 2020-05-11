@@ -8,5 +8,4 @@ sphinxcontrib-mockautodoc
 git+https://github.com/PhoenixDL/rising_sphinx_theme.git
 sphinx-autodoc-typehints
 sphinx-paramlinks<0.4.0
-sphinxcontrib.katex
-javasphinx
+jupyter

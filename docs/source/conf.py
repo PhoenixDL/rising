@@ -252,6 +252,8 @@ PACKAGES = [
 
 ENABLE_DOWNLOAD_LINK = True
 
+nbsphinx_kernel_name = 'python3'
+
 github_path = r'https://github.com/%s/%s/blob/master/notebooks/{{ env.doc2path(env.docname, base=None) }}' % (github_user, github_repo)
 colab_path = github_path.replace('https://github.com', 'https://colab.research.google.com/github')
 nbsphinx_execute = 'never'
