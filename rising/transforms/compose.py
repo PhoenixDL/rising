@@ -18,7 +18,7 @@ def dict_call(batch: dict, transform: Callable) -> Any:
         transform: transform to perform
 
     Returns:
-        transformed batch
+        Any: transformed batch
     """
     return transform(**batch)
 
@@ -44,6 +44,13 @@ class _TransformWrapper(torch.nn.Module):
     def forward(self, *args, **kwargs) -> Any:
         """
         Forwards calls to this wrapper to the internal transform
+
+        Args:
+            *args: positional arguments
+            **kwargs: keyword arguments
+
+        Returns:
+            Any: trafo return
         """
         return self.trafo(*args, **kwargs)
 
@@ -83,7 +90,7 @@ class Compose(AbstractTransform):
             **map_like: data which is unpacked like a dict
 
         Returns:
-            transformed data
+            Union[Sequence, Mapping]: transformed data
         """
         assert not (seq_like and map_like)
         assert len(self.transforms) == len(self.transform_order)
@@ -102,7 +109,7 @@ class Compose(AbstractTransform):
         Transforms getter
 
         Returns:
-            transforms to compose
+            torch.nn.ModuleList: transforms to compose
         """
         return self._transforms
 
@@ -113,11 +120,9 @@ class Compose(AbstractTransform):
         Transforms setter
 
         Args:
-        transforms: one or multiple transformations which are applied in
-            consecutive order
+            transforms: one or multiple transformations which are applied in
+                consecutive order
 
-        Returns:
-            transforms to compose
         """
         # make transforms a list to be mutable.
         # Otherwise the enforced typesetting below might fail.
@@ -137,7 +142,7 @@ class Compose(AbstractTransform):
         Getter for attribute shuffle
 
         Returns:
-            True if shuffle is enabled, False otherwise
+            bool: True if shuffle is enabled, False otherwise
         """
         return self._shuffle
 
@@ -147,7 +152,7 @@ class Compose(AbstractTransform):
         Setter for shuffle
 
         Args:
-            shuffle : new status of shuffle
+            shuffle: new status of shuffle
         """
         self._shuffle = shuffle
         self.transform_order = list(range(len(self.transforms)))
@@ -205,7 +210,7 @@ class DropoutCompose(RandomProcess, Compose):
             **map_like: data which is unpacked like a dict
 
         Returns:
-            dict with transformed data
+            Union[Sequence, Mapping]: dict with transformed data
         """
         assert not (seq_like and map_like)
         assert len(self.transforms) == len(self.transform_order)
