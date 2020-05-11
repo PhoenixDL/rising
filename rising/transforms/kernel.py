@@ -67,7 +67,7 @@ class KernelTransform(AbstractTransform):
             dim: spatial dimension of data
 
         Returns:
-            the suitable convolutional function
+            Callable: the suitable convolutional function
         """
         if dim == 1:
             return torch.nn.functional.conv1d
@@ -92,7 +92,7 @@ class KernelTransform(AbstractTransform):
             data: input data
 
         Returns:
-            dict with transformed data
+            dict: dict with transformed data
         """
         for key in self.keys:
             inp_pad = torch.nn.functional.pad(data[key], self.padding, mode=self.padding_mode)
