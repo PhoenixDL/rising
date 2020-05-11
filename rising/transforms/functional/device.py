@@ -19,7 +19,7 @@ def to_device(data: data_type, device: Union[torch.device, str], **kwargs) -> da
         kwargs: keyword arguments passed to assigning function
 
     Returns:
-        data which was pushed to device
+        Union[torch.Tensor, Sequence, Mapping]: data which was pushed to device
     """
     if torch.is_tensor(data):
         return data.to(device=device, **kwargs)
