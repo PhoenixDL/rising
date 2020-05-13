@@ -1,3 +1,4 @@
+jupyter
 treon
 matplotlib
 torchvision>=0.5.0
