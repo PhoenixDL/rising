@@ -31,6 +31,45 @@ Our goal is to provide a seamless integration into the PyTorch Ecosystem without
 ### What can I do with `rising`?
 Rising currently consists out of two main modules:
 
+### `rising` MNIST Example with CPU and GPU augmentation
+```python3
+import torchvision
+import rising.transforms as rtr
+from rising.loading import DataLoader
+
+# define dataset
+dataset = torchvision.datasets.MNIST('./', train=True, download=True)
+
+# define transformations
+transforms = [
+    rtr.SeqToMap("data", "label"), # rising uses dicts
+    rtr.ZeroMeanUnitVarianceTransform(),
+    rtr.Rot90((0, 1)),
+    rtr.Mirror(dims=(0, 1)),
+]
+
+composed = rtr.Compose(transforms)
+
+# Augmentation on CPU with multiprocesing
+dataloader = DataLoader(
+    dataset, batch_size=8, batch_transforms=composed, num_workers=8)
+
+# Augmentation on GPU
+dataloader = DataLoader(
+    dataset, batch_size=8, gpu_transforms=composed, num_workers=8)
+
+# Augmentation on CPU and GPU
+transforms_cpu = rtr.Compose(transforms[:2])
+transforms_gpu = rtr.Compose(transforms[2:])
+
+dataloader = DataLoader(
+    dataset, batch_size=8, num_workers=8,
+    batch_transforms=transforms_cpu,
+    gpu_transforms=transforms_gpu,
+)
+
+```
+
 #### `rising.loading`
 Provides classes which can be used to load your data.
 We provide some baseclasses like the `Cachedataset` or `Lazydataset` which can be easily used to load data either from the RAM or hard drive.
