@@ -27,4 +27,4 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        treon
+        NUM_TRAIN_EPOCHS=1 treon
