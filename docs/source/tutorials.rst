@@ -7,4 +7,5 @@ This Page contains a collection of curated tutorials and examples on how to use 
    :maxdepth: 1
 
    Using external transformations <external_augmentation.ipynb>
-   An Overview on rising transformsations <transformations.ipynb>
+   An Overview on rising transformations <transformations.ipynb>
+   Segmentation Example With PyTorch Lightning <lightning_segmentation.ipynb>
