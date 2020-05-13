@@ -28,4 +28,4 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        NUM_TRAIN_EPOCHS=1 treon --threads=1  # Treon on windows fails with multiple threads
+        SET NUM_TRAIN_EPOCHS=1 && treon --threads=1  # Treon on windows fails with multiple threads
