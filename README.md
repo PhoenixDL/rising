@@ -131,7 +131,7 @@ and [transformation examples](https://rising.readthedocs.io/en/latest/transforma
 ## Dataloading with `rising`
 In general you do not need to familiar with the whole augmentation process which runs in the background but if you are still curious about the
 detailed pipeline this section will give a very short introduction into the backend of the dataloader.
-The flow charts below highlight the differences between conventional augmentation pipelines the pipeline used in `rising`.
+The flow charts below highlight the differences between conventional augmentation pipelines and the pipeline used in `rising`.
 CPU operations are visualized in blue while GPU operations are green.
 
 The flow chart below visualizes the default augmentation pipeline of many other frameworks.
