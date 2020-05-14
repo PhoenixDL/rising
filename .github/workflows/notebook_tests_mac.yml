@@ -27,4 +27,8 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        treon
+        # treon
+        jupyter nbconvert --to script --kernel_name=python3 notebooks/*.ipynb
+        for filename in notebooks/*.py; do
+          python "$filename"
+        done
