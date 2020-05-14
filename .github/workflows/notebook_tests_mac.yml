@@ -27,5 +27,4 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        # treon
-        jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=-1 --kernel_name=python3 --execute notebooks/*.ipynb
+        treon --threads=1 # with more threads this requires to much RAM

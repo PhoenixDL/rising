@@ -27,8 +27,4 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        treon
-        # jupyter nbconvert --to script --kernel_name=python3 notebooks/*.ipynb
-        # for filename in notebooks/*.py; do
-        #  ipython "$filename"
-        # done
+        treon --threads=1 # with more threads this requires to much RAM
