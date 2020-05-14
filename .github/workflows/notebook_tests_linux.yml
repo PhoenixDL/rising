@@ -27,4 +27,5 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        treon
+        # treon
+        jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute notebooks/*.ipynb
