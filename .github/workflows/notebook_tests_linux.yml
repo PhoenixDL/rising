@@ -29,6 +29,6 @@ jobs:
       run: |
         # treon
         jupyter nbconvert --to script --kernel_name=python3 notebooks/*.ipynb
-        for each filename in notebooks/*.py; do
+        for filename in notebooks/*.py; do
           python "$filename"
         done
