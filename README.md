@@ -33,7 +33,7 @@ Our goal is to provide a seamless integration into the PyTorch Ecosystem without
 | Volumetric | ✅       | ✅            | ✅             | ❌      | ❌     | ❌              | ❌             |
 | Gradients  | ✅       | ❌            | ❌             | ✅      | ❌     | ❌              | ❌             |
 | GPU        | ✅       | ❌            | ❌             | ✅      | ✅     | ❌              | ❌             |
-| Backend    | PyTorch  | PyTorch/SITK  | Numpy          | PyTorch | C++     | PyTorch         | Numpy          |  
+| Backend    | PyTorch  | PyTorch/Sitk  | Numpy          | PyTorch | C++     | PyTorch         | Numpy          |  
 
 
 ## Installation
@@ -62,16 +62,15 @@ Rising currently consists out of two main modules:
 ### `rising.loading`
 Provides classes which can be used to load your data.
 We provide some baseclasses like the `Cachedataset` or `Lazydataset` which can be easily used to load data either from the RAM or hard drive.
-In contrast to the native PyTorch datasets you don't need to integrate your augmentation into your dataset. Hence, the only perpose of the dataset is to provide an interface to access individual data samples.
+In contrast to the native PyTorch datasets you don't need to integrate your augmentation into your dataset. Hence, the only purpose of the dataset is to provide an interface to access individual data samples.
 Our `DataLoader` is a direct subclass of the PyTorch dataloader and handles the batch assembly and applies the augmentation transformations to whole batches at once.
-Additionally, there is a container class which can be used to hold multiple datasets at once and thus provides a interface for the entirety of your data (e.g. train/val split or kfold).
 
 ### `rising.transforms`
-This module implements many augmentation transformations which can be used during training.
+This module implements many transformations which can be used during training for preprocessing or augmentation.
 All of them are implemented directly in PyTorch such that gradients can be propagated through them or augmentations could be computed live on the GPU.
-Finally, all transforms are implemented for 2D and 3D data.
+Finally, all transforms are implemented for 2D and 3D (volumetric) data.
 
-In the future, support for keypoints and bounding boxes will be added (bounding boxes are suported with an inefficient workaround with segmentations).
+In the future, support for keypoints and other geometric primitives which can be assembled by connected points.
 
 ## `rising` MNIST Example with CPU and GPU augmentation
 `rising` uses the same `Dataset` structure as PyTorch and thus we can just reuse the MNIST dataset from torchvision.
@@ -125,12 +124,12 @@ dataloader = DataLoader(
 ```
 
 A much more detailed overview how and where the augmentations are applied can be found below.
-You can also check out our example Notebooks for [2D classification](), [3D segmentation]()
-and [transformation examples](https://rising.readthedocs.io/en/latest/transformations.html).
+You can also check out our example Notebooks for [2D Classification](), [3D Segmentation]()
+and [Transformation Examples](https://rising.readthedocs.io/en/latest/transformations.html).
 
 ## Dataloading with `rising`
 In general you do not need to familiar with the whole augmentation process which runs in the background but if you are still curious about the
-detailed pipeline this section will give a very short introduction into the backend of the dataloader.
+detailed pipeline this section will give a very short introduction into the backend of the `Dataloader`.
 The flow charts below highlight the differences between conventional augmentation pipelines and the pipeline used in `rising`.
 CPU operations are visualized in blue while GPU operations are green.
 
@@ -143,11 +142,11 @@ Thus all transformations which should be able to be executed on the GPU should w
 
 `rising` lets the user decide from case to case where augmentations should be applied during this pipeline.
 This can be heavily dependent on the specific tasks and the underlying hardware.
-As a consequence, rising implements all its transformations in a batched fashion and the dataloader can execute them efficiently on the CPU and GPU.
+As a consequence, rising implements all its transformations in a batched fashion and the `Dataloader` can execute them efficiently on the CPU and GPU.
 Optionally, the `Dataloader` can still be used to apply transformations on a per sample fashion, e.g. when transforms from other frameworks should be integrated.
 ![RisingAugmentation](docs/source/images/dataloading/rising.png "rising augmentation pipeline")
 
-Because the `rising` augmentation pipeline is a superset of the currently used methods external frameworks can be integrated into rising.
+Because the `rising` augmentation pipeline is a superset of the currently used methods external frameworks can be integrated into `rising`.
 Check out our [External Augmentation Notebooks](https://rising.readthedocs.io/en/latest/external_augmentation.html) for more information (including `Batchgenerators`, `TorchIO`, `Albumentations`).
 
 ## Project Organization
