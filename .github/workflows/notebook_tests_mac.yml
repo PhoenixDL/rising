@@ -28,4 +28,4 @@ jobs:
     - name: Run Notebooks
       run: |
         # treon
-        jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=600 --kernel_name=python3 --execute notebooks/*.ipynb
+        jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=-1 --kernel_name=python3 --execute notebooks/*.ipynb
