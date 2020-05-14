@@ -28,4 +28,6 @@ jobs:
     - name: Run Notebooks
       run: |
         # treon
-        jupyter nbconvert --ExecutePreprocessor.timeout=-1 --to notebook --kernel_name=python3 --execute notebooks/*.ipynb
+        jupyter nbconvert --to script --kernel_name=python3 notebooks/*.ipynb
+        for each filename in notebooks do
+          python "$filename"
