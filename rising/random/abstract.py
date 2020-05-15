@@ -55,11 +55,11 @@ class AbstractParameter(torch.nn.Module):
         Args:
             size: the size of the sampled values. If None, it samples one value
                 without reshaping
-        device : the device the result value should be set to, if it is a tensor
-        dtype : the dtype, the result value should be casted to, if it is a tensor
-        tensor_like: the tensor, having the correct dtype and device.
-            The result will be pushed onto this device and casted to this
-            dtype if this is specified.
+            device : the device the result value should be set to, if it is a tensor
+            dtype : the dtype, the result value should be casted to, if it is a tensor
+            tensor_like: the tensor, having the correct dtype and device.
+                The result will be pushed onto this device and casted to this
+                dtype if this is specified.
 
         Returns:
             list or torch.Tensor: the sampled values
