@@ -34,12 +34,12 @@ class AbstractTransform(torch.nn.Module):
 
         Args:
             name : the property name
-        sampler : the sampler. Will be wrapped to a sampler always returning
-            the same element if not already a sampler
-        *args : additional positional arguments (will be forwarded to
-            sampler call)
-        **kwargs : additional keyword arguments (will be forwarded to
-            sampler call)
+            sampler : the sampler. Will be wrapped to a sampler always returning
+                the same element if not already a sampler
+            *args : additional positional arguments (will be forwarded to
+                sampler call)
+            **kwargs : additional keyword arguments (will be forwarded to
+                sampler call)
         """
         self._registered_samplers.append(name)
         if hasattr(self, name):

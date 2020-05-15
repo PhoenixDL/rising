@@ -122,8 +122,8 @@ class Zoom(BaseTransform):
                 If Sequence[Sequence] is provided, a random value for each item
                 in the outer Sequence is generated. This can be used to set
                 different ranges for different axis.
-            mode: one of :param:`nearest`, :param:`linear`, :param:`bilinear`,
-                :param:`bicubic`, :param:`trilinear`, :param:`area` (for more
+            mode: one of `nearest`, `linear`, `bilinear`,
+                `bicubic`, `trilinear`, `area` (for more
                 inforamtion see :func:`torch.nn.functional.interpolate`)
             align_corners: input and output tensors are aligned by the center
                 points of their corners pixels, preserving the values at the

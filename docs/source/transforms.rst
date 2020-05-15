@@ -404,7 +404,7 @@ Tensor Transforms
 .. currentmodule:: rising.transforms.tensor
 
 :hidden:`ToTensor`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ToTensor
     :members:
@@ -412,7 +412,7 @@ Tensor Transforms
     :show-inheritance:
 
 :hidden:`ToDeviceDtype`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ToDeviceDtype
     :members:
@@ -420,7 +420,7 @@ Tensor Transforms
     :show-inheritance:
 
 :hidden:`ToDevice`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ToDevice
     :members:
@@ -428,7 +428,7 @@ Tensor Transforms
     :show-inheritance:
 
 :hidden:`ToDtype`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ToDtype
     :members:
@@ -436,7 +436,7 @@ Tensor Transforms
     :show-inheritance:
 
 :hidden:`TensorOp`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: TensorOp
     :members:
@@ -444,7 +444,7 @@ Tensor Transforms
     :show-inheritance:
 
 :hidden:`Permute`
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autoclass:: Permute
     :members:
@@ -459,7 +459,7 @@ Utility Transforms
 .. currentmodule:: rising.transforms.utility
 
 :hidden:`DoNothing`
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: DoNothing
     :members:
@@ -467,7 +467,7 @@ Utility Transforms
     :show-inheritance:
 
 :hidden:`SegToBox`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: SegToBox
     :members:
@@ -475,7 +475,7 @@ Utility Transforms
     :show-inheritance:
 
 :hidden:`BoxToSeg`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: BoxToSeg
     :members:
@@ -483,7 +483,7 @@ Utility Transforms
     :show-inheritance:
 
 :hidden:`InstanceToSemantic`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: InstanceToSemantic
     :members:
