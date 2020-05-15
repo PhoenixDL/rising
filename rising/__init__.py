@@ -29,4 +29,3 @@ else:
     import warnings
     warnings.simplefilter('once')
     from rising.interface import AbstractMixin
-
