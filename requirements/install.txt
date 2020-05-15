@@ -1,5 +1,5 @@
 numpy
-torch
+torch>=1.2 # before 1.2 there is no default_convert in data package
 threadpoolctl
 tqdm
 
