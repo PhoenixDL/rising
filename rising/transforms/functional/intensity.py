@@ -46,7 +46,7 @@ def norm_range(data: torch.Tensor, min: float, max: float,
         out: if provided, result is saved in here
 
     Returns:
-        normalized data
+        torch.Tensor: normalized data
     """
     if out is None:
         out = torch.zeros_like(data)
@@ -68,7 +68,7 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True,
         out:  if provided, result is saved in here
 
     Returns:
-        scaled data
+        torch.Tensor: scaled data
     """
     if out is None:
         out = torch.zeros_like(data)
@@ -97,7 +97,7 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
         out: if provided, result is saved in here
 
     Returns:
-        normalized data
+        torch.Tensor: normalized data
     """
     if out is None:
         out = torch.zeros_like(data)
@@ -126,7 +126,7 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence],
         out: if provided, result is saved into out
 
     Returns:
-        normalized data
+        torch.Tensor: normalized data
     """
     if out is None:
         out = torch.zeros_like(data)
@@ -156,7 +156,7 @@ def add_noise(data: torch.Tensor, noise_type: str,
         kwargs: keyword arguments passed to generating function
 
     Returns:
-        data with added noise
+        torch.Tensor: data with added noise
 
     See Also:
         :func:`torch.Tensor.normal_`, :func:`torch.Tensor.exponential_`
@@ -179,7 +179,7 @@ def gamma_correction(data: torch.Tensor, gamma: float) -> torch.Tensor:
         gamma: gamma for correction
 
     Returns:
-        gamma corrected data
+        torch.Tensor: gamma corrected data
     """
     if torch.is_tensor(gamma):
         gamma = gamma.to(data)
@@ -198,7 +198,7 @@ def add_value(data: torch.Tensor, value: float, out: Optional[torch.Tensor] = No
         out: if provided, result is saved in here
 
     Returns:
-        augmented data
+        torch.Tensor: augmented data
     """
     return torch.add(data, value, out=out)
 
@@ -216,6 +216,6 @@ def scale_by_value(data: torch.Tensor, value: float,
         out: if provided, result is saved in here
 
     Returns:
-        augmented data
+        torch.Tensor: augmented data
     """
     return torch.mul(data, value, out=out)

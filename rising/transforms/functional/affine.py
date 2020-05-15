@@ -33,7 +33,7 @@ def expand_scalar_param(param: AffineParamType, batchsize: int, ndim: int) -> Te
         ndim: number of spatial dimensions
 
     Returns:
-        affine params in correct shape
+        torch.Tensor: affine params in correct shape
     """
     if check_scalar(param):
         return torch.tensor([[param] * ndim] * batchsize).float()
@@ -86,8 +86,9 @@ def create_scale(scale: AffineParamType,
             image but decrease the size of an grid
 
     Returns:
-        the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
-        the batch size and NDIM is the number of spatial dimensions
+        torch.Tensor: the homogeneous transformation matrix
+            [N, NDIM + 1, NDIM + 1], N is the batch size and NDIM is the
+            number of spatial dimensions
     """
     if scale is None:
         scale = 1
@@ -134,8 +135,8 @@ def create_translation(offset: AffineParamType,
             direction
 
     Returns:
-        the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
-        the batch size and NDIM is the number of spatial dimensions
+        torch.Tensor: the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1],
+            N is the batch size and NDIM is the number of spatial dimensions
     """
     if offset is None:
         offset = 0
@@ -178,8 +179,9 @@ def create_rotation(rotation: AffineParamType,
             Defaults to the torch default dtype
 
     Returns:
-        the homogeneous transformation matrix [N, NDIM + 1, NDIM + 1], N is
-        the batch size and NDIM is the number of spatial dimensions
+        torch.Tensor: the homogeneous transformation matrix
+            [N, NDIM + 1, NDIM + 1], N is the batch size and NDIM
+            is the number of spatial dimensions
 
     """
     if rotation is None:
@@ -206,7 +208,7 @@ def create_rotation_2d(sin: Tensor, cos: Tensor) -> Tensor:
     cos: cos value to use for rotation matrix, [1]
 
     Returns:
-        rotation matrix, [2, 2]
+        torch.Tensor: rotation matrix, [2, 2]
     """
     return torch.tensor([[cos.clone(), -sin.clone()],
                          [sin.clone(), cos.clone()]],
@@ -223,7 +225,7 @@ def create_rotation_3d(sin: Tensor, cos: Tensor) -> Tensor:
         cos: cos values to use for the rotation, (axis 0, axis 1, axis 2)[3]
 
     Returns:
-        rotation matrix, [3, 3]
+        torch.Tensor: rotation matrix, [3, 3]
     """
     rot_0 = create_rotation_3d_0(sin[0], cos[0])
     rot_1 = create_rotation_3d_1(sin[1], cos[1])
@@ -240,7 +242,7 @@ def create_rotation_3d_0(sin: Tensor, cos: Tensor) -> Tensor:
         cos: cos value to use for rotation matrix, [1]
 
     Returns:
-        rotation matrix, [3, 3]
+        torch.Tensor: rotation matrix, [3, 3]
     """
     return torch.tensor([[1., 0., 0.],
                          [0., cos.clone(), -sin.clone()],
@@ -257,7 +259,7 @@ def create_rotation_3d_1(sin: Tensor, cos: Tensor) -> Tensor:
         cos: cos value to use for rotation matrix, [1]
 
     Returns:
-        rotation matrix, [3, 3]
+        torch.Tensor: rotation matrix, [3, 3]
     """
     return torch.tensor([[cos.clone(), 0., sin.clone()],
                          [0., 1., 0.],
@@ -274,7 +276,7 @@ def create_rotation_3d_2(sin: Tensor, cos: Tensor) -> Tensor:
         cos: cos value to use for rotation matrix, [1]
 
     Returns:
-        rotation matrix, [3, 3]
+        torch.Tensor: rotation matrix, [3, 3]
     """
     return torch.tensor([[cos.clone(), -sin.clone(), 0.],
                          [sin.clone(), cos.clone(), 0.],
@@ -337,7 +339,7 @@ def parametrize_matrix(scale: AffineParamType,
             :func:`create_translation` for more info)
 
     Returns:
-        the transformation matrix [N, NDIM, NDIM+1], ``N`` is
+        torch.Tensor: the transformation matrix [N, NDIM, NDIM+1], ``N`` is
             the batch size and ``NDIM`` is the number of spatial dimensions
     """
     scale = create_scale(scale, batchsize=batchsize, ndim=ndim,
@@ -366,9 +368,9 @@ def affine_point_transform(point_batch: torch.Tensor,
             N is the batch size and NDIM is the number of spatial dimensions
 
     Returns:
-        the batch of transformed points in cartesian coordinates)
-        [N, NP, NDIM] ``NP`` is the number of points, ``N`` is the batch size,
-        ``NDIM`` is the number of spatial dimensions
+        torch.Tensor: the batch of transformed points in cartesian coordinates)
+            [N, NP, NDIM] ``NP`` is the number of points, ``N`` is the
+            batch size, ``NDIM`` is the number of spatial dimensions
     """
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
@@ -408,7 +410,7 @@ def affine_image_transform(image_batch: torch.Tensor,
             making the sampling more resolution agnostic.
 
     Returns:
-        transformed image
+        torch.Tensor: transformed image
 
     Warnings:
         When align_corners = True, the grid positions depend on the pixel size
@@ -475,7 +477,7 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
         zero_border: whether or not to have a fixed image border at zero
 
     Returns:
-        the new image size
+        torch.Tensor: the new image size
     """
     n_dim = matrix.size(-1) - 1
     if check_scalar(curr_img_size):

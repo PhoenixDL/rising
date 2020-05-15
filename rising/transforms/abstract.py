@@ -97,7 +97,7 @@ class AbstractTransform(torch.nn.Module):
             **kwargs: forwarded keyword arguments
 
         Returns:
-            transformed data
+            Any: transformed data
 
         """
         if self.grad:
@@ -116,7 +116,7 @@ class AbstractTransform(torch.nn.Module):
             **data: dict with data
 
         Returns:
-            dict with transformed data
+            dict: dict with transformed data
         """
         raise NotImplementedError
 
@@ -155,7 +155,7 @@ class BaseTransform(AbstractTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         kwargs = {}
         for k in self.property_names:
@@ -181,7 +181,7 @@ class PerSampleTransform(BaseTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         kwargs = {}
         for k in self.property_names:
@@ -222,7 +222,7 @@ class PerChannelTransform(BaseTransform):
             data: dict with tensors
 
         Returns:
-            dict with augmented data
+            dict: dict with augmented data
         """
         if self.per_channel:
             kwargs = {}

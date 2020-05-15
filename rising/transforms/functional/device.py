@@ -20,7 +20,7 @@ def to_device_dtype(data: data_type, dtype: Union[torch.dtype, str] = None,
         kwargs: keyword arguments passed to assigning function
 
     Returns:
-        data which was pushed to device
+        Union[torch.Tensor, Sequence, Mapping]: data which was pushed to device
     """
     if torch.is_tensor(data):
         return data.to(device=device, dtype=dtype, **kwargs)

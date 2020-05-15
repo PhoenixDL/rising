@@ -51,7 +51,7 @@ class SegToBox(AbstractTransform):
             **data: input data
 
         Returns:
-            transformed data
+            dict: transformed data
 
         """
 
@@ -91,7 +91,7 @@ class BoxToSeg(AbstractTransform):
             **data: input data
 
         Returns:
-            transformed data
+            dict: transformed data
         """
         for source, target in self.keys.items():
             out = torch.zeros((len(data[source]), 1, *self.seg_shape), dtype=self.seg_dtype,
@@ -126,7 +126,7 @@ class InstanceToSemantic(AbstractTransform):
             **data: input data
 
         Returns:
-            transformed data
+            dict: transformed data
 
         """
         for source, target in self.keys.items():

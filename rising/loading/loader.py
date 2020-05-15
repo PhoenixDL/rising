@@ -36,7 +36,7 @@ def default_transform_call(batch: Any, transform: Callable) -> Any:
         transform: transform to perform
 
     Returns:
-        transformed batch
+        Any: transformed batch
 
     """
 
@@ -120,7 +120,7 @@ class DataLoader(_DataLoader):
                 These are the first transforms applied to the data, since they
                 are applied on sample retrieval from dataset before batching
                 occurs.
-            pseudo_batch_dim: whether the :param:`sample_transforms` work on
+            pseudo_batch_dim: whether the :attr:`sample_transforms` work on
                 batches and thus need a pseudo batch dim of 1 to work
                 correctly.
             device: the device to move the data to for gpu_transforms.
@@ -193,11 +193,11 @@ class DataLoader(_DataLoader):
         self.auto_convert = auto_convert
         self.transform_call = transform_call
 
-    def get_batch_transformer(self):
+    def get_batch_transformer(self) -> Callable:
         """
         A getter function for the :class:`BatchTransformer`
         Returns:
-            the initialized BatchTransformer
+            BatchTransformer: the initialized BatchTransformer
 
         """
         # this is a function on purpose, since frameworks like ignite parse
@@ -208,13 +208,13 @@ class DataLoader(_DataLoader):
             auto_convert=self.auto_convert,
             transform_call=self.transform_call)
 
-    def get_gpu_batch_transformer(self):
+    def get_gpu_batch_transformer(self) -> Callable:
         """
         A getter function for the :class:`BatchTransformer` holding the
         GPU-Transforms
 
         Returns:
-            the initialized BatchTransformer
+            BatchTransformer: the initialized BatchTransformer
 
         """
         # this is a function on purpose, since frameworks like ignite parse
@@ -225,7 +225,15 @@ class DataLoader(_DataLoader):
                                 transform_call=self.transform_call
                                 )
 
-    def get_sample_transformer(self):
+    def get_sample_transformer(self) -> Callable:
+        """
+        A getter function for the :class:`SampleTransformer` holding the
+        Per-Sample-Transforms
+
+        Returns:
+            SampleTransformer: the initialized SampleTransformer
+
+        """
         # this is a function on purpose, since frameworks like ignite parse
         # the class dict to specify what to treat as args during reinit
         return SampleTransformer(self.dataset, self.sample_transforms,
@@ -236,7 +244,8 @@ class DataLoader(_DataLoader):
         Geneator iterator
 
         Returns:
-            iterator to load and augment data (can be either single or multiprocessing based)
+            Iterator: iterator to load and augment data (can be either
+                single or multiprocessing based)
         """
         if self.num_workers == 0:
             return _SingleProcessDataLoaderIter(self)
@@ -350,7 +359,7 @@ class BatchTransformer(object):
             **kwargs: keyword batch arguments
 
         Returns:
-            batched and augmented data
+            Any: batched and augmented data
         """
         batch = self._collate_fn(*args, **kwargs)
 
@@ -395,7 +404,7 @@ class SampleTransformer(object):
             item: the index specifying the sample to retrieve
 
         Returns:
-            the transformed sample
+            Any: the transformed sample
 
         """
         sample = self.dataset[item]
@@ -414,7 +423,7 @@ class SampleTransformer(object):
     def __len__(self) -> int:
         return len(self.dataset)
 
-    def _change_pseudo_batch_dim(self, sample: Any, add: bool):
+    def _change_pseudo_batch_dim(self, sample: Any, add: bool) -> Any:
         """
         Adds or removes the pseudo batch size
         Args:
@@ -422,7 +431,7 @@ class SampleTransformer(object):
             add: whether to add or remove the pseudo batchsize
 
         Returns:
-            sample with added or removed pseudo batchsize
+            Any: sample with added or removed pseudo batchsize
 
         """
         if isinstance(sample, torch.Tensor) or (NUMPY_AVAILABLE and isinstance(sample, np.ndarray)):
@@ -501,7 +510,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
         Get next item from iterator
 
         Returns:
-            batched and augmented data
+            Any: batched and augmented data
         """
         sample = super().__next__()
         return self._gpu_transforms(sample)
@@ -531,7 +540,7 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
         Get next item from iterator
 
         Returns:
-            batched and augmented data
+            Any: batched and augmented data
         """
         sample = super().__next__()
         sample = self._gpu_transforms(sample)
@@ -539,7 +548,7 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
 
 
 def _seed_npy_before_worker_init(worker_id: int, seed: int,
-                                 worker_init_fn: Optional[Callable] = None):
+                                 worker_init_fn: Optional[Callable] = None) -> Any:
     """
     Wrapper Function to wrap the existing worker_init_fn and seed numpy before
     calling the actual ``worker_init_fn``
@@ -552,6 +561,10 @@ def _seed_npy_before_worker_init(worker_id: int, seed: int,
             as it needs to be for numpy seeding
         worker_init_fn: will be called with the ``worker_id`` after seeding
             numpy if it is not ``None``
+
+    Returns:
+        Any: result of :attr`worker_init_fn`
+
     """
     try:
         import numpy as np

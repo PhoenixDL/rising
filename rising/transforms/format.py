@@ -31,7 +31,7 @@ class MapToSeq(AbstractTransform):
             data: input dict
 
         Returns:
-            mapped data
+            tuple: mapped data
         """
         return tuple(data[_k] for _k in self.keys)
 
@@ -58,8 +58,8 @@ class SeqToMap(AbstractTransform):
         Args:
             data: input tuple
 
-        Args:
-            mapped data
+        Returns:
+            dict: mapped data
         """
         return {_key: data[_idx] for _idx, _key in enumerate(self.keys)}
 

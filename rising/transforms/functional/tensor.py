@@ -20,7 +20,7 @@ def tensor_op(data: data_type, fn: str, *args, **kwargs) -> data_type:
         **kwargs: keyword arguments passed to tensor function
 
     Returns:
-        data which was pushed to device
+        Union[torch.Tensor, Sequence, Mapping]: data which was pushed to device
     """
     if torch.is_tensor(data):
         return getattr(data, fn)(*args, **kwargs)

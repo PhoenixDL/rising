@@ -184,7 +184,7 @@ class GammaCorrection(BaseTransform):
                          property_names=("gamma",), keys=keys, grad=grad,
                          **kwargs)
 
-
+  
 class RandomValuePerChannel(PerChannelTransform):
     """
     Apply augmentations which take random values as input by keyword
@@ -220,7 +220,7 @@ class RandomValuePerChannel(PerChannelTransform):
             data: dict with data
 
         Returns:
-            augmented data
+            dict: augmented data
         """
         if self.per_channel:
             seed = torch.random.get_rng_state()
