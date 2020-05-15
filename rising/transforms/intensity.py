@@ -184,7 +184,7 @@ class GammaCorrection(BaseTransform):
                          property_names=("gamma",), keys=keys, grad=grad,
                          **kwargs)
 
-  
+
 class RandomValuePerChannel(PerChannelTransform):
     """
     Apply augmentations which take random values as input by keyword
