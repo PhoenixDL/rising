@@ -20,6 +20,7 @@ support for volumetric data
 
    loading
    ops
+   random
    transforms
    transforms.functional
    utils

@@ -1,8 +1,7 @@
 import unittest
-from rising.transforms.affine import Affine, StackedAffine, Translate, Rotate, \
-    Scale, Resize
+from rising.transforms.affine import (Affine, StackedAffine, Translate, Rotate,
+                                      Scale, Resize, BaseAffine)
 import torch
-from copy import deepcopy
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 
 
@@ -72,8 +71,8 @@ class AffineTestCase(unittest.TestCase):
             StackedAffine(Affine(scale=1), Affine(scale=1))
         ]
 
-        for first_affine in deepcopy(affines):
-            for second_affine in deepcopy(affines):
+        for first_affine in affines:
+            for second_affine in affines:
                 if not isinstance(first_affine, Affine) and not isinstance(second_affine, Affine):
                     continue
 
@@ -109,15 +108,35 @@ class AffineTestCase(unittest.TestCase):
         sample = {'data': torch.rand(1, 3, 25, 30)}
 
         trafos = [
+            BaseAffine(),
+            BaseAffine(adjust_size=True),
+            Scale(5, adjust_size=True),
             Scale([5, 3], adjust_size=True),
-            Resize([50, 90]),
+            Scale(5, adjust_size=False),
+            Scale([5, 3], adjust_size=False),
+            Resize(50),
+            Resize((50, 90)),
             Rotate([90], adjust_size=True, degree=True),
+            Rotate([90], adjust_size=False, degree=True),
+            Translate(10, adjust_size=True, unit="pixel"),
+            Translate(10, adjust_size=False, unit="pixel"),
+            Translate([5, 10], adjust_size=False, unit="pixel"),
         ]
 
         expected_sizes = [
+            (25, 30),
+            (25, 30),
+            (5, 6),
             (5, 10),
+            (25, 30),
+            (25, 30),
+            (50, 50),
             (50, 90),
             (30, 25),
+            (25, 30),
+            (25, 30),
+            (25, 30),
+            (25, 30),
         ]
 
         for trafo, expected_size in zip(trafos, expected_sizes):
@@ -127,11 +146,11 @@ class AffineTestCase(unittest.TestCase):
                 self.assertTupleEqual(expected_size, result.shape[-2:])
 
     def test_translation_assemble_matrix_with_pixel(self):
-        trafo = Translate([1, 10, 100], unit='pixel')
+        trafo = Translate([10, 100], unit='pixel')
         sample = {'data': torch.rand(3, 3, 100, 100)}
-        expected = torch.tensor([[1., 0., -0.01], [0., 1., -0.01],
-                                 [1., 0., -0.1], [0., 1., -0.1],
-                                 [1., 0., -1.], [0., 1., -1.]])
+        expected = torch.tensor([[1., 0., -0.1], [0., 1., -0.01],
+                                 [1., 0., -0.1], [0., 1., -0.01],
+                                 [1., 0., -0.1], [0., 1., -0.01]])
 
         trafo.assemble_matrix(**sample)
         self.assertTrue(expected.allclose(expected))

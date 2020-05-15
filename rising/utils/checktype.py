@@ -1,3 +1,4 @@
+import torch
 from typing import Union, Any
 
 
@@ -11,4 +12,4 @@ def check_scalar(x: Union[Any, float, int]) -> bool:
     Returns:
         bool" True if input is scalar
     """
-    return isinstance(x, (int, float))
+    return isinstance(x, (int, float)) or (isinstance(x, torch.Tensor) and x.numel() == 1)

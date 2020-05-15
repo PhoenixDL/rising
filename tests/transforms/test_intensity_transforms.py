@@ -6,6 +6,7 @@ from unittest.mock import Mock, call
 
 from tests.transforms import chech_data_preservation
 from rising.transforms.intensity import *
+from rising.random import DiscreteParameter
 
 
 class MyTestCase(unittest.TestCase):
@@ -93,13 +94,15 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(comp_diff > min_diff)
 
     def test_per_channel_transform_per_channel_true(self):
+        # TODO: check why sometimes an overflow occurs
         mock = Mock(return_value=0)
 
         def augment_fn(inp, *args, **kwargs):
             return mock(inp)
 
         trafo = RandomValuePerChannel(
-            augment_fn, random_mode="random", per_channel=True, keys=('label',))
+            augment_fn, random_sampler=DiscreteParameter((1,)),
+            per_channel=True, keys=('label',))
         self.batch_dict["label"] = self.batch_dict["label"][None]
         output = trafo(**self.batch_dict)
         calls = [call(torch.tensor([0])), call(torch.tensor([1])),
@@ -107,28 +110,20 @@ class MyTestCase(unittest.TestCase):
         mock.assert_has_calls(calls)
 
     def test_random_add_value(self):
-        trafo = RandomAddValue("random")
+        trafo = RandomAddValue(DiscreteParameter((2,)))
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
-        random.seed(0)
-        rand_val = random.random()
-        random.seed(0)
         outp = trafo(**self.batch_dict)
-        expected_out = self.batch_dict["data"] + rand_val
+        expected_out = self.batch_dict["data"] + 2.
         self.assertTrue((outp["data"] == expected_out).all())
-        self.assertEqual(trafo.random_mode, "random")
 
     def test_random_scale_value(self):
-        trafo = RandomScaleValue("random")
+        trafo = RandomScaleValue(DiscreteParameter((2,)))
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
-        random.seed(0)
-        rand_val = random.random()
-        random.seed(0)
         outp = trafo(**self.batch_dict)
-        expected_out = self.batch_dict["data"] * rand_val
+        expected_out = self.batch_dict["data"] * 2.
         self.assertTrue((outp["data"] == expected_out).all())
-        self.assertEqual(trafo.random_mode, "random")
 
     def test_gamma_transform_scalar(self):
         trafo = GammaCorrection(gamma=2)
@@ -138,27 +133,6 @@ class MyTestCase(unittest.TestCase):
         outp = trafo(**self.batch_dict)
         expected_out = self.batch_dict["data"].pow(2)
         self.assertTrue((outp["data"] == expected_out).all())
-
-    def test_gamma_transform_error(self):
-        with self.assertRaises(TypeError):
-            trafo = GammaCorrection(gamma=(1, 1, 1))
-
-    def test_gamma_transform_max_smaller_one(self):
-        trafo = GammaCorrection(gamma=(0, 0.9))
-        random.seed(0)
-        rand_val = random.uniform(0, 0.9)
-        random.seed(0)
-        outp = trafo(**self.batch_dict)
-        expected_out = self.batch_dict["data"].pow(rand_val)
-        self.assertTrue((outp["data"] == expected_out).all())
-
-    def test_gamma_transform_max_greater_one(self):
-        # (1., 1.) allows switching cases but forces gamma to 1.
-        trafo = GammaCorrection(gamma=(1., 1.))
-        random.seed(0)
-        for _ in range(5):
-            outp = trafo(**self.batch_dict)
-            self.assertTrue((outp["data"] == self.batch_dict["data"]).all())
 
 
 if __name__ == '__main__':

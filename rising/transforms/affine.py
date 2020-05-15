@@ -1,4 +1,4 @@
-from typing import Sequence, Union, Iterable, Any, Optional
+from typing import Sequence, Union, Iterable, Any, Optional, Tuple
 
 import torch
 
@@ -10,6 +10,7 @@ from rising.utils.checktype import check_scalar
 
 __all__ = [
     'Affine',
+    'BaseAffine',
     'StackedAffine',
     'Rotate',
     'Scale',
@@ -73,7 +74,7 @@ class Affine(BaseTransform):
                          grad=grad,
                          **kwargs)
         self.matrix = matrix
-        self.output_size = output_size
+        self.register_sampler('output_size', output_size)
         self.adjust_size = adjust_size
         self.interpolation_mode = interpolation_mode
         self.padding_mode = padding_mode
@@ -260,7 +261,8 @@ class StackedAffine(Affine):
              for trafo in transforms])
 
         super().__init__(keys=keys, grad=grad,
-                         output_size=output_size, adjust_size=adjust_size,
+                         output_size=output_size,
+                         adjust_size=adjust_size,
                          interpolation_mode=interpolation_mode,
                          padding_mode=padding_mode,
                          align_corners=align_corners,
@@ -319,32 +321,23 @@ class BaseAffine(Affine):
             scale: the scale factor(s). Supported are:
                 * a single parameter (as float or int), which will be
                 replicated for all dimensions and batch samples
-                * a parameter per sample, which will be
-                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                 batch samples
-                * a parameter per sampler per dimension
                 * None will be treated as a scaling factor of 1
             rotation: the rotation factor(s). The rotation is performed in
                 consecutive order axis0 -> axis1 (-> axis 2). Supported are:
                 * a single parameter (as float or int), which will be
                 replicated for all dimensions and batch samples
-                * a parameter per sample, which will be
-                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                 batch samples
-                * a parameter per sampler per dimension
                 * None will be treated as a rotation angle of 0
             translation : torch.Tensor, int, float
                 the translation offset(s) relative to image (should be in the
                 range [0, 1]). Supported are:
                 * a single parameter (as float or int), which will be
                 replicated for all dimensions and batch samples
-                * a parameter per sample, which will be
-                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                 batch samples
-                * a parameter per sampler per dimension
                 * None will be treated as a translation offset of 0
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
@@ -381,9 +374,10 @@ class BaseAffine(Affine):
                          align_corners=align_corners,
                          reverse_order=reverse_order,
                          **kwargs)
-        self.scale = scale
-        self.rotation = rotation
-        self.translation = translation
+        self.register_sampler('scale', scale)
+        self.register_sampler('rotation', rotation)
+        self.register_sampler('translation', translation)
+
         self.degree = degree
         self.image_transform = image_transform
 
@@ -405,11 +399,19 @@ class BaseAffine(Affine):
         dtype = data[self.keys[0]].dtype
 
         self.matrix = parametrize_matrix(
-            scale=self.scale, rotation=self.rotation,
-            translation=self.translation,
+            scale=self.sample_for_batch("scale", batchsize),
+            rotation=self.sample_for_batch("rotation", batchsize),
+            translation=self.sample_for_batch("translation", batchsize),
             batchsize=batchsize, ndim=ndim, degree=self.degree,
             device=device, dtype=dtype, image_transform=self.image_transform)
         return self.matrix
+
+    def sample_for_batch(self, name: str, batchsize: int) -> Optional[Sequence[Any]]:
+        elem = getattr(self, name)
+        if elem is not None:
+            return [elem] + [getattr(self, name) for _ in range(batchsize - 1)]
+        else:
+            return None
 
 
 class Rotate(BaseAffine):
@@ -439,11 +441,8 @@ class Rotate(BaseAffine):
                 consecutive order axis0 -> axis1 (-> axis 2). Supported are:
                 * a single parameter (as float or int), which will be
                 replicated for all dimensions and batch samples
-                * a parameter per sample, which will be
-                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                 batch samples
-                * a parameter per sampler per dimension
                 * ``None`` will be treated as a rotation angle of 0
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
@@ -506,7 +505,7 @@ class Translate(BaseAffine):
                  interpolation_mode: str = 'bilinear',
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
-                 unit: str = 'relative',
+                 unit: str = 'pixel',
                  reverse_order: bool = False,
                  **kwargs):
         """
@@ -516,11 +515,8 @@ class Translate(BaseAffine):
                 range [0, 1]). Supported are:
                 * a single parameter (as float or int), which will be
                 replicated for all dimensions and batch samples
-                * a parameter per sample, which will be
-                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for all
                 batch samples
-                * a parameter per sampler per dimension
                 * None will be treated as a translation offset of 0
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
@@ -540,6 +536,8 @@ class Translate(BaseAffine):
                 they are instead considered as referring to the corner points
                 of the input’s corner pixels, making the sampling more
                 resolution agnostic.
+            unit: defines the unit of the translation. Either ```relative'``
+                to the image size or in ```pixel'``
             reverse_order: reverses the coordinate order of the
                 transformation to conform to the pytorch convention:
                 transformation params order [W,H(,D)] and
@@ -606,11 +604,8 @@ class Scale(BaseAffine):
                 the scale factor(s). Supported are:
                 * a single parameter (as float or int), which will be
                 replicated for all dimensions and batch samples
-                * a parameter per sample, which will be
-                replicated for all dimensions
                 * a parameter per dimension, which will be replicated for
                 all batch samples
-                * a parameter per sampler per dimension
                 * None will be treated as a scaling factor of 1
             keys: Sequence
                 keys which should be augmented
@@ -664,7 +659,7 @@ class Scale(BaseAffine):
 
 class Resize(Scale):
     def __init__(self,
-                 size: Union[int, Iterable],
+                 size: Union[int, Tuple[int]],
                  keys: Sequence = ('data',),
                  grad: bool = False,
                  interpolation_mode: str = 'bilinear',
@@ -703,7 +698,7 @@ class Resize(Scale):
             The offsets for shifting back and to origin are calculated on the
             entry matching the first item iin :attr:`keys` for each batch
         """
-        super().__init__(output_size=size,
+        super().__init__(output_size=None,
                          scale=None,
                          keys=keys,
                          grad=grad,
@@ -713,6 +708,7 @@ class Resize(Scale):
                          align_corners=align_corners,
                          reverse_order=reverse_order,
                          **kwargs)
+        self.register_sampler("size", size)
 
     def assemble_matrix(self, **data) -> torch.Tensor:
         """
@@ -728,18 +724,17 @@ class Resize(Scale):
 
         """
         curr_img_size = data[self.keys[0]].shape[2:]
+        output_size = self.size
 
-        was_scalar = check_scalar(self.output_size)
+        if torch.is_tensor(output_size):
+            self.output_size = int(output_size.item())
+        else:
+            self.output_size = tuple(int(t.item()) for t in output_size)
 
-        if was_scalar:
-            self.output_size = [self.output_size] * len(curr_img_size)
+        if check_scalar(output_size):
+            output_size = [output_size] * len(curr_img_size)
 
-        self.scale = [self.output_size[i] / curr_img_size[-i]
+        self.scale = [float(output_size[i]) / float(curr_img_size[i])
                       for i in range(len(curr_img_size))]
-
         matrix = super().assemble_matrix(**data)
-
-        if was_scalar:
-            self.output_size = self.output_size[0]
-
         return matrix

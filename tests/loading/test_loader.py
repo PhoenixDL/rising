@@ -63,7 +63,7 @@ class TestLoader(unittest.TestCase):
     def check_output_device(self, device):
         data = torch.rand(1, 3, 3)
         dset = [{"data": data}] * 5
-        gpu_transforms = Mirror((0,), prob=1)
+        gpu_transforms = Mirror((0, ))
         loader = DataLoader(dset, num_workers=0, gpu_transforms=gpu_transforms)
         iterator = iter(loader)
         outp = next(iterator)

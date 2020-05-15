@@ -103,42 +103,6 @@ class TestAbstractTransform(unittest.TestCase):
         output = trafo(**self.batch_dict)
         mock.assert_called_once()
 
-    def test_random_dims_transform(self):
-        torch.manual_seed(0)
-        self.batch_dict["data"] = torch.rand(1, 1, 32, 16)
-        trafo = RandomDimsTransform(sum_dim, dims=(0, 1))
-        shapes = [trafo(**self.batch_dict)["data"].shape for i in range(4)]
-        self.assertEqual(shapes[0], torch.Size([1, 1]))
-        self.assertEqual(shapes[1], torch.Size([1, 1, 32, 16]))
-        self.assertEqual(shapes[2], torch.Size([1, 1, 16]))
-        self.assertEqual(shapes[3], torch.Size([1, 1, 32]))
-
-    def test_random_process_random(self):
-        random.seed(0)
-        expected_val = random.random()
-
-        process = RandomProcess(random_mode="random")
-        random.seed(0)
-        val = process.rand()
-        self.assertEqual(expected_val, val)
-
-    def test_random_process_uniform(self):
-        random.seed(0)
-        expected_val = random.uniform(0, 1)
-        process = RandomProcess(random_mode="uniform", random_args=(0, 1))
-        random.seed(0)
-        val = process.rand()
-        self.assertEqual(expected_val, val)
-
-    def test_random_process_uniform_seq(self):
-        random.seed(0)
-        expected_val = (random.uniform(0, 1), random.uniform(0, 1))
-        process = RandomProcess(random_mode="uniform",
-                                random_args=((0, 1), (0, 1)))
-        random.seed(0)
-        val = process.rand()
-        self.assertEqual(expected_val, val)
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -47,22 +47,6 @@ Transformation Base Classes
     :undoc-members:
     :show-inheritance:
 
-:hidden:`RandomDimsTransform`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: RandomDimsTransform
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:hidden:`RandomProcess`
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: RandomProcess
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Compose Transforms
 ******************
 
@@ -192,22 +176,6 @@ Cropping Transforms
     :undoc-members:
     :show-inheritance:
 
-:hidden:`CenterCropRandomSize`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: CenterCropRandomSize
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:hidden:`RandomCropRandomSize`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: RandomCropRandomSize
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Format Transforms
 ******************
 
@@ -231,10 +199,26 @@ Format Transforms
     :undoc-members:
     :show-inheritance:
 
+:hidden:`PopKeys`
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: PopKeys
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:hidden:`FilterKeys`
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: FilterKeys
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Intensity Transforms
 *********************
 
-.. currentmodule:: rising.transforms.intensity
+.. automodule:: rising.transforms.intensity
 
 .. currentmodule:: rising.transforms.intensity
 
@@ -337,7 +321,7 @@ Intensity Transforms
 Kernel Transforms
 ******************
 
-.. currentmodule:: rising.transforms.kernel
+.. automodule:: rising.transforms.kernel
 
 .. currentmodule:: rising.transforms.kernel
 
@@ -420,23 +404,39 @@ Tensor Transforms
 .. currentmodule:: rising.transforms.tensor
 
 :hidden:`ToTensor`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ToTensor
     :members:
     :undoc-members:
     :show-inheritance:
 
+:hidden:`ToDeviceDtype`
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: ToDeviceDtype
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :hidden:`ToDevice`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ToDevice
     :members:
     :undoc-members:
     :show-inheritance:
 
+:hidden:`ToDtype`
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: ToDtype
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :hidden:`TensorOp`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: TensorOp
     :members:
@@ -444,7 +444,7 @@ Tensor Transforms
     :show-inheritance:
 
 :hidden:`Permute`
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autoclass:: Permute
     :members:
@@ -459,7 +459,7 @@ Utility Transforms
 .. currentmodule:: rising.transforms.utility
 
 :hidden:`DoNothing`
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: DoNothing
     :members:
@@ -467,7 +467,7 @@ Utility Transforms
     :show-inheritance:
 
 :hidden:`SegToBox`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: SegToBox
     :members:
@@ -475,7 +475,7 @@ Utility Transforms
     :show-inheritance:
 
 :hidden:`BoxToSeg`
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: BoxToSeg
     :members:
@@ -483,26 +483,9 @@ Utility Transforms
     :show-inheritance:
 
 :hidden:`InstanceToSemantic`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: InstanceToSemantic
     :members:
     :undoc-members:
     :show-inheritance:
-
-:hidden:`PopKeys`
-~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: PopKeys
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:hidden:`FilterKeys`
-~~~~~~~~~~~~~~~~~~~~~
-
-.. autoclass:: FilterKeys
-    :members:
-    :undoc-members:
-    :show-inheritance:
-

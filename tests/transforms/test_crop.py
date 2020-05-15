@@ -2,6 +2,7 @@ import unittest
 import torch
 import random
 
+from rising.random import DiscreteParameter
 from rising.transforms.crop import *
 from rising.transforms.functional.crop import random_crop, center_crop
 
@@ -29,6 +30,8 @@ class TestCrop(unittest.TestCase):
             crop = trafo(**self.batch)["data"]
 
             random.seed(0)
+            _ = random.choices([0])  # internally sample size
+            _ = random.choices([0])  # internally sample dist
             expected = random_crop(self.batch["data"], size=s)
 
             self.assertTrue((crop == expected).all())
@@ -37,7 +40,7 @@ class TestCrop(unittest.TestCase):
     def test_center_crop_random_size_transform(self):
         for _ in range(10):
             random.seed(0)
-            trafo = CenterCropRandomSize((3, 8))
+            trafo = CenterCrop(DiscreteParameter([3, 4, 5, 6, 7, 8]))
             crop = trafo(**self.batch)["data"]
 
             random.seed(0)
@@ -47,18 +50,19 @@ class TestCrop(unittest.TestCase):
             self.assertTrue((crop == expected).all())
             self.assertTrue(all([_s == s for _s in crop.shape[2:]]))
 
-    def test_random_crop_random_size_transform(self):
+    def test_center_crop_random_size_2_transform(self):
         for _ in range(10):
             random.seed(0)
-            trafo = RandomCropRandomSize((3, 8))
+            trafo = CenterCrop([DiscreteParameter([3, 4, 5]),
+                                DiscreteParameter([6, 7, 8])])
             crop = trafo(**self.batch)["data"]
 
             random.seed(0)
-            s = random.randrange(3, 8)
-            expected = random_crop(self.batch["data"], s)
+            s = (random.randrange(3, 5), random.randrange(6, 8))
+            expected = center_crop(self.batch["data"], s)
 
             self.assertTrue((crop == expected).all())
-            self.assertTrue(all([_s == s for _s in crop.shape[2:]]))
+            self.assertSequenceEqual(crop.shape[2:], s)
 
 
 if __name__ == '__main__':
