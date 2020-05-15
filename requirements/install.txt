@@ -1,5 +1,5 @@
 numpy
-torch>=1.2 # before 1.2 there is no default_convert in data package
+torch>=1.3 # before 1.3 torch.nn.functional.affine_grid has no argument align_corners
 threadpoolctl
 tqdm
 
