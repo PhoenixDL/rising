@@ -11,7 +11,7 @@ def check_scalar(x):
     Returns:
         True if input is scalar
     """
-    if isinstance(x, (int, float)):
+    return isinstance(x, (int, float)) or (is instance(x, torch.Tensor) and x.numel() == 1)
         return True
     elif torch.is_tensor(x):
         return x.numel() == 1
