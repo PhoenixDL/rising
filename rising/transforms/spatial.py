@@ -36,15 +36,15 @@ class Mirror(BaseTransform):
 
 
 class Rot90(AbstractTransform):
-    """Randomly rotate 90 degree around dims"""
+    """Rotate 90 degree around dims"""
 
     def __init__(self, dims: Union[Sequence[int], DiscreteParameter],
                  keys: Sequence[str] = ('data',),
                  prob: float = 0.5, grad: bool = False, **kwargs):
         """
         Args:
-            dims: dims which should be rotated. If more than two dims are
-                provided, two dimensions are randomly chosen at each call
+            dims: dims/axis ro rotate. If more than two dims are
+                provided, 2 dimensions are randomly chosen at each call
             keys: keys which should be rotated
             prob: probability for rotation
             grad: enable gradient computation inside transformation
