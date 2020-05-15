@@ -33,6 +33,9 @@ Multiple examples for different use cases can be found in our [tutorial docs](ht
 | GPU        | ✅       | ❌            | ❌             | ✅      | ✅     | ❌              | ❌             |
 | Backend    | PyTorch  | PyTorch/Sitk  | Numpy          | PyTorch | C++     | PyTorch         | Numpy          |  
 
+## Docs
+[master](https://rising.readthedocs.io/en/latest/)
+
 ## Installation
 Pypi Installation
 ```bash
