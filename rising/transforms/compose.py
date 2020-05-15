@@ -3,8 +3,10 @@ from typing import Sequence, Union, Callable, Any, Mapping
 
 import torch
 
-from rising.transforms import AbstractTransform, RandomProcess
 from rising.utils import check_scalar
+from rising.transforms import AbstractTransform
+from rising.random import ContinuousParameter, UniformParameter
+
 
 __all__ = ["Compose", "DropoutCompose"]
 
@@ -158,14 +160,14 @@ class Compose(AbstractTransform):
         self.transform_order = list(range(len(self.transforms)))
 
 
-class DropoutCompose(RandomProcess, Compose):
+class DropoutCompose(Compose):
     """
     Compose multiple transforms to one and randomly apply them
     """
 
-    def __init__(self, *transforms, dropout: Union[float, Sequence[float]] = 0.5,
-                 random_mode: str = "random", random_args: Sequence = (),
-                 random_module: str = "random",
+    def __init__(self, *transforms,
+                 dropout: Union[float, Sequence[float]] = 0.5,
+                 random_sampler: ContinuousParameter = None,
                  transform_call: Callable[[Any, Callable], Any] = dict_call,
                  **kwargs):
         """
@@ -176,11 +178,9 @@ class DropoutCompose(RandomProcess, Compose):
                 given probability
                 if :attr:`dropout` is a sequence, it needs to specify the
                 dropout probability for each given transform
-            random_mode: specifies distribution which should be used to sample
-                additive value
-            random_args: positional arguments passed for random function
-            random_module: module from where function random function should
-                be imported
+            random_sampler : a continuous parameter sampler. Samples a
+                random value for each
+            of the transforms.
             transform_call: function which determines how transforms are
                 called. By default Mappings and Sequences are unpacked
                 during the transform.
@@ -189,16 +189,21 @@ class DropoutCompose(RandomProcess, Compose):
             ValueError: if dropout is a sequence it must have the same length
                 as transforms
         """
-        super().__init__(*transforms, random_mode=random_mode,
-                         random_args=random_args, random_module=random_module,
-                         rand_seq=False, transform_call=transform_call, **kwargs)
+        super().__init__(*transforms, transform_call=transform_call, **kwargs)
+
+        if random_sampler is None:
+            random_sampler = UniformParameter(0., 1.)
+
+        self.register_sampler('prob', random_sampler, size=(len(self.transforms),))
+
         if check_scalar(dropout):
             dropout = [dropout] * len(self.transforms)
-        if len(dropout) != len(self.transforms):
-            raise ValueError(f"If dropout is a sequence it must specify the dropout probability "
-                             f"for each transform, found {len(dropout)} probabilities "
-                             f"and {len(self.transforms)} transforms.")
         self.dropout = dropout
+        if len(dropout) != len(self.transforms):
+            raise TypeError(f"If dropout is a sequence it must specify the "
+                            f"dropout probability for each transform, "
+                            f"found {len(dropout)} probabilities "
+                            f"and {len(self.transforms)} transforms.")
 
     def forward(self, *seq_like, **map_like) -> Union[Sequence, Mapping]:
         """
@@ -212,11 +217,13 @@ class DropoutCompose(RandomProcess, Compose):
         Returns:
             Union[Sequence, Mapping]: dict with transformed data
         """
+
         assert not (seq_like and map_like)
         assert len(self.transforms) == len(self.transform_order)
         data = seq_like if seq_like else map_like
 
+        rand = self.prob
         for idx in self.transform_order:
-            if self.rand() > self.dropout[idx]:
+            if rand[idx] > self.dropout[idx]:
                 data = self.transform_call(data, self.transforms[idx])
         return data

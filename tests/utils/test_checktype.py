@@ -10,7 +10,7 @@ class TypeCheckTestCase(unittest.TestCase):
                         False,
                         False,
                         False,
-                        False,
+                        True,
                         False]
         inputs = [0.,
                   1,

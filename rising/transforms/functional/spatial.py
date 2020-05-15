@@ -36,8 +36,8 @@ def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
     Returns:
         torch.Tensor: tensor with mirrored dimensions
     """
-    dims = [d + 2 for d in dims]
-    return torch.rot90(data, k, dims)
+    dims = [int(d + 2) for d in dims]
+    return torch.rot90(data, int(k), dims)
 
 
 def resize_native(data: torch.Tensor,
@@ -69,8 +69,12 @@ def resize_native(data: torch.Tensor,
     See Also:
         :func:`torch.nn.functional.interpolate`
     """
-    out = torch.nn.functional.interpolate(data, size=size, scale_factor=scale_factor,
-                                          mode=mode, align_corners=align_corners)
+    if check_scalar(scale_factor):
+        # pytorch internally checks for an iterable. Single value tensors are still iterable
+        scale_factor = float(scale_factor)
+    out = torch.nn.functional.interpolate(
+        data, size=size, scale_factor=scale_factor, mode=mode,
+        align_corners=align_corners)
 
     if preserve_range:
         out.clamp_(data.min(), data.max())

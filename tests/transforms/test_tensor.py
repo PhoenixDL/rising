@@ -24,6 +24,11 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(outp["label"].device, torch.device("cpu"))
         self.assertIsInstance(outp["id"], str)
 
+    def test_to_dtype(self):
+        trafo = ToDtype(dtype=torch.long, keys=("data",))
+        outp = trafo(**self.batch_dict)
+        self.assertEqual(outp["data"].dtype, torch.long)
+
     def test_one_hot(self):
         inp = torch.zeros(1, 1, 3, 3).long()
         inp[0, 0, 0, 0] = 1
