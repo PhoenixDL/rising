@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [macos-latest]
         python-version: [3.6, 3.7, 3.8]
-        pytorch-version: [1.3, 1.5] # versions < 1.3 mayy have issues with some BLAS ops due to missing mkl (https://github.com/pytorch/pytorch/issues/18996)
+        pytorch-version: [1.3, 1.5] # versions < 1.3 mayy have issues on mac with some BLAS ops due to missing mkl (https://github.com/pytorch/pytorch/issues/18996)
 
     steps:
     - uses: actions/checkout@v1
