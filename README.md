@@ -14,14 +14,13 @@ This is an alpha release which is highly experimental. All transforms should be 
 [![Chat](https://img.shields.io/badge/Slack-PhoenixDL-orange)](https://join.slack.com/t/phoenixdl/shared_invite/enQtODgwODI0MTE1MjgzLTJkZDE4N2NhM2VmNzVhYTEyMzI3NzFmMDY0NjM3MzJlZWRmMTk5ZWM1YzY2YjY5ZGQ1NWI1YmJmOTdiYTdhYTE)
 [![Documentation Status](https://readthedocs.org/projects/rising/badge/?version=latest)](https://rising.readthedocs.io/en/latest/?badge=latest)
 
+</div>
+
 | Python Version                                                 | Platform                                             | Unittests                                                                                         | NotebookTests                                                                            |
 |----------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/Linux-blue)   | ![Unittests Linux](https://github.com/PhoenixDL/rising/workflows/Unittests%20Linux/badge.svg)     | ![NotebookTests Linux](https://github.com/PhoenixDL/rising/workflows/NotebookTests%20Linux/badge.svg) |
 | ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/Windows-blue) | ![Unittests Windows](https://github.com/PhoenixDL/rising/workflows/Unittests%20Windows/badge.svg) | ![NotebookTests Windows](https://github.com/PhoenixDL/rising/workflows/NotebookTests%20Windows/badge.svg) |
 | ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)    | ![NotebookTests MacOS](https://github.com/PhoenixDL/rising/workflows/NotebookTests%20MacOS/badge.svg) |
-
-</div>
-
 
 ## What is `rising`?
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
@@ -138,13 +137,13 @@ The transforms are applied to individual samples which are loaded and augmented 
 This approach is very efficient and might only be slightly slower than batched execution of the transformations if applied on the CPU.
 GPU can be used to perform many operations in parallel and profit heavily from vectorization.
 Thus all transformations which should be able to be executed on the GPU should work in a batched fashion.
-![DefaultAugmentation](docs/source/images/dataloading/default.png "default augmentation pipeline")
+![DefaultAugmentation](docs/source/images/dataloading/default.svg "default augmentation pipeline")
 
 `rising` lets the user decide from case to case where augmentations should be applied during this pipeline.
 This can be heavily dependent on the specific tasks and the underlying hardware.
 As a consequence, rising implements all its transformations in a batched fashion and the `Dataloader` can execute them efficiently on the CPU and GPU.
 Optionally, the `Dataloader` can still be used to apply transformations on a per sample fashion, e.g. when transforms from other frameworks should be integrated.
-![RisingAugmentation](docs/source/images/dataloading/rising.png "rising augmentation pipeline")
+![RisingAugmentation](docs/source/images/dataloading/rising.svg "rising augmentation pipeline")
 
 Because the `rising` augmentation pipeline is a superset of the currently used methods external frameworks can be integrated into `rising`.
 Check out our [External Augmentation Notebooks](https://rising.readthedocs.io/en/latest/external_augmentation.html) for more information (including `Batchgenerators`, `TorchIO`, `Albumentations`).
