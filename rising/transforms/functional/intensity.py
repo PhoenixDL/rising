@@ -11,23 +11,16 @@ __all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_s
 def clamp(data: torch.Tensor, min: float, max: float,
           out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
+    Clamp tensor to minimal and maximal value
 
+    Args:
+        data: tensor to clamp
+        min: lower limit
+        max: upper limit
+        out: output tensor
 
-    Parameters
-    ----------
-    data:
-        tensor to clamp
-    min:
-        lower limit
-    max:
-        upper limit
-    out:
-        output tensor
-
-    Returns
-    -------
-    Tensor:
-        clamped tensor
+    Returns:
+        Tensor: clamped tensor
     """
     return torch.clamp(data, min=float(min), max=float(max), out=out)
 

@@ -12,25 +12,21 @@ __all__ = [
 
 
 class DiscreteParameter(AbstractParameter):
+    """
+    Samples parameters from a discrete population with or without
+    replacement
+    """
+
     def __init__(self, population: Sequence,
                  replacement: bool = False, weights: Sequence = None,
                  cum_weights: Sequence = None):
         """
-        Samples parameters from a discrete population with or without
-        replacement
-
-        Parameters
-        ----------
-        population : Sequence
-            the parameter population to sample from
-        replacement : bool
-            whether or not to sample with replacement
-        weights : Sequence, optional
-            relative sampling weights
-        cum_weights : Sequence
-            cumulative sampling weights
+        Args:
+            population : the parameter population to sample from
+            replacement : whether or not to sample with replacement
+            weights : relative sampling weights
+            cum_weights : cumulative sampling weights
         """
-
         super().__init__()
         if replacement:
             sample_fn = partial(sample_with_replacement, weights=weights,
@@ -50,15 +46,11 @@ class DiscreteParameter(AbstractParameter):
         """
         Samples from the discrete internal population
 
-        Parameters
-        ----------
-        n_samples : int
-            the number of elements to sample
+        Args:
+            n_samples : the number of elements to sample
 
-        Returns
-        -------
-        list
-            the sampled values
+        Returns:
+            list: the sampled values
 
         """
         return self.sample_fn(population=self.population, k=n_samples)

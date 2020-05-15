@@ -32,17 +32,14 @@ class AbstractTransform(torch.nn.Module):
         Internally a property is created to forward calls to the attribute to
         calls of the sampler.
 
-        Parameters
-        ----------
-        name : str
-            the property name
-        sampler : AbstractParameter
-            the sampler. Will be wrapped to a sampler always returning the
-            same element if not already a sampler
-        *args :
-            additional positional arguments (will be forwarded to sampler call)
-        **kwargs :
-            additional keyword arguments (will be forwarded to sampler call)
+        Args:
+            name : the property name
+        sampler : the sampler. Will be wrapped to a sampler always returning
+            the same element if not already a sampler
+        *args : additional positional arguments (will be forwarded to
+            sampler call)
+        **kwargs : additional keyword arguments (will be forwarded to
+            sampler call)
         """
         self._registered_samplers.append(name)
         if hasattr(self, name):

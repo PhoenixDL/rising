@@ -64,3 +64,20 @@ Type Checks
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: check_scalar
+
+Reshaping
+---------
+
+.. automodule:: rising.utils.shape
+
+.. currentmodule:: rising.utils.shape
+
+:hidden:`reshape`
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: reshape
+
+:hidden:`reshape_list`
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: reshape_list

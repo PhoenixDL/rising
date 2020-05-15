@@ -65,18 +65,18 @@ class SeqToMap(AbstractTransform):
 
 
 class PopKeys(AbstractTransform):
+    """
+    Pops keys from a given data dict
+    """
     def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
         """
-        Pops keys from a given data dict
-
-        Parameters
-        ----------
-        keys : Callable or Sequence of Strings
-            if callable it must return a boolean for each key indicating whether it should be popped from the dict.
-            if sequence of strings, the strings shall be the keys to be popped
-        return_popped : bool
-            whether to also return the popped values (default: False)
-
+        Args:
+            keys : if callable it must return a boolean for each key
+                indicating whether it should be popped from the dict.
+                if sequence of strings, the strings shall be the keys to be
+                popped
+            return_popped: whether to also return the popped values
+                (default: False)
         """
         super().__init__(grad=False)
         self.keys = keys
@@ -87,18 +87,18 @@ class PopKeys(AbstractTransform):
 
 
 class FilterKeys(AbstractTransform):
+    """
+    Filters keys from a given data dict
+    """
     def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
         """
-        Filters keys from a given data dict
-
-        Parameters
-        ----------
-        keys : Callable or Sequence of Strings
-            if callable it must return a boolean for each key indicating whether it should be retained in the dict.
-            if sequence of strings, the strings shall be the keys to be retained
-        return_popped : bool
-            whether to also return the popped values (default: False)
-
+        Args:
+            keys: if callable it must return a boolean for each key
+                indicating whether it should be retained in the dict.
+                if sequence of strings, the strings shall be the keys to be
+                retained
+            return_popped: whether to also return the popped values
+                (default: False)
         """
         super().__init__(grad=False)
         self.keys = keys

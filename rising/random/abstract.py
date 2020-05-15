@@ -19,15 +19,11 @@ class AbstractParameter(torch.nn.Module):
         """
         Calculates the number of elements in the given size
 
-        Parameters
-        ----------
-        size: Sequence or torch.Size
+        Args:
+            size: Sequence or torch.Size
 
-        Returns
-        -------
-        int
-            the number of elements
-
+        Returns:
+            int: the number of elements
         """
         if not isinstance(size, torch.Size):
             size = torch.Size(size)
@@ -38,16 +34,11 @@ class AbstractParameter(torch.nn.Module):
         """
         Abstract sampling function
 
-        Parameters
-        ----------
-        n_samples : int
-            the number of samples to return
+        Args:
+            n_samples : the number of samples to return
 
-        Returns
-        -------
-        torch.Tensor or list
-            the sampled values
-
+        Returns:
+            torch.Tensor or list: the sampled values
         """
         raise NotImplementedError
 
@@ -61,30 +52,21 @@ class AbstractParameter(torch.nn.Module):
         Calculates the number of samples from the given shape, performs the
         sampling and converts it back to the correct shape.
 
-        Parameters
-        ----------
-        size: Optional[Union[Sequence, torch.Size]]
-            the size of the sampled values. If None, it samples one value
-            without reshaping
-        device : torch.device or str, optional
-            the device the result value should be set to, if it is a tensor
-        dtype : torch.dtype or str, optional
-            the dtype, the result value should be casted to, if it is a tensor
-        tensor_like: torch.Tensor, optional
-            the tensor, having the correct dtype and device. The result will
-            be pushed onto this device and casted to this dtype if this is
-            specified.
+        Args:
+            size: the size of the sampled values. If None, it samples one value
+                without reshaping
+        device : the device the result value should be set to, if it is a tensor
+        dtype : the dtype, the result value should be casted to, if it is a tensor
+        tensor_like: the tensor, having the correct dtype and device.
+            The result will be pushed onto this device and casted to this
+            dtype if this is specified.
 
-        Returns
-        -------
-        list or torch.Tensor
-            the sampled values
+        Returns:
+            list or torch.Tensor: the sampled values
 
-        Notes
-        -----
-        if the parameter ``tensor_like`` is given,
-        it overwrites the parameters ``dtype`` and ``device``
-
+        Notes:
+            if the parameter ``tensor_like`` is given,
+            it overwrites the parameters ``dtype`` and ``device``
         """
         n_samples = self._get_n_samples(size if size is not None else (1,))
         samples = self.sample(n_samples)
