@@ -1,4 +1,5 @@
-from typing import Sequence
+import torch
+from typing import Sequence, Optional
 
 from rising.transforms import BaseTransform
 from rising.transforms.functional import one_hot_batch
@@ -15,18 +16,19 @@ class OneHot(BaseTransform):
     """
 
     def __init__(self, num_classes: int, keys: Sequence = ('seg',),
+                 dtype: Optional[torch.dtype] = None,
                  grad: bool = False, **kwargs):
         """
-
         Args:
             num_classes: number of classes. If :attr:`num_classes` is None,
                 the number of classes is automatically determined from the
                 current batch (by using the max of the current batch and
                 assuming a consecutive order from zero)
+            dtype: optionally changes the dtype of the onehot encoding
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to :func:`one_hot_batch`
         """
         super().__init__(augment_fn=one_hot_batch, keys=keys, grad=grad,
-                         num_classes=num_classes,
+                         num_classes=num_classes, dtype=dtype,
                          **kwargs)
