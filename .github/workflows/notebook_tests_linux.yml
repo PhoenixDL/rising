@@ -27,4 +27,4 @@ jobs:
         pip install --no-deps .
     - name: Run Notebooks
       run: |
-        treon
+        treon --threads=1 # with more threads this requires to much RAM
