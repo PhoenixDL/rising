@@ -105,7 +105,7 @@ class TestCompose(unittest.TestCase):
         compose = Compose([dummy_trafo])
         self.assertIsInstance(compose.transforms[0], _TransformWrapper)
         self.assertIsInstance(compose.transforms[0].trafo, DummyTrafo)
-    
+
     def test_one_of_no_weight(self):
         trafo = Mirror((0,))
         comp = OneOf(trafo, trafo)
