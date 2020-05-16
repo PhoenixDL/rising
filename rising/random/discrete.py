@@ -78,6 +78,7 @@ class DiscreteCombinationsParameter(DiscreteParameter):
     Sample parameters from an extended population which consists of all
     possible combinations of the given population
     """
+
     def __init__(self, population: Sequence, replacement: bool = False):
         """
         Args:
