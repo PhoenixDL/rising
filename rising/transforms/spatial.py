@@ -40,12 +40,14 @@ class Rot90(AbstractTransform):
 
     def __init__(self, dims: Union[Sequence[int], DiscreteParameter],
                  keys: Sequence[str] = ('data',),
+                 num_rots: Sequence[int] = (0, 1, 2, 3),
                  prob: float = 0.5, grad: bool = False, **kwargs):
         """
         Args:
             dims: dims/axis ro rotate. If more than two dims are
                 provided, 2 dimensions are randomly chosen at each call
             keys: keys which should be rotated
+            num_rots: possible values for number of rotations
             prob: probability for rotation
             grad: enable gradient computation inside transformation
             kwargs: keyword arguments passed to superclass
@@ -57,9 +59,13 @@ class Rot90(AbstractTransform):
         self.keys = keys
         self.prob = prob
         if not isinstance(dims, DiscreteParameter):
-            dims = DiscreteParameter(list(permutations(dims, 2)))
+            if len(dims) > 2:
+                dims = list(permutations(dims, 2))
+            else:
+                dims = (dims,)
+            dims = DiscreteParameter(dims)
         self.register_sampler("dims", dims)
-        self.register_sampler("num_rots", DiscreteParameter((0, 1, 2, 3)))
+        self.register_sampler("num_rots", DiscreteParameter(num_rots))
 
     def forward(self, **data) -> dict:
         """
