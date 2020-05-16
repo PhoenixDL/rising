@@ -113,9 +113,9 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
 
     if per_channel:
         for _c in range(data.shape[0]):
-            out[_c] =_norm(data[_c], out[_c])
+            out[_c] = _norm(data[_c], out[_c])
     else:
-         out = _norm(data, out)
+        out = _norm(data, out)
     return out
 
 
