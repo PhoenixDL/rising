@@ -26,6 +26,11 @@ class TestChannel(unittest.TestCase):
                 self.assertTrue((outp == exp).all())
                 self.assertEqual(outp.dtype, expected_dtype)
 
+    def test_one_hot_batch_float_error(self):
+        with self.assertRaises(TypeError):
+            inp = torch.zeros(1, 1, 3, 3).float()
+            one_hot_batch(inp)
+
 
 if __name__ == '__main__':
     unittest.main()

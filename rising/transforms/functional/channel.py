@@ -14,7 +14,7 @@ def one_hot_batch(target: torch.Tensor,
     into first dimension -> input should only have one channel)
 
     Args:
-        target: tensor to be converted
+        target: long tensor to be converted
         num_classes: number of classes.
             If :attr:`num_classes` is None, the maximum of target is used
         dtype: optionally changes the dtype of the onehot encoding
@@ -22,6 +22,10 @@ def one_hot_batch(target: torch.Tensor,
     Returns:
         torch.Tensor: one hot encoded tensor
     """
+    if target.dtype != torch.long:
+        raise TypeError(
+            f"Target tensor needs to be of type torch.long, found {target.dtype}")
+
     if target.ndim in [0, 1]:
         return torch_one_hot(target, num_classes)
     else:

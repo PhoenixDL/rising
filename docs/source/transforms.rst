@@ -161,6 +161,14 @@ Channel Transforms
     :undoc-members:
     :show-inheritance:
 
+:hidden:`ArgMax`
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: ArgMax
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Cropping Transforms
 ********************
 
