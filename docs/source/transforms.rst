@@ -215,6 +215,14 @@ Format Transforms
     :undoc-members:
     :show-inheritance:
 
+:hidden:`RenameKeys`
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RenameKeys
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Intensity Transforms
 *********************
 
