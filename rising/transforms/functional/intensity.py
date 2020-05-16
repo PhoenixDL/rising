@@ -51,7 +51,8 @@ def norm_range(data: torch.Tensor, min: float, max: float,
 
 
 def norm_min_max(data: torch.Tensor, per_channel: bool = True,
-                 out: Optional[torch.Tensor] = None) -> torch.Tensor:
+                 out: Optional[torch.Tensor] = None,
+                 eps: Optional[float] = 1e-8) -> torch.Tensor:
     """
     Scale range to [0,1]
 
@@ -59,28 +60,34 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True,
         data: input data. Per channel option supports [C,H,W] and [C,H,W,D].
         per_channel: range is normalized per channel
         out:  if provided, result is saved in here
+        eps: small constant for numerical stability.
+            If None, no factor constant will be added
 
     Returns:
         torch.Tensor: scaled data
     """
+    def _norm(_data: torch.Tensor, _out: torch.Tensor):
+        _min = _data.min()
+        _range = _data.max() - _min
+        if eps is not None:
+            _range = _range + eps
+        _out = (_data - _min) / _range
+        return _out
+
     if out is None:
         out = torch.zeros_like(data)
 
     if per_channel:
         for _c in range(data.shape[0]):
-            _min = data[_c].min()
-            _range = data[_c].max() - _min
-            out[_c] = (data[_c] - _min) / _range
+            out[_c] = _norm(data[_c], out[_c])
     else:
-        _min = data.min()
-        _range = data.max() - _min
-        out = (data - _min) / _range
-
+        out = _norm(data, out)
     return out
 
 
 def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
-                            out: Optional[torch.Tensor] = None) -> torch.Tensor:
+                            out: Optional[torch.Tensor] = None,
+                            eps: Optional[float] = 1e-8) -> torch.Tensor:
     """
     Normalize mean to zero and std to one
 
@@ -88,19 +95,27 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
         data: input data. Per channel option supports [C,H,W] and [C,H,W,D].
         per_channel: range is normalized per channel
         out: if provided, result is saved in here
+        eps: small constant for numerical stability.
+            If None, no factor constant will be added
 
     Returns:
         torch.Tensor: normalized data
     """
+    def _norm(_data: torch.Tensor, _out: torch.Tensor):
+        denom = _data.std()
+        if eps is not None:
+            denom = denom + eps
+        _out = (_data - _data.mean()) / denom
+        return _out
+
     if out is None:
         out = torch.zeros_like(data)
 
     if per_channel:
         for _c in range(data.shape[0]):
-            out[_c] = (data[_c] - data[_c].mean()) / data[_c].std()
+            out[_c] =_norm(data[_c], out[_c])
     else:
-        out = (data - data.mean()) / data.std()
-
+         out = _norm(data, out)
     return out
 
 

@@ -1,5 +1,5 @@
 import torch
-from typing import Union, Sequence
+from typing import Union, Sequence, Optional
 
 from rising.transforms.abstract import (BaseTransform, PerSampleTransform,
                                         PerChannelTransform)
@@ -65,33 +65,37 @@ class NormMinMax(PerSampleTransform):
     """Norm to [0, 1]"""
 
     def __init__(self, keys: Sequence = ('data',), per_channel: bool = True,
-                 grad: bool = False, **kwargs):
+                 grad: bool = False, eps: Optional[float] = 1e-8, **kwargs):
         """
         Args:
             keys: keys to normalize
             per_channel: normalize per channel
             grad: enable gradient computation inside transformation
+            eps: small constant for numerical stability.
+                If None, no factor constant will be added
             **kwargs: keyword arguments passed to normalization function
         """
         super().__init__(augment_fn=norm_min_max, keys=keys, grad=grad,
-                         per_channel=per_channel, **kwargs)
+                         per_channel=per_channel, eps=eps, **kwargs)
 
 
 class NormZeroMeanUnitStd(PerSampleTransform):
     """Normalize mean to zero and std to one"""
 
     def __init__(self, keys: Sequence = ('data',), per_channel: bool = True,
-                 grad: bool = False, **kwargs):
+                 grad: bool = False, eps: Optional[float] = 1e-8, **kwargs):
         """
         Args:
             keys: keys to normalize
             per_channel: normalize per channel
             grad: enable gradient computation inside transformation
-            kwargs: keyword arguments passed to normalization function
+            eps: small constant for numerical stability.
+                If None, no factor constant will be added
+            **kwargs: keyword arguments passed to normalization function
         """
         super().__init__(augment_fn=norm_zero_mean_unit_std, keys=keys,
-                         grad=grad,
-                         per_channel=per_channel, **kwargs)
+                         grad=grad, per_channel=per_channel, eps=eps,
+                         **kwargs)
 
 
 class NormMeanStd(PerSampleTransform):
