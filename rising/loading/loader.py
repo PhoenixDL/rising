@@ -53,12 +53,12 @@ class DataLoader(_DataLoader):
     A DataLoader introducing batch-transforms, per-sample-transforms,
     numpy seeds for worker processes outside the dataset
 
-    Notes:
+    .. note::
         For Reproducibility numpy and pytorch must be seeded in the main
         process, as these frameworks will be used to generate their own
         seeds for each worker.
 
-    Notes:
+    .. note::
         ``len(dataloader)`` heuristic is based on the length of the sampler
         used. When :attr:`dataset` is an
         :class:`~torch.utils.data.IterableDataset`, an infinite sampler is
@@ -67,20 +67,20 @@ class DataLoader(_DataLoader):
         loading configurations. So one should not query this method unless
         they work with a map-style dataset.
 
-    Warnings:
+    .. warning::
         If the ``spawn`` start method is used, :attr:`worker_init_fn`
         cannot be an unpicklable object, e.g., a lambda function. See
         :ref:`multiprocessing-best-practices` on more details related
         to multiprocessing in PyTorch.
 
-    Notes:
+    .. note::
         The GPU-Transforms for a batch are always executed in the main
         process after the batch was gathered from subprocesses which apply
         the CPU-Transformations. The desired workflow is as follows:
 
         Disk -> CPU-Transforms -> GPU-Memory -> GPU-Transforms -> Further
         GPU Processing (e.g. training a neural network)
-"""
+    """
 
     def __init__(self, dataset: Union[Sequence, Dataset],
                  batch_size: int = 1, shuffle: bool = False,
