@@ -568,7 +568,7 @@ def _seed_npy_before_worker_init(worker_id: int, seed: int,
     """
     if not sys.warnoptions and worker_id > 0:
         import warnings
-        warnings.simplefilter("once")
+        warnings.simplefilter("ignore")
     try:
         import numpy as np
         np.random.seed(seed + worker_id)
