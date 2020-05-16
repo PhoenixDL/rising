@@ -8,6 +8,7 @@ from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
     points_to_homogeneous, unit_box, get_batched_eye, deg_to_rad, \
     matrix_revert_coordinate_order
 from rising.utils.checktype import check_scalar
+from rising.random import AbstractParameter
 
 __all__ = [
     'affine_image_transform',
@@ -18,7 +19,8 @@ __all__ = [
     "parametrize_matrix"
 ]
 
-AffineParamType = Union[int, float, Sequence, torch.Tensor]
+AffineParamType = Union[int, Sequence[int], float, Sequence[float], torch.Tensor,
+                        AbstractParameter, Sequence[AbstractParameter]]
 
 
 def expand_scalar_param(param: AffineParamType, batchsize: int, ndim: int) -> Tensor:

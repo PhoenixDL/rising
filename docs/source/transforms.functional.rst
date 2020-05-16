@@ -115,10 +115,10 @@ Device Transforms
 
 .. currentmodule:: rising.transforms.functional.device
 
-:hidden:`to_device`
-~~~~~~~~~~~~~~~~~~~~
+:hidden:`to_device_dtype`
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: to_device
+.. autofunction:: to_device_dtype
 
 Intensity Transforms
 **********************************************************

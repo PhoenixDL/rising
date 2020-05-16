@@ -1,6 +1,9 @@
 from .abstract import AbstractTransform
+from typing import Union, Sequence, Callable, Tuple
 
-__all__ = ["MapToSeq", "SeqToMap"]
+from rising.transforms.functional.utility import pop_keys, filter_keys
+
+__all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys"]
 
 
 class MapToSeq(AbstractTransform):
@@ -59,3 +62,49 @@ class SeqToMap(AbstractTransform):
             dict: mapped data
         """
         return {_key: data[_idx] for _idx, _key in enumerate(self.keys)}
+
+
+class PopKeys(AbstractTransform):
+    """
+    Pops keys from a given data dict
+    """
+
+    def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
+        """
+        Args:
+            keys : if callable it must return a boolean for each key
+                indicating whether it should be popped from the dict.
+                if sequence of strings, the strings shall be the keys to be
+                popped
+            return_popped: whether to also return the popped values
+                (default: False)
+        """
+        super().__init__(grad=False)
+        self.keys = keys
+        self.return_popped = return_popped
+
+    def forward(self, **data) -> Union[dict, Tuple[dict, dict]]:
+        return pop_keys(data=data, keys=self.keys, return_popped=self.return_popped)
+
+
+class FilterKeys(AbstractTransform):
+    """
+    Filters keys from a given data dict
+    """
+
+    def __init__(self, keys: Union[Callable, Sequence], return_popped: bool = False):
+        """
+        Args:
+            keys: if callable it must return a boolean for each key
+                indicating whether it should be retained in the dict.
+                if sequence of strings, the strings shall be the keys to be
+                retained
+            return_popped: whether to also return the popped values
+                (default: False)
+        """
+        super().__init__(grad=False)
+        self.keys = keys
+        self.return_popped = return_popped
+
+    def forward(self, **data) -> Union[dict, Tuple[dict, dict]]:
+        return filter_keys(data=data, keys=self.keys, return_popped=self.return_popped)

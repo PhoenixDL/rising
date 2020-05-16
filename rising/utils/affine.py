@@ -147,7 +147,7 @@ def deg_to_rad(angles: Union[torch.Tensor, float, int]
 
 def unit_box(n: int, scale: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
-    Create a sclaed version of a unit box
+    Create a (scaled) version of a unit box
 
     Args:
         n: number of dimensions
