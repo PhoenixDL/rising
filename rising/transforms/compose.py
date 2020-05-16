@@ -77,12 +77,12 @@ class Compose(AbstractTransform):
 
         """
         super().__init__(grad=True)
-        if len(transforms) == 0:
-            raise ValueError("At least one transformation needs to be composed.")
-        if isinstance(transforms[0], Sequence):
+        if len(transforms) > 0 and isinstance(transforms[0], Sequence):
             transforms = transforms[0]
-
+        if not transforms:
+            raise ValueError("At least one transformation needs to be selected.")
         self.transforms = transforms
+
         self.transform_call = transform_call
         self.shuffle = shuffle
 
@@ -259,10 +259,10 @@ class OneOf(AbstractTransform):
             09083c2d092eae/torchio/transforms/augmentation/composition.py)
         """
         super().__init__(grad=True)
-        if len(transforms) == 0:
-            raise ValueError("At least one transformation needs to be selected.")
-        if isinstance(transforms[0], Sequence):
+        if len(transforms) > 0 and isinstance(transforms[0], Sequence):
             transforms = transforms[0]
+        if not transforms:
+            raise ValueError("At least one transformation needs to be selected.")
         self.transforms = transforms
 
         if weights is not None and len(weights) != len(transforms):

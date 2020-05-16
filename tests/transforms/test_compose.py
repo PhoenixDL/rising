@@ -113,6 +113,11 @@ class TestCompose(unittest.TestCase):
         expected_out = trafo(**self.batch)
         self.assertTrue(out["data"].allclose(expected_out["data"]))
 
+    def test_one_of_weight_error(self):
+        with self.assertRaises(ValueError):
+            trafo = Mirror((0,))
+            comp = OneOf(trafo, trafo, weights=[0.33, 0.33, 0.33])
+
     def test_one_of_weight(self):
         for weight in [[1., 0.], torch.tensor([1., 0.])]:
             with self.subTest(weight=weight):
@@ -122,6 +127,14 @@ class TestCompose(unittest.TestCase):
                 out = comp(**self.batch)
                 expected_out = trafo0(**self.batch)
                 self.assertTrue(out["data"].allclose(expected_out["data"]))
+
+    def test_no_trafo_error(self):
+        for trafo_cls in [OneOf, Compose, DropoutCompose]:
+            with self.subTest(trafo_cls=trafo_cls):
+                with self.assertRaises(ValueError):
+                    comp = trafo_cls([])
+                with self.assertRaises(ValueError):
+                    comp = trafo_cls()
 
 
 if __name__ == '__main__':
