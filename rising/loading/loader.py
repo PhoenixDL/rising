@@ -566,6 +566,10 @@ def _seed_npy_before_worker_init(worker_id: int, seed: int,
         Any: result of :attr`worker_init_fn`
 
     """
+    import sys
+    if not sys.warnoptions and worker_id > 0:
+        import warnings
+        warnings.simplefilter("ignore")
     try:
         import numpy as np
         np.random.seed(seed + worker_id)
