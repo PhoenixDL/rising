@@ -68,7 +68,7 @@ Discrete Random Parameters
     :show-inheritance:
 
 :hidden:`DiscreteCombinationsParameter`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: DiscreteCombinationsParameter
     :members:
@@ -76,6 +76,6 @@ Discrete Random Parameters
     :show-inheritance:
 
 :hidden:`combinations_all`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: combinations_all
