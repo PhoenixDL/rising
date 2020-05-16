@@ -70,6 +70,14 @@ Compose Transforms
     :undoc-members:
     :show-inheritance:
 
+:hidden:`OneOf`
+~~~~~~~~~~~~~~~
+
+.. autoclass:: OneOf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :hidden:`dict_call`
 ~~~~~~~~~~~~~~~~~~~
 

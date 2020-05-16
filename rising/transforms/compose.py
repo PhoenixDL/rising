@@ -1,5 +1,5 @@
 from random import shuffle
-from typing import Sequence, Union, Callable, Any, Mapping
+from typing import Sequence, Union, Callable, Any, Mapping, Optional
 
 import torch
 
@@ -8,7 +8,7 @@ from rising.transforms import AbstractTransform
 from rising.random import ContinuousParameter, UniformParameter
 
 
-__all__ = ["Compose", "DropoutCompose"]
+__all__ = ["Compose", "DropoutCompose", "OneOf"]
 
 
 def dict_call(batch: dict, transform: Callable) -> Any:
@@ -62,7 +62,9 @@ class Compose(AbstractTransform):
     Compose multiple transforms
     """
 
-    def __init__(self, *transforms, shuffle: bool = False,
+    def __init__(self,
+                 *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
+                 shuffle: bool = False,
                  transform_call: Callable[[Any, Callable], Any] = dict_call):
         """
         Args:
@@ -75,6 +77,8 @@ class Compose(AbstractTransform):
 
         """
         super().__init__(grad=True)
+        if len(transforms) == 0:
+            raise ValueError("At least one transformation needs to be composed.")
         if isinstance(transforms[0], Sequence):
             transforms = transforms[0]
 
@@ -165,22 +169,24 @@ class DropoutCompose(Compose):
     Compose multiple transforms to one and randomly apply them
     """
 
-    def __init__(self, *transforms,
+    def __init__(self,
+                 *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
                  dropout: Union[float, Sequence[float]] = 0.5,
+                 shuffle: bool = False,
                  random_sampler: ContinuousParameter = None,
                  transform_call: Callable[[Any, Callable], Any] = dict_call,
                  **kwargs):
         """
         Args:
-            *transforms: one or multiple transformations which are applied in c
-                onsecutive order
+            *transforms: one or multiple transformations which are applied in
+                consecutive order
             dropout: if provided as float, each transform is skipped with the
                 given probability
                 if :attr:`dropout` is a sequence, it needs to specify the
                 dropout probability for each given transform
+            shuffle: apply transforms in random order
             random_sampler : a continuous parameter sampler. Samples a
-                random value for each
-            of the transforms.
+                random value for each of the transforms.
             transform_call: function which determines how transforms are
                 called. By default Mappings and Sequences are unpacked
                 during the transform.
@@ -189,7 +195,8 @@ class DropoutCompose(Compose):
             ValueError: if dropout is a sequence it must have the same length
                 as transforms
         """
-        super().__init__(*transforms, transform_call=transform_call, **kwargs)
+        super().__init__(*transforms, transform_call=transform_call,
+                         shuffle=shuffle, **kwargs)
 
         if random_sampler is None:
             random_sampler = UniformParameter(0., 1.)
@@ -226,4 +233,55 @@ class DropoutCompose(Compose):
         for idx in self.transform_order:
             if rand[idx] > self.dropout[idx]:
                 data = self.transform_call(data, self.transforms[idx])
+        return data
+
+
+class OneOf(AbstractTransform):
+    """
+    Apply one of the given transforms.
+    """
+
+    def __init__(self, *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
+                 weights: Optional[Sequence[float]] = None,
+                 p: float = 1.,
+                 transform_call: Callable[[Any, Callable], Any] = dict_call):
+        """
+        Args:
+            *transforms: transforms to choose from
+            weights: additional weights for transforms
+            p: probability that one transform i applied
+            transform_call: function which determines how transforms are
+                called. By default Mappings and Sequences are unpacked
+                during the transform.
+
+        References:
+            (https://github.com/fepegar/torchio/blob/687aa8d73e9377f4e6f7db7996
+            09083c2d092eae/torchio/transforms/augmentation/composition.py)
+        """
+        super().__init__(grad=True)
+        if len(transforms) == 0:
+            raise ValueError("At least one transformation needs to be selected.")
+        if isinstance(transforms[0], Sequence):
+            transforms = transforms[0]
+        self.transforms = transforms
+
+        if weights is not None and len(weights) != len(transforms):
+            raise ValueError("If weights are porvided, every transform needs a weight. "
+                             f"Found {len(weights)} weights and {len(transforms)} transforms")
+        if weights is None:
+            self.weights = torch.tensor(
+                [1 / len(self.transforms)] * len(self.transforms))
+        else:
+            if not isinstance(weights, torch.Tensor):
+                self.weights = torch.tensor(weights)
+            else:
+                self.weights = weights
+
+        self.p = p
+        self.transform_call = transform_call
+
+    def forward(self, **data) -> dict:
+        if torch.rand(1) < self.p:
+            index = torch.multinomial(self.weights, 1)
+            data = self.transform_call(data, self.transforms[int(index)])
         return data
