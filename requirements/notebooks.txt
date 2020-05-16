@@ -6,3 +6,4 @@ batchgenerators
 SimpleITK
 tensorboard
 pytorch-lightning
+gdown
