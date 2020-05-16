@@ -1,14 +1,31 @@
-from typing import Sequence
+from typing import Sequence, List
 from random import (sample as sample_without_replacement,
                     choices as sample_with_replacement)
 
 from functools import partial
+from itertools import combinations
 
 from rising.random.abstract import AbstractParameter
 
 __all__ = [
-    'DiscreteParameter'
+    'DiscreteParameter', 'DiscreteCombinationsParameter'
 ]
+
+
+def combinations_all(data: Sequence) -> List:
+    """
+    Return all combinations of all length for given sequence
+
+    Args:
+        data: sequence to get combinations of
+
+    Returns:
+        List: all combinations
+    """
+    comb = []
+    for r in range(1, len(data) + 1):
+        comb.extend(combinations(data, r=r))
+    return comb
 
 
 class DiscreteParameter(AbstractParameter):
@@ -54,3 +71,18 @@ class DiscreteParameter(AbstractParameter):
 
         """
         return self.sample_fn(population=self.population, k=n_samples)
+
+
+class DiscreteCombinationsParameter(DiscreteParameter):
+    """
+    Sample parameters from an extended population which consists of all
+    possible combinations of the given population
+    """
+    def __init__(self, population: Sequence, replacement: bool = False):
+        """
+        Args:
+            population : population to build combination of
+            replacement : whether or not to sample with replacement
+        """
+        population = combinations_all(population)
+        super().__init__(population=population, replacement=replacement)

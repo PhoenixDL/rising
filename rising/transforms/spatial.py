@@ -1,13 +1,14 @@
 # from __future__ import annotations
 import torch
 
-from itertools import permutations
+from itertools import combinations
 from typing import Union, Sequence, Callable, Optional
 from torch.multiprocessing import Value
 
 from rising.random import AbstractParameter, DiscreteParameter
 from rising.transforms.abstract import AbstractTransform, BaseTransform
 from rising.transforms.functional.spatial import *
+
 
 __all__ = ["Mirror", "Rot90", "ResizeNative",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
@@ -30,6 +31,13 @@ class Mirror(BaseTransform):
                 it is used for all dims
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to superclass
+
+        Examples:
+            >>> # Use mirror transform for augmentations
+            >>> from rising.random import DiscreteCombinationsParameter
+            >>> # We sample from all possible mirror combination for
+            >>> # volumetric data
+            >>> trafo = Mirror(DiscreteCombinationsParameter((0, 1, 2)))
         """
         super().__init__(augment_fn=mirror, dims=dims, keys=keys, grad=grad,
                          property_names=('dims',), **kwargs)
@@ -60,7 +68,7 @@ class Rot90(AbstractTransform):
         self.prob = prob
         if not isinstance(dims, DiscreteParameter):
             if len(dims) > 2:
-                dims = list(permutations(dims, 2))
+                dims = list(combinations(dims, 2))
             else:
                 dims = (dims,)
             dims = DiscreteParameter(dims)

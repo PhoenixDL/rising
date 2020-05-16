@@ -67,3 +67,15 @@ Discrete Random Parameters
     :undoc-members:
     :show-inheritance:
 
+:hidden:`DiscreteCombinationsParameter`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: DiscreteCombinationsParameter
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:hidden:`combinations_all`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: combinations_all
