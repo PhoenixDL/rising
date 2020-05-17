@@ -156,7 +156,6 @@ Optionally, the `Dataloader` can still be used to apply transformations on a per
 ![RisingAugmentation](docs/source/images/dataloading/rising.svg "rising augmentation pipeline")
 
 Because the `rising` augmentation pipeline is a superset of the currently used methods, external frameworks can be integrated into `rising`.
-Check out our [External Augmentation Notebooks](https://rising.readthedocs.io/en/latest/external_augmentation.html) for more information (including `Batchgenerators`, `TorchIO`, `Albumentations`).
 
 ## Project Organization
 `Issues`: If you find any bugs, want some additional features or maybe just have a question don't hesitate to open an issue :)
