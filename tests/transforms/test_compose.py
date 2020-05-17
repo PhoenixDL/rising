@@ -1,4 +1,3 @@
-
 import unittest
 import torch
 import random
@@ -6,7 +5,7 @@ import copy
 
 from rising.transforms.spatial import Mirror
 from rising.transforms.compose import Compose, DropoutCompose, \
-    AbstractTransform, _TransformWrapper
+    AbstractTransform, _TransformWrapper, OneOf
 
 
 class TestCompose(unittest.TestCase):
@@ -106,6 +105,36 @@ class TestCompose(unittest.TestCase):
         compose = Compose([dummy_trafo])
         self.assertIsInstance(compose.transforms[0], _TransformWrapper)
         self.assertIsInstance(compose.transforms[0].trafo, DummyTrafo)
+
+    def test_one_of_no_weight(self):
+        trafo = Mirror((0,))
+        comp = OneOf(trafo, trafo)
+        out = comp(**self.batch)
+        expected_out = trafo(**self.batch)
+        self.assertTrue(out["data"].allclose(expected_out["data"]))
+
+    def test_one_of_weight_error(self):
+        with self.assertRaises(ValueError):
+            trafo = Mirror((0,))
+            comp = OneOf(trafo, trafo, weights=[0.33, 0.33, 0.33])
+
+    def test_one_of_weight(self):
+        for weight in [[1., 0.], torch.tensor([1., 0.])]:
+            with self.subTest(weight=weight):
+                trafo0 = Mirror((0,))
+                trafo1 = Mirror((1,))
+                comp = OneOf(trafo0, trafo1, weights=weight)
+                out = comp(**self.batch)
+                expected_out = trafo0(**self.batch)
+                self.assertTrue(out["data"].allclose(expected_out["data"]))
+
+    def test_no_trafo_error(self):
+        for trafo_cls in [OneOf, Compose, DropoutCompose]:
+            with self.subTest(trafo_cls=trafo_cls):
+                with self.assertRaises(ValueError):
+                    comp = trafo_cls([])
+                with self.assertRaises(ValueError):
+                    comp = trafo_cls()
 
 
 if __name__ == '__main__':
