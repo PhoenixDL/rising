@@ -29,7 +29,7 @@ import rising  # noqa: E402
 for md in ['CONTRIBUTING.md', 'README.md']:
     shutil.copy(os.path.join(PATH_ROOT, md), os.path.join(PATH_HERE, md.lower()))
 
-converted_readme = pypandoc.convert('readme.md', 'rst').split('\n')
+converted_readme = pypandoc.convert_file('readme.md', 'rst').split('\n')
 os.remove('readme.md')
 
 rst_file = []
