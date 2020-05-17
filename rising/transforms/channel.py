@@ -1,5 +1,6 @@
-import torch
 from typing import Sequence, Optional
+
+import torch
 
 from rising.transforms import BaseTransform
 from rising.transforms.functional import one_hot_batch

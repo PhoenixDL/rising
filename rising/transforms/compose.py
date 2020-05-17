@@ -253,10 +253,6 @@ class OneOf(AbstractTransform):
             transform_call: function which determines how transforms are
                 called. By default Mappings and Sequences are unpacked
                 during the transform.
-
-        References:
-            (https://github.com/fepegar/torchio/blob/687aa8d73e9377f4e6f7db7996
-            09083c2d092eae/torchio/transforms/augmentation/composition.py)
         """
         super().__init__(grad=True)
         if len(transforms) > 0 and isinstance(transforms[0], Sequence):
@@ -272,10 +268,7 @@ class OneOf(AbstractTransform):
             self.weights = torch.tensor(
                 [1 / len(self.transforms)] * len(self.transforms))
         else:
-            if not isinstance(weights, torch.Tensor):
-                self.weights = torch.tensor(weights)
-            else:
-                self.weights = weights
+            self.weights = torch.tensor(weights)
 
         self.p = p
         self.transform_call = transform_call
