@@ -27,3 +27,4 @@ jobs:
       run: |
         cd docs;
         bash build_docs.sh
+        cat source/getting_started.rst
