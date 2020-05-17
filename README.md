@@ -20,18 +20,18 @@
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
 Our goal is to provide a seamless integration into the PyTorch Ecosystem without sacrificing usability or features.
 Multiple examples for different use cases can be found in our [tutorial docs](https://rising.readthedocs.io/en/latest/tutorials.html) e.g. 
-[2D Classification on MedNIST](),
-[3D Segmentation of Hippocampus (Medical Decathlon)](),
+[2D Classification on MedNIST](https://github.com/PhoenixDL/rising/blob/master/notebooks/classification_2d_mednist.ipynb),
+[3D Segmentation of Hippocampus (Medical Decathlon)](https://github.com/PhoenixDL/rising/blob/master/notebooks/lightning_segmentation.ipynb),
 [Example Transformation Output](https://rising.readthedocs.io/en/latest/transformations.html),
 [Integration of External Frameworks](https://rising.readthedocs.io/en/latest/external_augmentation.html)
 
 ## Why another framework?
-|            | `rising` | TorchIO       | Batchgenerators | Kornia | DALI    | Vanilla PyTorch | Albumentations | 
-|------------|----------|---------------|-----------------|--------|---------|-----------------|----------------|
-| Volumetric | ✅       | ✅            | ✅             | ❌      | ❌     | ❌              | ❌             |
-| Gradients  | ✅       | ❌            | ❌             | ✅      | ❌     | ❌              | ❌             |
-| GPU        | ✅       | ❌            | ❌             | ✅      | ✅     | ❌              | ❌             |
-| Backend    | PyTorch  | PyTorch/Sitk  | Numpy          | PyTorch | C++     | PyTorch         | Numpy          |  
+|  | rising | TorchIO | Batchgenerators | Kornia | DALI | Vanilla PyTorch | Albumentations |
+|:----------:|:-------:|:------------:|:---------------:|:-------:|:----:|:---------------:|:--------------:|
+| Volumetric | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Gradients | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| GPU | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Backend | PyTorch | PyTorch/SITK | NumPy | PyTorch | C++ | PyTorch | NumPy |
 
 ## Docs
 [master](https://rising.readthedocs.io/en/latest/)
@@ -133,7 +133,7 @@ dataloader = DataLoader(
 ```
 
 More details about how and where the augmentations are applied can be found below.
-You can also check out our example Notebooks for [2D Classification](), [3D Segmentation]()
+You can also check out our example Notebooks for [2D Classification](https://github.com/PhoenixDL/rising/blob/master/notebooks/classification_2d_mednist.ipynb), [3D Segmentation](https://github.com/PhoenixDL/rising/blob/master/notebooks/lightning_segmentation.ipynb)
 and [Transformation Examples](https://rising.readthedocs.io/en/latest/transformations.html).
 
 ## Dataloading with `rising`

@@ -26,4 +26,4 @@ jobs:
     - name: Build Docs
       run: |
         cd docs;
-        bash build_docs.sh
+        bash build_docs.sh;

@@ -16,6 +16,7 @@ import inspect
 import os
 import shutil
 import sys
+import pypandoc
 
 import rising_sphinx_theme
 
@@ -25,8 +26,27 @@ sys.path.insert(0, os.path.abspath(PATH_ROOT))
 
 import rising  # noqa: E402
 
-for md in ['CONTRIBUTING.md']:
+for md in ['CONTRIBUTING.md', 'README.md']:
     shutil.copy(os.path.join(PATH_ROOT, md), os.path.join(PATH_HERE, md.lower()))
+
+converted_readme = pypandoc.convert_file('readme.md', 'rst').split('\n')
+os.remove('readme.md')
+
+rst_file = []
+skip = False
+
+# skip problematic parts 
+for line in converted_readme:
+    if any([line.startswith(x) for x in ['.. container::' ,'   |PyPI|', 'Why another framework?', '.. |PyPI|', '|PyPI|', '   logo', '.. raw:: html']]):
+        skip = True
+    elif any([line.startswith(x) for x in ['What is ``rising``?', 'Installation', '.. |DefaultAugmentation|', '.. figure:: images/logo/rising_logo.png']]):
+        skip = False
+
+    if not skip:
+        rst_file.append(line.replace('docs/source/images', 'images').replace('.svg', '.png'))
+    
+with open('getting_started.rst', 'w') as f:
+    f.write('\n'.join(rst_file))
 
 # -- Project information -----------------------------------------------------
 
