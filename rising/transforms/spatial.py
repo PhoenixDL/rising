@@ -1,13 +1,14 @@
 # from __future__ import annotations
 import torch
 
-from itertools import permutations
+from itertools import combinations
 from typing import Union, Sequence, Callable, Optional
 from torch.multiprocessing import Value
 
 from rising.random import AbstractParameter, DiscreteParameter
 from rising.transforms.abstract import AbstractTransform, BaseTransform
 from rising.transforms.functional.spatial import *
+
 
 __all__ = ["Mirror", "Rot90", "ResizeNative",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
@@ -30,6 +31,13 @@ class Mirror(BaseTransform):
                 it is used for all dims
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to superclass
+
+        Examples:
+            >>> # Use mirror transform for augmentations
+            >>> from rising.random import DiscreteCombinationsParameter
+            >>> # We sample from all possible mirror combination for
+            >>> # volumetric data
+            >>> trafo = Mirror(DiscreteCombinationsParameter((0, 1, 2)))
         """
         super().__init__(augment_fn=mirror, dims=dims, keys=keys, grad=grad,
                          property_names=('dims',), **kwargs)
@@ -40,12 +48,14 @@ class Rot90(AbstractTransform):
 
     def __init__(self, dims: Union[Sequence[int], DiscreteParameter],
                  keys: Sequence[str] = ('data',),
+                 num_rots: Sequence[int] = (0, 1, 2, 3),
                  prob: float = 0.5, grad: bool = False, **kwargs):
         """
         Args:
             dims: dims/axis ro rotate. If more than two dims are
                 provided, 2 dimensions are randomly chosen at each call
             keys: keys which should be rotated
+            num_rots: possible values for number of rotations
             prob: probability for rotation
             grad: enable gradient computation inside transformation
             kwargs: keyword arguments passed to superclass
@@ -57,9 +67,13 @@ class Rot90(AbstractTransform):
         self.keys = keys
         self.prob = prob
         if not isinstance(dims, DiscreteParameter):
-            dims = DiscreteParameter(list(permutations(dims, 2)))
+            if len(dims) > 2:
+                dims = list(combinations(dims, 2))
+            else:
+                dims = (dims,)
+            dims = DiscreteParameter(dims)
         self.register_sampler("dims", dims)
-        self.register_sampler("num_rots", DiscreteParameter((0, 1, 2, 3)))
+        self.register_sampler("num_rots", DiscreteParameter(num_rots))
 
     def forward(self, **data) -> dict:
         """

@@ -29,7 +29,7 @@ class TestSpatialTransforms(unittest.TestCase):
 
     def test_rot90_transform(self):
         random.seed(0)
-        trafo = Rot90((0, 1), prob=1)
+        trafo = Rot90((0, 1), prob=1, num_rots=(1,))
         outp = trafo(**self.batch_dict)
         self.assertTrue((outp["data"][0, 0] == torch.tensor([[3, 6, 9], [2, 5, 8], [1, 4, 7]])).all())
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
