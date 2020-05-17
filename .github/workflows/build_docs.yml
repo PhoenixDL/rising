@@ -27,7 +27,3 @@ jobs:
       run: |
         cd docs;
         bash build_docs.sh;
-        # cd source;
-        # python conf.py;
-        # cd ..;
-        cat source/getting_started.rst

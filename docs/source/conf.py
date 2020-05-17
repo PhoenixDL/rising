@@ -37,9 +37,9 @@ skip = False
 
 # skip problematic parts 
 for line in converted_readme:
-    if any([line.startswith(x) for x in ['.. container::' ,'   |PyPI|', 'Why another framework?', '.. |PyPI|', '|PyPI|']]):
+    if any([line.startswith(x) for x in ['.. container::' ,'   |PyPI|', 'Why another framework?', '.. |PyPI|', '|PyPI|', '   logo', '.. raw:: html']]):
         skip = True
-    elif any([line.startswith(x) for x in ['What is ``rising``?', 'Installation', '.. |DefaultAugmentation|']]):
+    elif any([line.startswith(x) for x in ['What is ``rising``?', 'Installation', '.. |DefaultAugmentation|', '.. figure:: images/logo/rising_logo.png']]):
         skip = False
 
     if not skip:
