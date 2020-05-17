@@ -108,18 +108,6 @@ Cropping Transforms
 
 .. autofunction:: random_crop
 
-Device Transforms
-**********************************************************
-
-.. automodule:: rising.transforms.functional.device
-
-.. currentmodule:: rising.transforms.functional.device
-
-:hidden:`to_device_dtype`
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: to_device_dtype
-
 Intensity Transforms
 **********************************************************
 
@@ -200,6 +188,11 @@ Tensor Transforms
 ~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: tensor_op
+
+:hidden:`to_device_dtype`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: to_device_dtype
 
 Utility Transforms
 **********************************************************

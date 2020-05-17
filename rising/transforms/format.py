@@ -1,9 +1,9 @@
 from .abstract import AbstractTransform
-from typing import Union, Sequence, Callable, Tuple
+from typing import Union, Sequence, Callable, Tuple, Mapping, Dict, Hashable
 
 from rising.transforms.functional.utility import pop_keys, filter_keys
 
-__all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys"]
+__all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys", "RenameKeys"]
 
 
 class MapToSeq(AbstractTransform):
@@ -108,3 +108,21 @@ class FilterKeys(AbstractTransform):
 
     def forward(self, **data) -> Union[dict, Tuple[dict, dict]]:
         return filter_keys(data=data, keys=self.keys, return_popped=self.return_popped)
+
+
+class RenameKeys(AbstractTransform):
+    """Rename keys inside batch"""
+
+    def __init__(self, keys: Mapping[Hashable, Hashable]):
+        """
+        Args:
+            keys: keys of mapping define current name and items define the
+                new names
+        """
+        super().__init__(grad=False)
+        self.keys = keys
+
+    def forward(self, **data) -> Dict:
+        for old_key, new_key in self.keys.items():
+            data[new_key] = data.pop(old_key)
+        return data
