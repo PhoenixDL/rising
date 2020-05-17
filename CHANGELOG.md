@@ -3,6 +3,8 @@
 | Date | Commit | Short Description | Breaking Changes? |
 | ---- | --------- | ----------------- | ----------------- |
 | 2020-05-16 | 583119902cf8b5347396803b4812105479c35728 | Per Sample Option for Affine transform | No |
+| 2020-05-16 | e7c3eb2a00db0349f700a687263d8e3b8a1dbc40 | move device functional | Yes |
+| 2020-05-16 | e7c3eb2a00db0349f700a687263d8e3b8a1dbc40 | RenameKeysTransform, OneOf, ArgMax | No |
 | 2020-05-16 | 484f11f652fdb245dc6f10500443d41407c03a0b | Disable Worker warnings for all workers but one | No |
 | 2020-05-15 | 63559c6c50c354c44ae7c1fa4f9c7788adc4be39 | Random Parameter Injection API | Yes |
 | 2020-05-15 | 29457c9ba8435369bb1db259cb7488698cde755b | Filter warnings after first occurrence | No |

@@ -70,6 +70,14 @@ Compose Transforms
     :undoc-members:
     :show-inheritance:
 
+:hidden:`OneOf`
+~~~~~~~~~~~~~~~
+
+.. autoclass:: OneOf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :hidden:`dict_call`
 ~~~~~~~~~~~~~~~~~~~
 
@@ -153,6 +161,14 @@ Channel Transforms
     :undoc-members:
     :show-inheritance:
 
+:hidden:`ArgMax`
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: ArgMax
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Cropping Transforms
 ********************
 
@@ -211,6 +227,14 @@ Format Transforms
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: FilterKeys
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:hidden:`RenameKeys`
+~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: RenameKeys
     :members:
     :undoc-members:
     :show-inheritance:
