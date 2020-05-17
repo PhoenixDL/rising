@@ -31,6 +31,11 @@ class TestIntensityFunctional(unittest.TestCase):
         self.assertEqual(outp.min().item(), 0)
         self.assertEqual(outp.max().item(), 1)
 
+    def test_norm_min_max_zeros(self):
+        outp = norm_min_max(torch.zeros(1, 1, 32, 32), per_channel=False)
+
+        self.assertTrue(isclose(outp.min().item(), 0, abs_tol=1e-06))
+
     def test_norm_min_max_per_channels(self):
         inp = (self.batch_2d[0] * 10) + 1
         outp = norm_min_max(inp, per_channel=True)
@@ -45,6 +50,12 @@ class TestIntensityFunctional(unittest.TestCase):
 
         self.assertTrue(isclose(outp.mean().item(), 0, abs_tol=1e-06))
         self.assertTrue(isclose(outp.std().item(), 1, rel_tol=1e-06))
+
+    def test_zero_mean_unit_std_zeros(self):
+        outp = norm_zero_mean_unit_std(torch.zeros(1, 1, 32, 32), per_channel=False)
+
+        self.assertTrue(isclose(outp.mean().item(), 0, abs_tol=1e-06))
+        self.assertTrue(isclose(outp.min().item(), 0, abs_tol=1e-06))
 
     def test_zero_mean_unit_std_per_channel(self):
         inp = (self.batch_2d[0] * 10) + 1
