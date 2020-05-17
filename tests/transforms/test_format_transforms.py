@@ -1,6 +1,6 @@
 import unittest
 import torch
-from rising.transforms.format import MapToSeq, SeqToMap
+from rising.transforms.format import MapToSeq, SeqToMap, RenameKeys
 
 
 class TestFormat(unittest.TestCase):
@@ -20,6 +20,12 @@ class TestFormat(unittest.TestCase):
         self.assertEqual(out['data'], 0)
         self.assertEqual(out['seg'], 1)
         self.assertEqual(out['label'], 2)
+
+    def test_rename(self):
+        trafo = RenameKeys({"data": "new_data", "seg": "new_seg"})
+        out = trafo(**{'data': 0, 'seg': 1, 'label': 2})
+        self.assertIn("new_data", out)
+        self.assertIn("new_seg", out)
 
 
 if __name__ == '__main__':

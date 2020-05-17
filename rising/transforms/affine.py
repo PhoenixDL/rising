@@ -1,4 +1,4 @@
-from typing import Sequence, Union, Iterable, Any, Optional, Tuple
+from typing import Sequence, Union, Any, Optional, Tuple
 
 import torch
 
@@ -37,6 +37,7 @@ class Affine(BaseTransform):
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
                  reverse_order: bool = False,
+                 per_sample: bool = True,
                  **kwargs):
         """
         Args:
@@ -66,6 +67,8 @@ class Affine(BaseTransform):
                 transformation to conform to the pytorch convention:
                 transformation params order [W,H(,D)] and
                 batch order [(D,)H,W]
+            per_sample: sample different values for each element in the batch.
+                The transform is still applied in a batched wise fashion.
             **kwargs: additional keyword arguments passed to the
                 affine transform
         """
@@ -80,6 +83,7 @@ class Affine(BaseTransform):
         self.padding_mode = padding_mode
         self.align_corners = align_corners
         self.reverse_order = reverse_order
+        self.per_sample = per_sample
 
     def assemble_matrix(self, **data) -> torch.Tensor:
         """
@@ -314,6 +318,7 @@ class BaseAffine(Affine):
                  padding_mode: str = 'zeros',
                  align_corners: bool = False,
                  reverse_order: bool = False,
+                 per_sample: bool = True,
                  **kwargs,
                  ):
         """
@@ -364,6 +369,8 @@ class BaseAffine(Affine):
                 transformation to conform to the pytorch convention:
                 transformation params order [W,H(,D)] and
                 batch order [(D,)H,W]
+            per_sample: sample different values for each element in the batch.
+                The transform is still applied in a batched wise fashion.
             **kwargs: additional keyword arguments passed to the
                 affine transform
         """
@@ -373,6 +380,7 @@ class BaseAffine(Affine):
                          padding_mode=padding_mode,
                          align_corners=align_corners,
                          reverse_order=reverse_order,
+                         per_sample=per_sample,
                          **kwargs)
         self.register_sampler('scale', scale)
         self.register_sampler('rotation', rotation)
@@ -406,12 +414,23 @@ class BaseAffine(Affine):
             device=device, dtype=dtype, image_transform=self.image_transform)
         return self.matrix
 
-    def sample_for_batch(self, name: str, batchsize: int) -> Optional[Sequence[Any]]:
+    def sample_for_batch(self, name: str, batchsize: int) -> Optional[
+            Union[Any, Sequence[Any]]]:
+        """
+        Sample elements for batch
+
+        Args:
+            name: name of parameter
+            batchsize: batch size
+
+        Returns:
+            Optional[Union[Any, Sequence[Any]]]: sampled elements
+        """
         elem = getattr(self, name)
-        if elem is not None:
+        if elem is not None and self.per_sample:
             return [elem] + [getattr(self, name) for _ in range(batchsize - 1)]
         else:
-            return None
+            return elem  # either a single scalar value or None
 
 
 class Rotate(BaseAffine):
