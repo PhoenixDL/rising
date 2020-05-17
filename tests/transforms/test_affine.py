@@ -121,6 +121,9 @@ class AffineTestCase(unittest.TestCase):
             Translate(10, adjust_size=True, unit="pixel"),
             Translate(10, adjust_size=False, unit="pixel"),
             Translate([5, 10], adjust_size=False, unit="pixel"),
+            Scale(5, adjust_size=False, per_sample=False),
+            Rotate([90], adjust_size=False, degree=True, per_sample=False),
+            Translate(10, adjust_size=False, unit="pixel", per_sample=False),
         ]
 
         expected_sizes = [
@@ -133,6 +136,9 @@ class AffineTestCase(unittest.TestCase):
             (50, 50),
             (50, 90),
             (30, 25),
+            (25, 30),
+            (25, 30),
+            (25, 30),
             (25, 30),
             (25, 30),
             (25, 30),
