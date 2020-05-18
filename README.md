@@ -29,8 +29,8 @@ Multiple examples for different use cases can be found in our [tutorial docs](ht
 |  | rising | TorchIO | Batchgenerators | Kornia | DALI | Vanilla PyTorch | Albumentations |
 |:----------:|:-------:|:------------:|:---------------:|:-------:|:----:|:---------------:|:--------------:|
 | Volumetric | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Gradients | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| GPU | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Gradients | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| GPU | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Backend | PyTorch | PyTorch/SITK | NumPy | PyTorch | C++ | PyTorch | NumPy |
 
 ## Docs
