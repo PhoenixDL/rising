@@ -119,7 +119,12 @@ class NormMeanStd(PerSampleTransform):
 
 
 class Noise(PerChannelTransform):
-    """Add noise to data"""
+    """
+    Add noise to data
+
+    .. warning:: This transform will apply different noise patterns to
+        different keys.
+    """
 
     def __init__(self, noise_type: str, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
@@ -131,16 +136,21 @@ class Noise(PerChannelTransform):
             keys: keys to normalize
             grad: enable gradient computation inside transformation
             kwargs: keyword arguments passed to noise function
-        See Also
-        --------
-        :func:`torch.Tensor.normal_`, :func:`torch.Tensor.exponential_`
+
+        See Also:
+            :func:`torch.Tensor.normal_`, :func:`torch.Tensor.exponential_`
         """
         super().__init__(augment_fn=add_noise, per_channel=per_channel, keys=keys,
                          grad=grad, noise_type=noise_type, **kwargs)
 
 
 class ExponentialNoise(Noise):
-    """Add exponential noise to data"""
+    """
+    Add exponential noise to data
+
+    .. warning:: This transform will apply different noise patterns to
+        different keys.
+    """
 
     def __init__(self, lambd: float, keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
@@ -156,7 +166,12 @@ class ExponentialNoise(Noise):
 
 
 class GaussianNoise(Noise):
-    """Add gaussian noise to data"""
+    """
+    Add gaussian noise to data
+
+    .. warning:: This transform will apply different noise patterns to
+        different keys.
+    """
 
     def __init__(self, mean: float, std: float, keys: Sequence = ('data',),
                  grad: bool = False, **kwargs):
@@ -193,6 +208,8 @@ class RandomValuePerChannel(PerChannelTransform):
     """
     Apply augmentations which take random values as input by keyword
     :attr:`value`
+
+    .. warning:: This transform will apply different values to different keys.
     """
 
     def __init__(self, augment_fn: callable,
@@ -245,7 +262,11 @@ class RandomValuePerChannel(PerChannelTransform):
 
 
 class RandomAddValue(RandomValuePerChannel):
-    """Increase values additively"""
+    """
+    Increase values additively
+
+    .. warning:: This transform will apply different values to different keys.
+    """
 
     def __init__(self, random_sampler: AbstractParameter,
                  per_channel: bool = False,
@@ -263,7 +284,11 @@ class RandomAddValue(RandomValuePerChannel):
 
 
 class RandomScaleValue(RandomValuePerChannel):
-    """Scale Values"""
+    """
+    Scale Values
+
+    .. warning:: This transform will apply different values to different keys.
+    """
 
     def __init__(self, random_sampler: AbstractParameter,
                  per_channel: bool = False,

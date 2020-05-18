@@ -4,7 +4,7 @@ from typing import Callable, Union, Sequence, Any, Tuple
 from rising.random import AbstractParameter, DiscreteParameter
 
 __all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
-           "PerChannelTransform"]
+           "PerChannelTransform", "BaseTransformSeeded"]
 
 augment_callable = Callable[[torch.Tensor], Any]
 augment_axis_callable = Callable[[torch.Tensor, Union[float, Sequence]], Any]
@@ -119,7 +119,13 @@ class AbstractTransform(torch.nn.Module):
 
 
 class BaseTransform(AbstractTransform):
-    """Transform to apply a functional interface to given keys"""
+    """
+    Transform to apply a functional interface to given keys
+
+    .. warning:: This transform should not be used
+        with functions which have randomness build in because it will
+        result in different augmentations per key.
+    """
 
     def __init__(self, augment_fn: augment_callable, *args,
                  keys: Sequence = ('data',), grad: bool = False,
@@ -165,11 +171,44 @@ class BaseTransform(AbstractTransform):
         return data
 
 
+class BaseTransformSeeded(BaseTransform):
+    """
+    Transform to apply a functional interface to given keys and use the same
+    pytorch(!) seed for every key.
+    """
+
+    def forward(self, **data) -> dict:
+        """
+        Apply transformation and use same seed for every key
+
+        Args:
+            data: dict with tensors
+
+        Returns:
+            dict: dict with augmented data
+        """
+        kwargs = {}
+        for k in self.property_names:
+            kwargs[k] = getattr(self, k)
+
+        kwargs.update(self.kwargs)
+
+        seed = torch.random.get_rng_state()
+        for _key in self.keys:
+            torch.random.set_rng_state(seed)
+            data[_key] = self.augment_fn(data[_key], *self.args, **kwargs)
+        return data
+
+
 class PerSampleTransform(BaseTransform):
     """
     Apply transformation to each sample in batch individually
     :attr:`augment_fn` must be callable with option :attr:`out`
-    where results are saved in
+    where results are saved in.
+
+    .. warning:: This transform should not be used
+        with functions which have randomness build in because it will
+        result in different augmentations per sample and key.
     """
 
     def forward(self, **data) -> dict:
@@ -194,7 +233,13 @@ class PerSampleTransform(BaseTransform):
 
 
 class PerChannelTransform(BaseTransform):
-    """Apply transformation per channel (but still to whole batch)"""
+    """
+    Apply transformation per channel (but still to whole batch)
+
+    .. warning:: This transform should not be used
+        with functions which have randomness build in because it will
+        result in different augmentations per channel and key.
+    """
 
     def __init__(self, augment_fn: augment_callable, per_channel: bool = False,
                  keys: Sequence = ('data',), grad: bool = False,

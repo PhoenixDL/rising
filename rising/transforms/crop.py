@@ -1,5 +1,7 @@
+import torch
+
 from typing import Sequence, Union
-from rising.transforms.abstract import BaseTransform
+from rising.transforms.abstract import BaseTransform, BaseTransformSeeded
 from rising.random import AbstractParameter
 from rising.transforms.functional.crop import random_crop, center_crop
 
@@ -17,13 +19,12 @@ class CenterCrop(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-
         super().__init__(augment_fn=center_crop, keys=keys,
                          grad=grad, property_names=('size', ), size=size,
                          **kwargs)
 
 
-class RandomCrop(BaseTransform):
+class RandomCrop(BaseTransformSeeded):
     def __init__(self, size: Union[int, Sequence, AbstractParameter],
                  dist: Union[int, Sequence, AbstractParameter] = 0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):

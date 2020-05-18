@@ -1,6 +1,6 @@
 import torch
 import random
-from typing import Union, Sequence
+from typing import Union, Sequence, Tuple, List
 
 from rising.utils import check_scalar
 
@@ -60,9 +60,12 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
 
     Returns:
         torch.Tensor: cropped output
+        List[int]: top left corner used for crop
     """
     if check_scalar(dist):
         dist = [dist] * (data.ndim - 2)
+    if isinstance(dist[0], torch.Tensor):
+        dist = [int(i) for i in dist]
     if check_scalar(size):
         size = [size] * (data.ndim - 2)
     if not isinstance(size[0], int):
@@ -71,6 +74,6 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
     if any([crop_dim + dist_dim >= img_dim for img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)]):
         raise TypeError(f"Crop can not be realized with given size {size} and dist {dist}.")
 
-    corner = [random.randrange(0, img_dim - crop_dim - dist_dim) for
+    corner = [torch.randint(0, img_dim - crop_dim - dist_dim, (1,)).item() for
               img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)]
     return crop(data, corner, size)

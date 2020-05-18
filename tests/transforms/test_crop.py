@@ -11,31 +11,36 @@ class TestCrop(unittest.TestCase):
     def setUp(self) -> None:
         data = torch.zeros(1, 1, 10, 10)
         data[:, :, 4:7, 4:7] = 1
-        self.batch = {"data": data}
+        self.batch = {"data": data, "seg": data.clone()}
 
     def test_center_crop_transform(self):
         for s in range(1, 10):
-            trafo = CenterCrop(s)
-            crop = trafo(**self.batch)["data"]
+            trafo = CenterCrop(s, keys=("data", "seg"))
+            crop = trafo(**self.batch)
 
             expected = center_crop(self.batch["data"], s)
 
-            self.assertTrue((crop == expected).all())
-            self.assertTrue(all([_s == s for _s in crop.shape[2:]]))
+            self.assertTrue(expected.allclose(crop["data"]))
+            self.assertTrue(expected.allclose(crop["seg"]))
+            self.assertTrue(all([_s == s for _s in crop["data"].shape[2:]]))
+            self.assertTrue(all([_s == s for _s in crop["seg"].shape[2:]]))
 
     def test_random_crop_transform(self):
-        for s in range(9):
-            random.seed(0)
-            trafo = RandomCrop(s)
-            crop = trafo(**self.batch)["data"]
+        for s in range(1, 10):
+            torch.manual_seed(s)
+            trafo = RandomCrop(s, keys=("data", "seg"))
+            crop = trafo(**self.batch)
 
             random.seed(0)
-            _ = random.choices([0])  # internally sample size
-            _ = random.choices([0])  # internally sample dist
+            _ = random.choices([0])  # internally sample size in transform
+            _ = random.choices([0])  # internally sample dist in transform
+            torch.manual_seed(s) # seed random_crop
             expected = random_crop(self.batch["data"], size=s)
 
-            self.assertTrue((crop == expected).all())
-            self.assertTrue(all([_s == s for _s in crop.shape[2:]]))
+            self.assertTrue(expected.allclose(crop["data"]))
+            self.assertTrue(expected.allclose(crop["seg"]))
+            self.assertTrue(all([_s == s for _s in crop["data"].shape[2:]]))
+            self.assertTrue(all([_s == s for _s in crop["seg"].shape[2:]]))
 
     def test_center_crop_random_size_transform(self):
         for _ in range(10):
