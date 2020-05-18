@@ -18,10 +18,11 @@ class MyTestCase(unittest.TestCase):
             self.assertTrue(all([_s == s for _s in crop.shape[2:]]))
 
     def test_random_crop(self):
-        random.seed(0)
-        h = random.randrange(0, 7)
-        w = random.randrange(0, 7)
+        torch.manual_seed(0)
+        h = torch.randint(0, 7, (1,)).item()
+        w = torch.randint(0, 7, (1,)).item()
         expected = self.data[:, :, h: h + 3, w: w + 3]
+        torch.manual_seed(0)
         crop = random_crop(self.data, size=3.)
         self.assertTrue((crop == expected).all())
         self.assertTrue(all([_s == 3 for _s in crop.shape[2:]]))
