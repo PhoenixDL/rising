@@ -61,7 +61,7 @@ Check out our [contributing guide](https://rising.readthedocs.io/en/latest/contr
 Rising currently consists out of two main modules:
 
 ### `rising.loading`
-The `Dataloader` of rising will be your new best friend because it handles all you transformations and applies them efficiently to the data either on CPU or GPU.
+The `Dataloader` of rising will be your new best friend because it handles all your transformations and applies them efficiently to the data either on CPU or GPU.
 On CPU you can easily switch between transformations which can only be performed per sample and transformations which can be applied per batch.
 In contrast to the native PyTorch datasets you don't need to integrate your augmentation into your dataset.
 Hence, the only purpose of the dataset is to provide an interface to access individual data samples.
