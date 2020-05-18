@@ -34,7 +34,7 @@ class TestCrop(unittest.TestCase):
             random.seed(0)
             _ = random.choices([0])  # internally sample size in transform
             _ = random.choices([0])  # internally sample dist in transform
-            torch.manual_seed(s) # seed random_crop
+            torch.manual_seed(s)  # seed random_crop
             expected = random_crop(self.batch["data"], size=s)
 
             self.assertTrue(expected.allclose(crop["data"]))
