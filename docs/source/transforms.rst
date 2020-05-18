@@ -31,6 +31,14 @@ Transformation Base Classes
     :undoc-members:
     :show-inheritance:
 
+:hidden:`BaseTransformSeeded`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: BaseTransformSeeded
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :hidden:`PerSampleTransform`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
