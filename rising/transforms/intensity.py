@@ -12,13 +12,16 @@ from rising.transforms.functional.intensity import (
     gamma_correction,
     add_value,
     scale_by_value,
-    clamp)
+    clamp,
+    random_bezier)
+
 from rising.random import AbstractParameter
 
 __all__ = ["Clamp", "NormRange", "NormMinMax",
            "NormZeroMeanUnitStd", "NormMeanStd", "Noise",
            "GaussianNoise", "ExponentialNoise", "GammaCorrection",
-           "RandomValuePerChannel", "RandomAddValue", "RandomScaleValue"]
+           "RandomValuePerChannel", "RandomAddValue", "RandomScaleValue",
+           "RandomBezierTransform"]
 
 
 class Clamp(BaseTransform):
@@ -303,3 +306,17 @@ class RandomScaleValue(RandomValuePerChannel):
         """
         super().__init__(augment_fn=scale_by_value, random_sampler=random_sampler,
                          per_channel=per_channel, keys=keys, grad=grad, **kwargs)
+
+
+class RandomBezierTransform(BaseTransform):
+    """ Apply a random 3rd order bezier spline to the intensity values,
+    as proposed in Models Genesis """
+
+    def __init__(self, keys: Sequence = ('data',), **kwargs):
+        """
+        Args:
+            keys: keys which should be augmented
+            **kwargs: keyword arguments passed to augment_fn
+        """
+        super().__init__(augment_fn=random_bezier, keys=keys, grad=False, **kwargs)
+

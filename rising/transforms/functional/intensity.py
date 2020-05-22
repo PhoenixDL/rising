@@ -1,11 +1,13 @@
 import torch
 
+import numpy as np
+
 from typing import Union, Sequence, Optional
 
 from rising.utils import check_scalar
 
 __all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_std",
-           "add_noise", "add_value", "gamma_correction", "scale_by_value", "clamp"]
+           "add_noise", "add_value", "gamma_correction", "scale_by_value", "clamp", "random_bezier"]
 
 
 def clamp(data: torch.Tensor, min: float, max: float,
@@ -227,3 +229,40 @@ def scale_by_value(data: torch.Tensor, value: float,
         torch.Tensor: augmented data
     """
     return torch.mul(data, value, out=out)
+
+
+
+def _cubic_bezier(points, nTimes=1000):
+
+    p0 = points[0].unsqueeze(0)
+    p1 = points[1].unsqueeze(0)
+    p2 = points[2].unsqueeze(0)
+    p3 = points[3].unsqueeze(0)
+
+    t = torch.linspace(0.0, 1.0, nTimes).unsqueeze(1)
+
+    points =  (1 - t * t * t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + \
+           3 * (1 - t) * t * t * p2 + t * t * t * p3
+
+    xvals = points[:,0]
+    yvals = points[:,1]
+
+    return xvals, yvals
+
+
+def random_bezier(data: torch.Tensor, prob_random_inversion : float=0.0,
+                                   out: Optional[torch.Tensor] = None) -> torch.Tensor:
+    points = [torch.zeros((2)),
+              torch.rand((2)),
+              torch.rand((2)),
+              torch.ones((2))]
+
+    xvals, yvals = _cubic_bezier(points, nTimes=1000)
+
+    if torch.rand((1)) < prob_random_inversion:
+        # Inversion of curve
+        xvals = torch.flip(xvals,dims=(0,))
+    # At the moment, there's no pytorch implementation of unstructured interpolation,
+    # in future, this will move to pytorch code
+    out = torch.from_numpy(np.interp(data.numpy(), xvals.numpy(), yvals.numpy()))
+    return out.type(data.dtype)
