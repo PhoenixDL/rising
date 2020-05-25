@@ -21,7 +21,7 @@ class Mirror(BaseTransform):
 
     def __init__(self,
                  dims: Union[int, DiscreteParameter,
-                             Sequence[Union[int, DiscreteParameter]]],
+                             Sequence[Union[int, DiscreteParameter]]], prob: float = 0.5,
                  keys: Sequence[str] = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -39,7 +39,7 @@ class Mirror(BaseTransform):
             >>> # volumetric data
             >>> trafo = Mirror(DiscreteCombinationsParameter((0, 1, 2)))
         """
-        super().__init__(augment_fn=mirror, dims=dims, keys=keys, grad=grad,
+        super().__init__(augment_fn=mirror, dims=dims, prob=prob, keys=keys, grad=grad,
                          property_names=('dims',), **kwargs)
 
 
