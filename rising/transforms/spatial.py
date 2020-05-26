@@ -16,13 +16,12 @@ __all__ = ["Mirror", "Rot90", "ResizeNative",
 scheduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 
-class Mirror(BaseTransform):
+class Mirror(AbstractTransform):
     """Random mirror transform"""
 
-    def __init__(self,
-                 dims: Union[int, DiscreteParameter,
-                             Sequence[Union[int, DiscreteParameter]]], prob: float = 0.5,
-                 keys: Sequence[str] = ('data',), grad: bool = False, **kwargs):
+    def __init__(self, dims: Union[int, DiscreteParameter, Sequence[Union[int, DiscreteParameter]]],
+                 keys: Sequence[str] = ('data',), prob: float = 0.5,
+                 grad: bool = False, **kwargs):
         """
         Args:
             dims: axes which should be mirrored
@@ -39,8 +38,30 @@ class Mirror(BaseTransform):
             >>> # volumetric data
             >>> trafo = Mirror(DiscreteCombinationsParameter((0, 1, 2)))
         """
-        super().__init__(augment_fn=mirror, dims=dims, prob=prob, keys=keys, grad=grad,
-                         property_names=('dims',), **kwargs)
+        super().__init__(grad=grad, **kwargs)
+        self.keys = keys
+        self.prob = prob
+        if not isinstance(dims, DiscreteParameter):
+            if len(dims) > 2:
+                dims = list(combinations(dims, 2))
+            else:
+                dims = (dims,)
+            dims = DiscreteParameter(dims)
+        self.register_sampler("dims", dims)
+
+    def forward(self, **data) -> dict:
+        """
+        Apply transformation
+
+        Args:
+            data: dict with tensors
+        Returns:
+            dict: dict with augmented data
+        """
+        if torch.rand(1) < self.prob:
+            for key in self.keys:
+                data[key] = mirror(data[key], self.dims)
+        return data
 
 
 class Rot90(AbstractTransform):
