@@ -6,7 +6,7 @@ from rising.utils import check_scalar
 __all__ = ["mirror", "rot90", "resize_native"]
 
 
-def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]], prob: float = 0.5) -> torch.Tensor:
+def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]]) -> torch.Tensor:
     """
     Mirror data at dims
 
@@ -17,14 +17,11 @@ def mirror(data: torch.Tensor, dims: Union[int, Sequence[int]], prob: float = 0.
     Returns:
         torch.Tensor: tensor with mirrored dimensions
     """
-    if torch.rand(1) < prob:
-        if check_scalar(dims):
-            dims = (dims,)
+    if check_scalar(dims):
+        dims = (dims,)
         # batch and channel dims
-        dims = [d + 2 for d in dims]
-        return data.flip(dims)
-    else:
-        return data
+    dims = [d + 2 for d in dims]
+    return data.flip(dims)
 
 
 def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
