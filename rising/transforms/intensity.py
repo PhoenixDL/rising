@@ -23,7 +23,7 @@ __all__ = ["Clamp", "NormRange", "NormMinMax",
            "NormZeroMeanUnitStd", "NormMeanStd", "Noise",
            "GaussianNoise", "ExponentialNoise", "GammaCorrection",
            "RandomValuePerChannel", "RandomAddValue", "RandomScaleValue",
-           "RandomBezierTransform"]
+           "RandomBezierTransform", "InvertAmplitude"]
 
 
 class Clamp(BaseTransform):
@@ -315,11 +315,7 @@ class RandomBezierTransform(BaseTransform):
     as proposed in Models Genesis """
 
     def __init__(self, maxv: float = 1.0, minv: float=0.0, keys: Sequence = ('data',), **kwargs):
-        """
-        Args:
-            keys: keys which should be augmented
-            **kwargs: keyword arguments passed to augment_fn
-        """
+
         super().__init__(augment_fn=bezier_3rd_order, maxv=maxv, minv=minv, keys=keys, grad=False, **kwargs)
 
 
