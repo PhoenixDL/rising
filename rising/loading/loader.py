@@ -101,7 +101,7 @@ class DataLoader(_DataLoader):
                  auto_convert: bool = True,
                  transform_call: Callable[[Any, Callable], Any] = default_transform_call,
                  **kwargs
-                ):
+                 ):
         """
         Args:
             dataset: dataset from which to load the data
