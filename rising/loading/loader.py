@@ -99,7 +99,9 @@ class DataLoader(_DataLoader):
                  worker_init_fn: Optional[Callable] = None,
                  multiprocessing_context=None,
                  auto_convert: bool = True,
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
+                 transform_call: Callable[[Any, Callable], Any] = default_transform_call,
+                 **kwargs
+                ):
         """
         Args:
             dataset: dataset from which to load the data
@@ -163,7 +165,7 @@ class DataLoader(_DataLoader):
                          collate_fn=collate_fn, pin_memory=pin_memory,
                          drop_last=drop_last, timeout=timeout,
                          worker_init_fn=worker_init_fn,
-                         multiprocessing_context=multiprocessing_context)
+                         multiprocessing_context=multiprocessing_context, **kwargs)
 
         if gpu_transforms is not None and not torch.cuda.is_available():
             if hasattr(gpu_transforms, 'to'):
