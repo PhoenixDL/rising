@@ -32,18 +32,15 @@
 /rising/transforms/compose.py @mibaumgartner
 /rising/transforms/crop.py @mibaumgartner
 /rising/transforms/format.py @mibaumgartner
-/rising/transforms/intensity.py @justusschock @mibaumgartner @weningerleon
+/rising/transforms/intensity.py @justusschock @mibaumgartner
 /rising/transforms/kernel.py @mibaumgartner
 /rising/transforms/spatial.py @justusschock @mibaumgartner
 /rising/transforms/utility.py @justusschock @mibaumgartner
-/rising/transforms/painting.py @weningerleon
-
 # Functional Transforms
 /rising/transforms/functional/affine.py @justusschock
 /rising/transforms/functional/crop.py @mibaumgartner
-/rising/transforms/functional/intensity.py @justusschock @mibaumgartner @weningerleon
+/rising/transforms/functional/intensity.py @justusschock @mibaumgartner
 /rising/transforms/functional/spatial.py @justusschock @mibaumgartner
-/rising/transforms/functional/painting.py @weningerleon
 
 # Utils
 /rising/utils/checktype.py @mibaumgartner
