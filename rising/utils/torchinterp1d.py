@@ -76,7 +76,7 @@ class Interp1d(torch.autograd.Function):
                 'The interp1d function depends on the '
                 'torchsearchsorted module, which is not available.\n'
                 'You must get it at ',
-                'https://github.com/aliutkus/torchsearchsorted\n')
+                'https://github.com/aliutkus/torchsearchsorted \n')
 
         # making the vectors at least 2D
         is_flat = {}
