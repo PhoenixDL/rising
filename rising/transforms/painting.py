@@ -14,7 +14,7 @@ class LocalPixelShuffle(BaseTransform):
     """ Shuffels Pixels locally in n patches,
     as proposed in Models Genesis """
 
-    def __init__(self, n: int=-1, block_size: tuple=(0,0,0), rel_block_size: float = 0.1,
+    def __init__(self, n: int = -1, block_size: tuple = (0, 0, 0), rel_block_size: float = 0.1,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -34,8 +34,8 @@ class RandomInpainting(BaseTransform):
     as proposed in Models Genesis """
 
     def __init__(self, n: int = 5,
-                 maxv: float=1.0, minv: float = 0.0,
-                 max_size: tuple = (0,0,0), min_size: tuple = (0,0,0), rel_max_size: tuple = (0.25, 0.25, 0.25), rel_min_size: tuple = (0.1, 0.1, 0.1), min_border_distance: tuple = (3, 3, 3),
+                 maxv: float = 1.0, minv: float = 0.0,
+                 max_size: tuple = (0, 0, 0), min_size: tuple = (0, 0, 0), rel_max_size: tuple = (0.25, 0.25, 0.25), rel_min_size: tuple = (0.1, 0.1, 0.1), min_border_distance: tuple = (3, 3, 3),
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -58,9 +58,9 @@ class RandomOutpainting(AbstractTransform):
     """ The border of the images will be replaced by uniform noise,
     as proposed in Models Genesis. (Replaces a patch in an equally sized noise image with the corresponding input image content) """
 
-    def __init__(self, prob: float = 0.5, maxv: float=1.0, minv: float = 0.0,
-                 max_size: tuple = (0,0,0), min_size: tuple = (0,0,0), 
-                 rel_max_size: tuple = (6/7, 6/7, 6/7), rel_min_size: tuple = (5/7, 5/7, 5/7), min_border_distance: tuple = (3, 3, 3),
+    def __init__(self, prob: float = 0.5, maxv: float = 1.0, minv: float = 0.0,
+                 max_size: tuple = (0, 0, 0), min_size: tuple = (0, 0, 0),
+                 rel_max_size: tuple = (6 / 7, 6 / 7, 6 / 7), rel_min_size: tuple = (5 / 7, 5 / 7, 5 / 7), min_border_distance: tuple = (3, 3, 3),
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -90,7 +90,7 @@ class RandomOutpainting(AbstractTransform):
         if torch.rand(1) < self.prob:
             for key in self.keys:
                 data[key] = random_outpainting(data[key], maxv=self.maxv, minv=self.minv, max_size=self.max_size, min_size=self.min_size, rel_max_size=self.rel_max_size, rel_min_size=self.rel_min_size,
-                min_border_distance=self.min_border_distance)
+                                               min_border_distance=self.min_border_distance)
         return data
 
 
@@ -99,10 +99,10 @@ class RandomInOrOutpainting(AbstractTransform):
     as proposed in Models Genesis """
 
     def __init__(self, prob: float = 0.5, n: int = 5,
-                 maxv: float=1.0, minv: float = 0.0,
-                 max_size_in: tuple = (0,0,0), min_size_in: tuple = (0,0,0), rel_max_size_in: tuple = (0.25, 0.25, 0.25), rel_min_size_in: tuple = (0.1, 0.1, 0.1),
-                 max_size_out: tuple = (0,0,0), min_size_out: tuple = (0,0,0), 
-                 rel_max_size_out: tuple = (6/7, 6/7, 6/7), rel_min_size_out: tuple = (5/7, 5/7, 5/7),
+                 maxv: float = 1.0, minv: float = 0.0,
+                 max_size_in: tuple = (0, 0, 0), min_size_in: tuple = (0, 0, 0), rel_max_size_in: tuple = (0.25, 0.25, 0.25), rel_min_size_in: tuple = (0.1, 0.1, 0.1),
+                 max_size_out: tuple = (0, 0, 0), min_size_out: tuple = (0, 0, 0),
+                 rel_max_size_out: tuple = (6 / 7, 6 / 7, 6 / 7), rel_min_size_out: tuple = (5 / 7, 5 / 7, 5 / 7),
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -131,8 +131,10 @@ class RandomInOrOutpainting(AbstractTransform):
     def forward(self, **data) -> dict:
         if torch.rand(1) < self.prob:
             for key in self.keys:
-                data[key] = random_outpainting(data[key], maxv=self.maxv, minv=self.minv, max_size=self.max_size_out, min_size=self.min_size_out, rel_max_size=self.rel_max_size_out, rel_min_size=self.rel_min_size_out)
+                data[key] = random_outpainting(data[key], maxv=self.maxv, minv=self.minv, max_size=self.max_size_out,
+                                               min_size=self.min_size_out, rel_max_size=self.rel_max_size_out, rel_min_size=self.rel_min_size_out)
         else:
             for key in self.keys:
-                data[key] = random_inpainting(data[key], n=self.n, maxv=self.maxv, minv=self.minv, max_size = self.max_size_in, min_size=self.min_size_in, rel_max_size=self.rel_max_size_in, rel_min_size=self.rel_min_size_in)
+                data[key] = random_inpainting(data[key], n=self.n, maxv=self.maxv, minv=self.minv, max_size=self.max_size_in,
+                                              min_size=self.min_size_in, rel_max_size=self.rel_max_size_in, rel_min_size=self.rel_min_size_in)
         return data
