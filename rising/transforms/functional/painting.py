@@ -65,8 +65,8 @@ def random_outpainting(data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0)
     out = torch.rand(data.size()) * (maxv - minv) + minv
 
     block_size_x = torch.randint(5*img_rows // 7, 6*img_rows // 7, (1,))
-    block_size_y = torch.randint(5*img_rows // 7, 6*img_rows // 7, (1,))
-    block_size_z = torch.randint(5*img_rows // 7, 6*img_rows // 7, (1,))
+    block_size_y = torch.randint(5*img_cols // 7, 6*img_cols // 7, (1,))
+    block_size_z = torch.randint(5*img_deps // 7, 6*img_deps // 7, (1,))
     x = torch.randint(3, int(img_rows - block_size_x - 3), (1,))
     y = torch.randint(3, int(img_cols - block_size_y - 3), (1,))
     z = torch.randint(3, int(img_deps - block_size_z - 3), (1,))
