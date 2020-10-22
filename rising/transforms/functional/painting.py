@@ -11,7 +11,7 @@ def local_pixel_shuffle(data: torch.Tensor, n: int = -1, block_size: tuple = (0,
         n = int(1000 * channels)  # changes ~ 12.5% of voxels
     for b in range(batch_size):
         for _ in range(n):
-            c = torch.randint(0, channels - 1, (1,))
+            c = torch.randint(0, max(1, channels - 1), (1,))
 
             (block_size_x, block_size_y, block_size_z) = (torch.tensor([size]) for size in block_size)
 
