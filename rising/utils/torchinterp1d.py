@@ -30,15 +30,8 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-
 import torch
 import contextlib
-SEARCHSORTED_AVAILABLE = True
-try:
-    from torchsearchsorted import searchsorted
-except ImportError:
-    SEARCHSORTED_AVAILABLE = False
-
 
 class Interp1d(torch.autograd.Function):
     def __call__(self, x, y, xnew, out=None):
@@ -54,7 +47,6 @@ class Interp1d(torch.autograd.Function):
         any number of desired interpolation problems.
         The code will run on GPU if all the tensors provided are on a cuda
         device.
-
         Parameters
         ----------
         x : (N, ) or (D, N) Pytorch Tensor
@@ -68,16 +60,7 @@ class Interp1d(torch.autograd.Function):
             dimension must be the same as that of whichever `x` and `y` is 2-D.
         out : Pytorch Tensor, same shape as `xnew`
             Tensor for the output. If None: allocated automatically.
-
         """
-        # checking availability of the searchsorted pytorch module
-        if not SEARCHSORTED_AVAILABLE:
-            raise Exception(
-                'The interp1d function depends on the '
-                'torchsearchsorted module, which is not available.\n'
-                'You must get it at ',
-                'https://github.com/aliutkus/torchsearchsorted\n')
-
         # making the vectors at least 2D
         is_flat = {}
         require_grad = {}
@@ -140,7 +123,14 @@ class Interp1d(torch.autograd.Function):
 
         # calling searchsorted on the x values.
         ind = ynew.long()
-        searchsorted(v['x'].contiguous(), v['xnew'].contiguous(), ind)
+
+        # expanding xnew to match the number of rows of x in case only one xnew is
+        # provided
+        if v['xnew'].shape[0] == 1:
+            v['xnew'] = v['xnew'].expand(v['x'].shape[0], -1)
+
+        torch.searchsorted(v['x'].contiguous(),
+                           v['xnew'].contiguous(), out=ind)
 
         # the `-1` is because searchsorted looks for the index where the values
         # must be inserted to preserve order. And we want the index of the
@@ -175,7 +165,7 @@ class Interp1d(torch.autograd.Function):
             v['slopes'] = (
                     (v['y'][:, 1:]-v['y'][:, :-1])
                     /
-                    (eps + v['x'][:, 1:]-v['x'][:, :-1])
+                    (eps + (v['x'][:, 1:]-v['x'][:, :-1]))
                 )
 
             # now build the linear interpolation
