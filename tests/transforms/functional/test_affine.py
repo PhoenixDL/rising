@@ -218,15 +218,23 @@ class AffineTestCase(unittest.TestCase):
     def test_matrix_parametrization(self):
         inputs = [
             {'scale': None, 'translation': None, 'rotation': None, 'batchsize': 2, 'ndim': 2,
-             'dtype': torch.float},
+             'dtype': torch.float, "image_transform": False},
+            {'scale': [4, 5], 'translation': [2, 3], 'rotation': 90, 'batchsize': 1, 'ndim': 2,
+             'dtype': torch.float, "degree": True, "image_transform": False},
+            {'scale': [4, 5], 'translation': [2, 3], 'rotation': 90, 'batchsize': 1, 'ndim': 2,
+             'dtype': torch.float, "degree": True, "image_transform": True},
             {'scale': [2, 5], 'translation': [9, 18, 27],
              'rotation': [180, 0, 180], 'degree': True, 'batchsize': 3,
-             'ndim': 2, 'dtype':torch.float}
+             'ndim': 2, 'dtype':torch.float, "image_transform": False}
         ]
 
         expectations = [
             torch.tensor([[[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]],
                           [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]]),
+
+            torch.tensor([[[0., -4., -12.], [5., 0., 10.], [0., 0., 1.]]]),
+
+            torch.tensor([[[0., 1/5., -2.], [-1/4., 0., -3.], [0., 0., 1.]]]),
 
             torch.bmm(torch.bmm(torch.tensor([[[2., 0., 0], [0., 5., 0.], [0., 0., 1.]],
                                               [[2., 0., 0.], [0., 5., 0.], [0., 0., 1.]],
@@ -241,7 +249,7 @@ class AffineTestCase(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                res = parametrize_matrix(**inp, image_transform=False).to(exp.dtype)
+                res = parametrize_matrix(**inp).to(exp.dtype)
                 self.assertTrue(torch.allclose(res, matrix_to_cartesian(exp), atol=1e-6))
 
 

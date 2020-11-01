@@ -19,6 +19,8 @@ __all__ = [
     "parametrize_matrix"
 ]
 
+from rising.utils.inverse import orthogonal_inverse
+
 AffineParamType = Union[int, Sequence[int], float, Sequence[float], torch.Tensor,
                         AbstractParameter, Sequence[AbstractParameter]]
 
@@ -154,7 +156,8 @@ def create_rotation(rotation: AffineParamType,
                     batchsize: int, ndim: int,
                     degree: bool = False,
                     device: Optional[Union[torch.device, str]] = None,
-                    dtype: Optional[Union[torch.dtype, str]] = None) -> torch.Tensor:
+                    dtype: Optional[Union[torch.dtype, str]] = None,
+                    image_transform: bool = True) -> torch.Tensor:
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -177,6 +180,10 @@ def create_rotation(rotation: AffineParamType,
             Defaults to the torch default device
         dtype: the dtype of the resulting trensor.
             Defaults to the torch default dtype
+        image_transform: bool
+            inverts the rotation matrix to match expected behavior when
+            applied to an image, e.g. rotation > 0 should rotate the image
+            counter clockwise but the grid clockwise
 
     Returns:
         torch.Tensor: the homogeneous transformation matrix
@@ -196,7 +203,13 @@ def create_rotation(rotation: AffineParamType,
     matrix_fn = create_rotation_2d if ndim == 2 else create_rotation_3d
     sin, cos = torch.sin(rotation), torch.cos(rotation)
     rotation_matrix = torch.stack([matrix_fn(s, c) for s, c in zip(sin, cos)])
-    return matrix_to_homogeneous(rotation_matrix)
+
+    homo_rotation_matrix = matrix_to_homogeneous(rotation_matrix)
+
+    if image_transform:
+        homo_rotation_matrix = orthogonal_inverse(homo_rotation_matrix)
+
+    return homo_rotation_matrix
 
 
 def create_rotation_2d(sin: Tensor, cos: Tensor) -> Tensor:
@@ -346,11 +359,16 @@ def parametrize_matrix(scale: AffineParamType,
                          device=device, dtype=dtype,
                          image_transform=image_transform)
     rotation = create_rotation(rotation, batchsize=batchsize, ndim=ndim,
-                               degree=degree, device=device, dtype=dtype)
+                               degree=degree, device=device, dtype=dtype,
+                               image_transform=image_transform)
     translation = create_translation(translation, batchsize=batchsize,
                                      ndim=ndim, device=device, dtype=dtype,
                                      image_transform=image_transform)
-    return torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
+    if image_transform:
+        total_trafo = torch.bmm(torch.bmm(translation, rotation), scale)[:, :-1]
+    else:
+        total_trafo = torch.bmm(torch.bmm(scale, rotation), translation)[:, :-1]
+    return total_trafo
 
 
 def affine_point_transform(point_batch: torch.Tensor,
