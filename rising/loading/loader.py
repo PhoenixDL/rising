@@ -189,6 +189,7 @@ class DataLoader(_DataLoader):
             gpu_transforms = Compose(to_gpu_trafo, gpu_transforms)
             gpu_transforms = gpu_transforms.to(device)
 
+        self.device = device
         self.sample_transforms = sample_transforms
         self.pseudo_batch_dim = pseudo_batch_dim and sample_transforms is not None
         self.gpu_transforms = gpu_transforms
