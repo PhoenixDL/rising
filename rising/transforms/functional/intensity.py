@@ -3,9 +3,11 @@ import torch
 from typing import Union, Sequence, Optional
 
 from rising.utils import check_scalar
+from rising.utils.torchinterp1d import Interp1d
 
 __all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_std",
-           "add_noise", "add_value", "gamma_correction", "scale_by_value", "clamp"]
+           "add_noise", "add_value", "gamma_correction", "scale_by_value", "clamp",
+           "bezier_3rd_order", "random_inversion"]
 
 
 def clamp(data: torch.Tensor, min: float, max: float,
@@ -227,3 +229,39 @@ def scale_by_value(data: torch.Tensor, value: float,
         torch.Tensor: augmented data
     """
     return torch.mul(data, value, out=out)
+
+
+def bezier_3rd_order(data: torch.Tensor, maxv: float=1.0, minv: float=0.0,
+                     out: Optional[torch.Tensor] = None) -> torch.Tensor:
+    p0 = torch.zeros((1,2))
+    p1 = torch.rand((1,2))
+    p2 = torch.rand((1,2))
+    p3 = torch.ones((1,2))
+
+    t = torch.linspace(0.0, 1.0, 1000).unsqueeze(1)
+
+    points = (1-t*t*t)*p0 + 3*(1-t)*(1-t)*t*p1 + 3*(1-t)*t*t*p2 + t*t*t*p3
+
+    # scaling according to maxv,minv
+    points = points*(maxv-minv) + minv
+
+    xvals = points[:,0]
+    yvals = points[:,1]
+
+    out_flat = Interp1d()(xvals, yvals, data.view(-1))
+
+    return out_flat.view(data.shape)
+
+
+def random_inversion(data: torch.Tensor, prob_inversion: float=0.5,
+                     maxv: float=1.0, minv: float=0.0,
+                     out: Optional[torch.Tensor] = None) -> torch.Tensor:
+
+    if torch.rand((1)) < prob_inversion:
+        # Inversion of curve
+        out = maxv + minv - data
+    else:
+        # do nothing
+        out = data
+
+    return out
