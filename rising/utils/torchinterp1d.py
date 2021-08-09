@@ -35,6 +35,7 @@ import contextlib
 
 class Interp1d(torch.autograd.Function):
 
+    @staticmethod
     def forward(ctx, x, y, xnew, out=None):
         """
         Linear 1D interpolation on the GPU for Pytorch.
