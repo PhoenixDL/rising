@@ -20,3 +20,4 @@ from rising.transforms.functional.spatial import *
 from rising.transforms.functional.tensor import *
 from rising.transforms.functional.utility import *
 from rising.transforms.functional.channel import *
+from rising.transforms.functional.painting import *

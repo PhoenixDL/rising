@@ -1,5 +1,5 @@
 numpy
-torch>=1.3 # before 1.3 torch.nn.functional.affine_grid has no argument align_corners
+torch>=1.6 # before 1.6 torch.searchsorted is not present
 threadpoolctl
 tqdm
 
