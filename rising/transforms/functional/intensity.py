@@ -248,7 +248,7 @@ def bezier_3rd_order(data: torch.Tensor, maxv: float=1.0, minv: float=0.0,
     xvals = points[:,0]
     yvals = points[:,1]
 
-    out_flat = Interp1d()(xvals, yvals, data.view(-1))
+    out_flat = Interp1d.apply(xvals, yvals, data.view(-1))
 
     return out_flat.view(data.shape)
 
