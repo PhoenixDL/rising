@@ -34,8 +34,6 @@ import torch
 import contextlib
 
 class Interp1d(torch.autograd.Function):
-    def __call__(self, x, y, xnew, out=None):
-        return self.forward(x, y, xnew, out)
 
     def forward(ctx, x, y, xnew, out=None):
         """
