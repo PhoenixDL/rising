@@ -37,9 +37,13 @@ skip = False
 
 # skip problematic parts
 for line in converted_readme:
-    if any([line.startswith(x) for x in ['.. container::' ,'   |PyPI|', 'Why another framework?', '.. |PyPI|', '|PyPI|', '   logo', '.. raw:: html']]):
+    if any([line.startswith(x) for x in [
+        '.. container::', '   |PyPI|', 'Why another framework?', '.. |PyPI|', '|PyPI|', '   logo', '.. raw:: html'
+    ]]):
         skip = True
-    elif any([line.startswith(x) for x in ['What is ``rising``?', 'Installation', '.. |DefaultAugmentation|', '.. figure:: images/logo/rising_logo.png']]):
+    elif any([line.startswith(x) for x in [
+        'What is ``rising``?', 'Installation', '.. |DefaultAugmentation|', '.. figure:: images/logo/rising_logo.png'
+    ]]):
         skip = False
 
     if not skip:
@@ -108,10 +112,10 @@ if IS_REALESE:
 # source_suffix = ['.rst', '.md']
 # source_suffix = ['.rst', '.md', '.ipynb']
 source_suffix = {
+    # '.ipynb': 'nbsphinx',
     '.rst': 'restructuredtext',
     '.txt': 'markdown',
     '.md': 'markdown',
-#    '.ipynb': 'nbsphinx',
 }
 
 # The master toctree document.
@@ -274,12 +278,13 @@ ENABLE_DOWNLOAD_LINK = True
 
 nbsphinx_kernel_name = 'python3'
 
-github_path = r'https://github.com/%s/%s/blob/master/notebooks/{{ env.doc2path(env.docname, base=None) }}' % (github_user, github_repo)
+github_path = r'https://github.com/%s/%s/blob/master/notebooks/{{ env.doc2path(env.docname, base=None) }}' \
+              % (github_user, github_repo)
 colab_path = github_path.replace('https://github.com', 'https://colab.research.google.com/github')
 nbsphinx_execute = 'never'
 
 nb_suffix = 'notebooks'
-nb_doc_path = PATH_HERE # os.path.join(PATH_HERE, nb_suffix)
+nb_doc_path = PATH_HERE  # os.path.join(PATH_HERE, nb_suffix)
 os.makedirs(nb_doc_path, exist_ok=True)
 nb_path = os.path.join(PATH_ROOT, nb_suffix)
 
@@ -343,10 +348,10 @@ else:
             </div>
     """ % (colab_path, github_path)
 
-from docutils import nodes
-from sphinx.util.docfields import TypedField
-from sphinx import addnodes
-import sphinx.ext.doctest
+from docutils import nodes  # noqa: E402
+from sphinx.util.docfields import TypedField  # noqa: E402
+from sphinx import addnodes  # noqa: E402
+import sphinx.ext.doctest  # noqa: E402
 
 # Without this, doctest adds any example with a `>>>` as a test
 doctest_test_doctest_blocks = ''
