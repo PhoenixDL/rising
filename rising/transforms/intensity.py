@@ -314,7 +314,7 @@ class RandomBezierTransform(BaseTransform):
     """ Apply a random 3rd order bezier spline to the intensity values,
     as proposed in Models Genesis """
 
-    def __init__(self, maxv: float = 1.0, minv: float=0.0, keys: Sequence = ('data',), **kwargs):
+    def __init__(self, maxv: float = 1.0, minv: float = 0.0, keys: Sequence = ('data',), **kwargs):
 
         super().__init__(augment_fn=bezier_3rd_order, maxv=maxv, minv=minv, keys=keys, grad=False, **kwargs)
 
@@ -324,9 +324,8 @@ class InvertAmplitude(BaseTransform):
         out = maxv + minv - data
     """
 
-    def __init__(self, prob: float = 0.5, maxv: float = 1.0, minv: float=0.0,
+    def __init__(self, prob: float = 0.5, maxv: float = 1.0, minv: float = 0.0,
                  keys: Sequence = ('data',), **kwargs):
 
         super().__init__(augment_fn=random_inversion, prob_inversion=prob, maxv=maxv, minv=minv,
                          keys=keys, grad=False, **kwargs)
-
