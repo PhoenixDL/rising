@@ -35,7 +35,7 @@ os.remove('readme.md')
 rst_file = []
 skip = False
 
-# skip problematic parts 
+# skip problematic parts
 for line in converted_readme:
     if any([line.startswith(x) for x in ['.. container::' ,'   |PyPI|', 'Why another framework?', '.. |PyPI|', '|PyPI|', '   logo', '.. raw:: html']]):
         skip = True
@@ -44,7 +44,7 @@ for line in converted_readme:
 
     if not skip:
         rst_file.append(line.replace('docs/source/images', 'images').replace('.svg', '.png'))
-    
+
 with open('getting_started.rst', 'w') as f:
     f.write('\n'.join(rst_file))
 

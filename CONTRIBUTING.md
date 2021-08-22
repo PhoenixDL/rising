@@ -93,13 +93,13 @@ You can run your tests with coverage by installing ´coverage´ and executing
 coverage run -m unittest; coverage report -m;
 ```
 
-inside the terminal. Pycharm Professional supports `Run with coverage` directly. 
+inside the terminal. Pycharm Professional supports `Run with coverage` directly.
 Furthermore, the coverage is always computed and uploaded when you execute `git push` and can be seen on github.
 
 ## Writing documentation
 
 `rising` uses an adapted version of [google style](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
-for formatting docstrings. Opposing to the original google style we opted to not duplicate the typing from the function 
+for formatting docstrings. Opposing to the original google style we opted to not duplicate the typing from the function
 signature to the docstrings.
 Length of line inside docstrings block must be limited to 80 characters to
 fit into Jupyter documentation popups.

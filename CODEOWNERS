@@ -1,6 +1,6 @@
-# Use this CODEOWNERS file for automatically request reviews from owners at PRs. 
+# Use this CODEOWNERS file for automatically request reviews from owners at PRs.
 # For Details see https://help.github.com/en/articles/about-code-owners
-# The order of the codeowners is simply alphabetically. 
+# The order of the codeowners is simply alphabetically.
 
 # Global repo stuff
 /* @justusschock @mibaumgartner
