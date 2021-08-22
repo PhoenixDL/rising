@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import torch
 import contextlib
 
+
 class Interp1d(torch.autograd.Function):
 
     @staticmethod
@@ -82,17 +83,17 @@ class Interp1d(torch.autograd.Function):
         # Checking for the dimensions
         assert (v['x'].shape[1] == v['y'].shape[1]
                 and (
-                     v['x'].shape[0] == v['y'].shape[0]
-                     or v['x'].shape[0] == 1
-                     or v['y'].shape[0] == 1
-                    )
-                ), ("x and y must have the same number of columns, and either "
-                    "the same number of row or one of them having only one "
-                    "row.")
+            v['x'].shape[0] == v['y'].shape[0]
+            or v['x'].shape[0] == 1
+            or v['y'].shape[0] == 1
+        )
+        ), ("x and y must have the same number of columns, and either "
+            "the same number of row or one of them having only one "
+            "row.")
 
         reshaped_xnew = False
         if ((v['x'].shape[0] == 1) and (v['y'].shape[0] == 1)
-           and (v['xnew'].shape[0] > 1)):
+                and (v['xnew'].shape[0] > 1)):
             # if there is only one row for both x and y, there is no need to
             # loop over the rows of xnew because they will all have to face the
             # same interpolation problem. We should just stack them together to
@@ -105,7 +106,7 @@ class Interp1d(torch.autograd.Function):
         D = max(v['x'].shape[0], v['xnew'].shape[0])
         shape_ynew = (D, v['xnew'].shape[-1])
         if out is not None:
-            if out.numel() != shape_ynew[0]*shape_ynew[1]:
+            if out.numel() != shape_ynew[0] * shape_ynew[1]:
                 # The output provided is of incorrect shape.
                 # Going for a new one
                 out = None
@@ -162,14 +163,14 @@ class Interp1d(torch.autograd.Function):
         # output. Hence, we start also activating gradient tracking
         with torch.enable_grad() if enable_grad else contextlib.suppress():
             v['slopes'] = (
-                    (v['y'][:, 1:]-v['y'][:, :-1])
-                    /
-                    (eps + (v['x'][:, 1:]-v['x'][:, :-1]))
-                )
+                (v['y'][:, 1:] - v['y'][:, :-1])
+                /
+                (eps + (v['x'][:, 1:] - v['x'][:, :-1]))
+            )
 
             # now build the linear interpolation
-            ynew = sel('y') + sel('slopes')*(
-                                    v['xnew'] - sel('x'))
+            ynew = sel('y') + sel('slopes') * (
+                v['xnew'] - sel('x'))
 
             if reshaped_xnew:
                 ynew = ynew.view(original_xnew_shape)
@@ -181,9 +182,9 @@ class Interp1d(torch.autograd.Function):
     def backward(ctx, grad_out):
         inputs = ctx.saved_tensors[1:]
         gradients = torch.autograd.grad(
-                        ctx.saved_tensors[0],
-                        [i for i in inputs if i is not None],
-                        grad_out, retain_graph=True)
+            ctx.saved_tensors[0],
+            [i for i in inputs if i is not None],
+            grad_out, retain_graph=True)
         result = [None, ] * 5
         pos = 0
         for index in range(len(inputs)):

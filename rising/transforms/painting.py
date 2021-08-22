@@ -14,7 +14,7 @@ class LocalPixelShuffle(BaseTransform):
     """ Shuffels Pixels locally in n patches,
     as proposed in Models Genesis """
 
-    def __init__(self, n: int=-1,
+    def __init__(self, n: int = -1,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -32,7 +32,7 @@ class RandomInpainting(BaseTransform):
     as proposed in Models Genesis """
 
     def __init__(self, n: int = 5,
-                 maxv: float=1.0, minv: float = 0.0,
+                 maxv: float = 1.0, minv: float = 0.0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -50,7 +50,7 @@ class RandomOutpainting(AbstractTransform):
     """ The border of the images will be replaced by uniform noise,
     as proposed in Models Genesis """
 
-    def __init__(self, prob: float = 0.5, maxv: float=1.0, minv: float = 0.0,
+    def __init__(self, prob: float = 0.5, maxv: float = 1.0, minv: float = 0.0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:
@@ -78,7 +78,7 @@ class RandomInOrOutpainting(AbstractTransform):
     as proposed in Models Genesis """
 
     def __init__(self, prob: float = 0.5, n: int = 5,
-                 maxv: float=1.0, minv: float = 0.0,
+                 maxv: float = 1.0, minv: float = 0.0,
                  keys: Sequence = ('data',), grad: bool = False, **kwargs):
         """
         Args:

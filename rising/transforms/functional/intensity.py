@@ -231,30 +231,30 @@ def scale_by_value(data: torch.Tensor, value: float,
     return torch.mul(data, value, out=out)
 
 
-def bezier_3rd_order(data: torch.Tensor, maxv: float=1.0, minv: float=0.0,
+def bezier_3rd_order(data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0,
                      out: Optional[torch.Tensor] = None) -> torch.Tensor:
-    p0 = torch.zeros((1,2))
-    p1 = torch.rand((1,2))
-    p2 = torch.rand((1,2))
-    p3 = torch.ones((1,2))
+    p0 = torch.zeros((1, 2))
+    p1 = torch.rand((1, 2))
+    p2 = torch.rand((1, 2))
+    p3 = torch.ones((1, 2))
 
     t = torch.linspace(0.0, 1.0, 1000).unsqueeze(1)
 
-    points = (1-t*t*t)*p0 + 3*(1-t)*(1-t)*t*p1 + 3*(1-t)*t*t*p2 + t*t*t*p3
+    points = (1 - t * t * t) * p0 + 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t * p3
 
     # scaling according to maxv,minv
-    points = points*(maxv-minv) + minv
+    points = points * (maxv - minv) + minv
 
-    xvals = points[:,0]
-    yvals = points[:,1]
+    xvals = points[:, 0]
+    yvals = points[:, 1]
 
     out_flat = Interp1d.apply(xvals, yvals, data.view(-1))
 
     return out_flat.view(data.shape)
 
 
-def random_inversion(data: torch.Tensor, prob_inversion: float=0.5,
-                     maxv: float=1.0, minv: float=0.0,
+def random_inversion(data: torch.Tensor, prob_inversion: float = 0.5,
+                     maxv: float = 1.0, minv: float = 0.0,
                      out: Optional[torch.Tensor] = None) -> torch.Tensor:
 
     if torch.rand((1)) < prob_inversion:
