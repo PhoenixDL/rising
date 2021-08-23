@@ -1,12 +1,13 @@
-import unittest
-import torch
 import random
+import unittest
 from math import isclose
-from unittest.mock import Mock, call
+from unittest.mock import call, Mock
 
-from tests.transforms import chech_data_preservation
-from rising.transforms.intensity import *
+import torch
+
 from rising.random import DiscreteParameter
+from rising.transforms.intensity import *
+from tests.transforms import chech_data_preservation
 
 
 class MyTestCase(unittest.TestCase):

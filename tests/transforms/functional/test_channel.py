@@ -1,6 +1,7 @@
 import unittest
 
 import torch
+
 from rising.transforms.functional.channel import one_hot_batch
 
 

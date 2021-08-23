@@ -1,6 +1,7 @@
-import torch
 import random
-from typing import Union, Sequence, Tuple, List
+from typing import List, Sequence, Tuple, Union
+
+import torch
 
 from rising.utils import check_scalar
 

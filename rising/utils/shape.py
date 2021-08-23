@@ -1,5 +1,6 @@
+from typing import Sequence, Union
+
 import torch
-from typing import Union, Sequence
 
 
 def reshape(value: Union[list, torch.Tensor],

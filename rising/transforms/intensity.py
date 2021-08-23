@@ -1,23 +1,22 @@
-import torch
-from typing import Union, Sequence, Optional
+from typing import Optional, Sequence, Union
 
-from rising.transforms.abstract import (BaseTransform, PerSampleTransform,
-                                        PerChannelTransform)
-from rising.transforms.functional.intensity import (
-    norm_range,
-    norm_min_max,
-    norm_mean_std,
-    norm_zero_mean_unit_std,
-    add_noise,
-    gamma_correction,
-    add_value,
-    scale_by_value,
-    clamp,
-    bezier_3rd_order,
-    random_inversion,
-)
+import torch
 
 from rising.random import AbstractParameter
+from rising.transforms.abstract import BaseTransform, PerChannelTransform, PerSampleTransform
+from rising.transforms.functional.intensity import (
+    add_noise,
+    add_value,
+    bezier_3rd_order,
+    clamp,
+    gamma_correction,
+    norm_mean_std,
+    norm_min_max,
+    norm_range,
+    norm_zero_mean_unit_std,
+    random_inversion,
+    scale_by_value,
+)
 
 __all__ = ["Clamp", "NormRange", "NormMinMax",
            "NormZeroMeanUnitStd", "NormMeanStd", "Noise",

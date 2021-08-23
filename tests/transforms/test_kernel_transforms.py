@@ -1,7 +1,7 @@
-import torch
 import random
 import unittest
 
+import torch
 
 from rising.transforms.kernel import *
 

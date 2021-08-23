@@ -1,8 +1,8 @@
-import torch
 import itertools
-
 from math import pi
-from typing import Union, Optional
+from typing import Optional, Union
+
+import torch
 
 
 def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:

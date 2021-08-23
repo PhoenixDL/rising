@@ -1,14 +1,20 @@
 import unittest
-from typing import Sequence, Mapping
+from typing import Mapping, Sequence
 from unittest.mock import Mock, patch
 
 import numpy as np
 import torch
 
 from rising.loading.dataset import Dataset
-from rising.loading.loader import (_seed_npy_before_worker_init, DataLoader,
-                                   BatchTransformer, _MultiProcessingDataLoaderIter, default_transform_call,
-                                   SampleTransformer, _SingleProcessDataLoaderIter)
+from rising.loading.loader import (
+    _MultiProcessingDataLoaderIter,
+    _seed_npy_before_worker_init,
+    _SingleProcessDataLoaderIter,
+    BatchTransformer,
+    DataLoader,
+    default_transform_call,
+    SampleTransformer,
+)
 from rising.transforms import Mirror
 
 

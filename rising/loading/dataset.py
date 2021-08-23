@@ -3,7 +3,7 @@ import os
 import pathlib
 from functools import partial
 from multiprocessing import cpu_count
-from typing import Any, Sequence, Callable, Union, List, Iterator, Generator, Optional
+from typing import Any, Callable, Generator, Iterator, List, Optional, Sequence, Union
 
 try:
     import dill
@@ -13,7 +13,8 @@ except ImportError:
     DILL_AVAILABLE = False
 
 from torch.multiprocessing import Pool
-from torch.utils.data import Dataset as TorchDset, Subset
+from torch.utils.data import Dataset as TorchDset
+from torch.utils.data import Subset
 from tqdm import tqdm
 
 logger = logging.getLogger(__file__)

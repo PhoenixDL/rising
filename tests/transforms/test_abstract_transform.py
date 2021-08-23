@@ -1,7 +1,8 @@
-import unittest
-from unittest.mock import Mock, call
-import torch
 import random
+import unittest
+from unittest.mock import call, Mock
+
+import torch
 
 from rising.transforms.abstract import *
 

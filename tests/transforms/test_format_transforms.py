@@ -1,6 +1,8 @@
 import unittest
+
 import torch
-from rising.transforms.format import MapToSeq, SeqToMap, RenameKeys
+
+from rising.transforms.format import MapToSeq, RenameKeys, SeqToMap
 
 
 class TestFormat(unittest.TestCase):

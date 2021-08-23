@@ -1,8 +1,9 @@
-from typing import Sequence, Mapping, Hashable, Union
+from typing import Hashable, Mapping, Sequence, Union
 
 import torch
+
 from rising.transforms.abstract import AbstractTransform
-from rising.transforms.functional.utility import seg_to_box, box_to_seg, instance_to_semantic
+from rising.transforms.functional.utility import box_to_seg, instance_to_semantic, seg_to_box
 
 __all__ = ["DoNothing", "SegToBox", "BoxToSeg", "InstanceToSemantic"]
 

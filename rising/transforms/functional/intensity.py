@@ -1,6 +1,6 @@
-import torch
+from typing import Optional, Sequence, Union
 
-from typing import Union, Sequence, Optional
+import torch
 
 from rising.utils import check_scalar
 from rising.utils.torchinterp1d import Interp1d

@@ -1,6 +1,7 @@
-import unittest
-import torch
 import random
+import unittest
+
+import torch
 
 from rising.transforms.functional.crop import *
 

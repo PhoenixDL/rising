@@ -1,1 +1,1 @@
-from ._utils import LoadDummySample, DummyDataset
+from ._utils import DummyDataset, LoadDummySample

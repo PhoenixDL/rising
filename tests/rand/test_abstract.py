@@ -1,6 +1,8 @@
-import torch
 import unittest
-from rising.random import DiscreteParameter, AbstractParameter
+
+import torch
+
+from rising.random import AbstractParameter, DiscreteParameter
 
 
 class TestAbstract(unittest.TestCase):

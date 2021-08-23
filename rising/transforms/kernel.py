@@ -1,9 +1,10 @@
 import math
-from typing import Sequence, Union, Callable
+from typing import Callable, Sequence, Union
 
 import torch
 
 from rising.utils import check_scalar
+
 from .abstract import AbstractTransform
 
 __all__ = ["KernelTransform", "GaussianSmoothing"]

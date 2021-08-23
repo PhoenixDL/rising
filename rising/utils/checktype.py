@@ -1,5 +1,6 @@
+from typing import Any, Union
+
 import torch
-from typing import Union, Any
 
 
 def check_scalar(x: Union[Any, float, int]) -> bool:

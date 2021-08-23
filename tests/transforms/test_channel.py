@@ -1,7 +1,8 @@
 import unittest
+
 import torch
 
-from rising.transforms import Permute, OneHot, ArgMax
+from rising.transforms import ArgMax, OneHot, Permute
 
 
 class TestChannel(unittest.TestCase):

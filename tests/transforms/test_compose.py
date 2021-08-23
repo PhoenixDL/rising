@@ -1,11 +1,11 @@
-import unittest
-import torch
-import random
 import copy
+import random
+import unittest
 
+import torch
+
+from rising.transforms.compose import _TransformWrapper, AbstractTransform, Compose, DropoutCompose, OneOf
 from rising.transforms.spatial import Mirror
-from rising.transforms.compose import Compose, DropoutCompose, \
-    AbstractTransform, _TransformWrapper, OneOf
 
 
 class TestCompose(unittest.TestCase):

@@ -16,8 +16,8 @@ import inspect
 import os
 import shutil
 import sys
-import pypandoc
 
+import pypandoc
 import rising_sphinx_theme
 
 PATH_HERE = os.path.abspath(os.path.dirname(__file__))

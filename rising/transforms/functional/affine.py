@@ -1,14 +1,20 @@
 import warnings
-from typing import Union, Sequence, Optional
+from typing import Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 
-from rising.utils.affine import points_to_cartesian, matrix_to_homogeneous, \
-    points_to_homogeneous, unit_box, get_batched_eye, deg_to_rad, \
-    matrix_revert_coordinate_order
-from rising.utils.checktype import check_scalar
 from rising.random import AbstractParameter
+from rising.utils.affine import (
+    deg_to_rad,
+    get_batched_eye,
+    matrix_revert_coordinate_order,
+    matrix_to_homogeneous,
+    points_to_cartesian,
+    points_to_homogeneous,
+    unit_box,
+)
+from rising.utils.checktype import check_scalar
 
 __all__ = [
     'affine_image_transform',

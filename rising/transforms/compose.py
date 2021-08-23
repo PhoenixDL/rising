@@ -1,12 +1,11 @@
 from random import shuffle
-from typing import Sequence, Union, Callable, Any, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional, Sequence, Union
 
 import torch
 
-from rising.utils import check_scalar
-from rising.transforms import AbstractTransform
 from rising.random import ContinuousParameter, UniformParameter
-
+from rising.transforms import AbstractTransform
+from rising.utils import check_scalar
 
 __all__ = ["Compose", "DropoutCompose", "OneOf"]
 

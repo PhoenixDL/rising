@@ -1,4 +1,5 @@
 import unittest
+
 from rising import AbstractMixin
 
 

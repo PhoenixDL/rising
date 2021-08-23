@@ -1,6 +1,7 @@
 import unittest
-import torch
 from copy import deepcopy
+
+import torch
 
 from rising.transforms.functional import *
 

@@ -1,14 +1,12 @@
 # from __future__ import annotations
-import torch
-
 from itertools import combinations
-from typing import Union, Sequence, Callable, Optional
+from typing import Callable, Optional, Sequence, Union
+
+import torch
 from torch.multiprocessing import Value
 
 from rising.random import AbstractParameter, DiscreteParameter
 from rising.transforms.abstract import AbstractTransform, BaseTransform
-from rising.transforms.functional.spatial import *
-
 
 __all__ = ["Mirror", "Rot90", "ResizeNative",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]

@@ -1,7 +1,8 @@
-from .abstract import AbstractTransform
-from typing import Union, Sequence, Callable, Tuple, Mapping, Dict, Hashable
+from typing import Callable, Dict, Hashable, Mapping, Sequence, Tuple, Union
 
-from rising.transforms.functional.utility import pop_keys, filter_keys
+from rising.transforms.functional.utility import filter_keys, pop_keys
+
+from .abstract import AbstractTransform
 
 __all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys", "RenameKeys"]
 
@@ -75,7 +76,7 @@ class PopKeys(AbstractTransform):
             keys : if callable it must return a boolean for each key
                 indicating whether it should be popped from the dict.
                 if sequence of strings, the strings shall be the keys to be
-                popped
+                poppedAbstractTransform,
             return_popped: whether to also return the popped values
                 (default: False)
         """

@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union, Mapping, Hashable
+from typing import Hashable, List, Mapping, Tuple, Union
 
 import torch
 from torch import Tensor

@@ -1,14 +1,15 @@
+import os
+import pickle
+import shutil
+import tempfile
 import unittest
 from unittest.mock import Mock
-import os
-import tempfile
-import shutil
-import pickle
+
 import dill
+import numpy as np
 from torch.multiprocessing import Pool
 
-import numpy as np
-from rising.loading.dataset import AsyncDataset, load_async, dill_helper
+from rising.loading.dataset import AsyncDataset, dill_helper, load_async
 
 
 class LoadDummySample:

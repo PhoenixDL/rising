@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 
 from rising.transforms.functional.tensor import *
 

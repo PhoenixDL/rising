@@ -1,11 +1,9 @@
-import torch
 from typing import Sequence
 
-from rising.transforms.abstract import AbstractTransform, BaseTransform
-from rising.transforms.functional.painting import (
-    local_pixel_shuffle, random_inpainting, random_outpainting
-)
+import torch
 
+from rising.transforms.abstract import AbstractTransform, BaseTransform
+from rising.transforms.functional.painting import local_pixel_shuffle, random_inpainting, random_outpainting
 
 __all__ = ["RandomInpainting", "RandomOutpainting", "RandomInOrOutpainting", "LocalPixelShuffle"]
 
