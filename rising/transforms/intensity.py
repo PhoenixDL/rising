@@ -311,11 +311,12 @@ class RandomScaleValue(RandomValuePerChannel):
 
 
 class RandomBezierTransform(BaseTransform):
-    """ Apply a random 3rd order bezier spline to the intensity values,
-    as proposed in Models Genesis """
+    """ 
+    Apply a random 3rd order bezier spline to the intensity values,
+    as proposed in Models Genesis
+    """
 
     def __init__(self, maxv: float = 1.0, minv: float = 0.0, keys: Sequence = ('data',), **kwargs):
-
         super().__init__(augment_fn=bezier_3rd_order, maxv=maxv, minv=minv, keys=keys, grad=False, **kwargs)
 
 
