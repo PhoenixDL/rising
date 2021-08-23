@@ -348,10 +348,10 @@ else:
             </div>
     """ % (colab_path, github_path)
 
-from docutils import nodes  # noqa: E402
-from sphinx.util.docfields import TypedField  # noqa: E402
-from sphinx import addnodes  # noqa: E402
 import sphinx.ext.doctest  # noqa: E402
+from docutils import nodes  # noqa: E402
+from sphinx import addnodes  # noqa: E402
+from sphinx.util.docfields import TypedField  # noqa: E402
 
 # Without this, doctest adds any example with a `>>>` as a test
 doctest_test_doctest_blocks = ''

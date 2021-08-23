@@ -7,6 +7,7 @@ import torch
 
 from rising.random import DiscreteParameter
 from rising.transforms import (
+    Clamp,
     ExponentialNoise,
     GammaCorrection,
     GaussianNoise,

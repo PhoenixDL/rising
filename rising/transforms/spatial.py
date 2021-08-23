@@ -11,6 +11,8 @@ from rising.transforms.abstract import AbstractTransform, BaseTransform
 __all__ = ["Mirror", "Rot90", "ResizeNative",
            "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
+from rising.transforms.functional import mirror, resize_native, rot90
+
 scheduler_type = Callable[[int], Union[int, Sequence[int]]]
 
 
