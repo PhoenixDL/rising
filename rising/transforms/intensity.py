@@ -311,7 +311,7 @@ class RandomScaleValue(RandomValuePerChannel):
 
 
 class RandomBezierTransform(BaseTransform):
-    """ 
+    """
     Apply a random 3rd order bezier spline to the intensity values,
     as proposed in Models Genesis
     """
