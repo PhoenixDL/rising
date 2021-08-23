@@ -1,8 +1,9 @@
-import torch
 import unittest
-import numpy as np
 
-from rising.ops import torch_one_hot, np_one_hot
+import numpy as np
+import torch
+
+from rising.ops import np_one_hot, torch_one_hot
 
 
 class TestOneHot(unittest.TestCase):

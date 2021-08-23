@@ -1,7 +1,8 @@
-import torch
 import unittest
 
-from rising.transforms.functional.tensor import *
+import torch
+
+from rising.transforms.functional import tensor_op
 
 
 class TestSpatialFunctional(unittest.TestCase):

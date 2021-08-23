@@ -1,9 +1,17 @@
 import unittest
+
 import torch
-from rising.transforms.functional.affine import _check_new_img_size, \
-    affine_point_transform, affine_image_transform, parametrize_matrix, \
-    create_rotation, create_translation, create_scale
-from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
+
+from rising.transforms.functional.affine import (
+    _check_new_img_size,
+    affine_image_transform,
+    affine_point_transform,
+    create_rotation,
+    create_scale,
+    create_translation,
+    parametrize_matrix,
+)
+from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 
 
 class AffineTestCase(unittest.TestCase):

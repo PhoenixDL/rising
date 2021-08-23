@@ -1,5 +1,6 @@
+from typing import Dict, Optional, Sequence, Union
+
 import torch
-from typing import Dict, Union, Sequence, Optional
 from torch.utils.data._utils.collate import default_convert
 
 from rising.transforms import AbstractTransform, BaseTransform

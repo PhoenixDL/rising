@@ -1,6 +1,7 @@
 from typing import Optional
 
 import torch
+
 from rising.ops import torch_one_hot
 
 __all__ = ["one_hot_batch"]

@@ -34,6 +34,12 @@ repos:
   #  hooks:
   #    - id: yesqa
 
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.9.3
+    hooks:
+      - id: isort
+        name: imports
+
   - repo: https://github.com/PyCQA/flake8
     rev: 3.9.2
     hooks:

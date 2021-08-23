@@ -1,7 +1,8 @@
-import torch
 import unittest
 
-from rising.transforms.functional.tensor import *
+import torch
+
+from rising.transforms.functional import to_device_dtype
 
 
 class TestSpatialFunctional(unittest.TestCase):

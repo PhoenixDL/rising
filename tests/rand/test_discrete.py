@@ -1,5 +1,6 @@
 import unittest
-from rising.random import DiscreteParameter, DiscreteCombinationsParameter
+
+from rising.random import DiscreteCombinationsParameter, DiscreteParameter
 from rising.random.discrete import combinations_all
 
 

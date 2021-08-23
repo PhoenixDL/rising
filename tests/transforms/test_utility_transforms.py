@@ -1,8 +1,9 @@
 import unittest
-import torch
 from copy import deepcopy
-from rising.transforms.format import *
-from rising.transforms.utility import *
+
+import torch
+
+from rising.transforms import BoxToSeg, DoNothing, FilterKeys, InstanceToSemantic, PopKeys, SegToBox
 
 
 class TestUtilityTransforms(unittest.TestCase):

@@ -1,7 +1,8 @@
-import torch
 import unittest
 
-from rising.transforms.functional.spatial import *
+import torch
+
+from rising.transforms.functional import mirror, resize_native, rot90
 
 
 class TestSpatialFunctional(unittest.TestCase):

@@ -1,9 +1,18 @@
-import unittest
-from rising.utils.affine import points_to_homogeneous, matrix_to_homogeneous, \
-    matrix_to_cartesian, points_to_cartesian, matrix_revert_coordinate_order, \
-    get_batched_eye, deg_to_rad, unit_box
-import torch
 import math
+import unittest
+
+import torch
+
+from rising.utils.affine import (
+    deg_to_rad,
+    get_batched_eye,
+    matrix_revert_coordinate_order,
+    matrix_to_cartesian,
+    matrix_to_homogeneous,
+    points_to_cartesian,
+    points_to_homogeneous,
+    unit_box,
+)
 
 
 class AffineHelperTests(unittest.TestCase):

@@ -1,11 +1,10 @@
-from typing import Sequence, Union, Any, Optional, Tuple
+from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
 
 from rising.transforms.abstract import BaseTransform
-from rising.transforms.functional.affine import affine_image_transform, \
-    AffineParamType, parametrize_matrix
-from rising.utils.affine import matrix_to_homogeneous, matrix_to_cartesian
+from rising.transforms.functional.affine import affine_image_transform, AffineParamType, parametrize_matrix
+from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 from rising.utils.checktype import check_scalar
 
 __all__ = [

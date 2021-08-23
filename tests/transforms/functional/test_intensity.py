@@ -1,8 +1,18 @@
 import unittest
-import torch
 from math import isclose
 
-from rising.transforms.functional.intensity import *
+import torch
+
+from rising.transforms.functional import (
+    add_noise,
+    add_value,
+    gamma_correction,
+    norm_mean_std,
+    norm_min_max,
+    norm_range,
+    norm_zero_mean_unit_std,
+    scale_by_value,
+)
 
 
 class TestIntensityFunctional(unittest.TestCase):

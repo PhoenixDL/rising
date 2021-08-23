@@ -1,10 +1,9 @@
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
 import torch
 
 from rising.transforms import BaseTransform
 from rising.transforms.functional import one_hot_batch
-
 
 __all__ = ["OneHot", "ArgMax"]
 

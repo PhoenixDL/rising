@@ -2,15 +2,15 @@ import collections
 import warnings
 from contextlib import contextmanager
 from functools import partial
-from typing import Callable, Mapping, Sequence, Union, Any, Iterator, Optional, Generator
+from typing import Any, Callable, Generator, Iterator, Mapping, Optional, Sequence, Union
 
 import torch
 from threadpoolctl import threadpool_limits
-from torch.utils.data import DataLoader as _DataLoader, Sampler, Dataset
+from torch.utils.data import DataLoader as _DataLoader
+from torch.utils.data import Dataset, Sampler
 from torch.utils.data._utils.collate import default_convert
-from torch.utils.data.dataloader import \
-    _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter, \
-    _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
+from torch.utils.data.dataloader import _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
+from torch.utils.data.dataloader import _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter
 
 try:
     import numpy as np
@@ -20,7 +20,7 @@ except ImportError:
     NUMPY_AVAILABLE = False
 
 from rising.loading.collate import do_nothing_collate
-from rising.transforms import ToDevice, Compose
+from rising.transforms import Compose, ToDevice
 
 __all__ = ['DataLoader', 'default_transform_call']
 
@@ -480,6 +480,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
         """
         try:
             import numpy as np
+
             # generate numpy seed. The range comes so that the seed in each
             # worker (which is this baseseed plus the worker id) is always an
             # uint32. This is because numpy only accepts uint32 as valid seeds

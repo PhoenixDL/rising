@@ -1,5 +1,6 @@
+from typing import Any, Callable, Sequence, Tuple, Union
+
 import torch
-from typing import Callable, Union, Sequence, Any, Tuple
 
 from rising.random import AbstractParameter, DiscreteParameter
 

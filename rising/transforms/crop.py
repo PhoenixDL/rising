@@ -1,9 +1,10 @@
+from typing import Sequence, Union
+
 import torch
 
-from typing import Sequence, Union
-from rising.transforms.abstract import BaseTransform, BaseTransformSeeded
 from rising.random import AbstractParameter
-from rising.transforms.functional.crop import random_crop, center_crop
+from rising.transforms.abstract import BaseTransform, BaseTransformSeeded
+from rising.transforms.functional.crop import center_crop, random_crop
 
 __all__ = ["CenterCrop", "RandomCrop"]
 

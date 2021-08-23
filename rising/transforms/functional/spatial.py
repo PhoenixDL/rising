@@ -1,5 +1,6 @@
+from typing import Optional, Sequence, Union
+
 import torch
-from typing import Sequence, Union, Optional
 
 from rising.utils import check_scalar
 

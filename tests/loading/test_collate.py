@@ -1,6 +1,7 @@
-import torch
 import unittest
 from collections import namedtuple
+
+import torch
 
 try:
     import numpy as np

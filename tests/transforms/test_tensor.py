@@ -1,8 +1,9 @@
 import unittest
-import torch
-import numpy as np
 
-from rising.transforms import *
+import numpy as np
+import torch
+
+from rising.transforms import OneHot, TensorOp, ToDevice, ToDtype, ToTensor
 
 
 class MyTestCase(unittest.TestCase):

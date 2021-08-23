@@ -1,9 +1,8 @@
-from typing import Sequence, List
-from random import (sample as sample_without_replacement,
-                    choices as sample_with_replacement)
-
 from functools import partial
 from itertools import combinations
+from random import choices as sample_with_replacement
+from random import sample as sample_without_replacement
+from typing import List, Sequence
 
 from rising.random.abstract import AbstractParameter
 

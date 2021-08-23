@@ -1,6 +1,8 @@
 import unittest
-from rising.utils.checktype import check_scalar
+
 import torch
+
+from rising.utils.checktype import check_scalar
 
 
 class TypeCheckTestCase(unittest.TestCase):

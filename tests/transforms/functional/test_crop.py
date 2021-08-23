@@ -1,8 +1,9 @@
-import unittest
-import torch
 import random
+import unittest
 
-from rising.transforms.functional.crop import *
+import torch
+
+from rising.transforms.functional import center_crop, random_crop
 
 
 class MyTestCase(unittest.TestCase):

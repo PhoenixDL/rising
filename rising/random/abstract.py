@@ -1,6 +1,7 @@
-import torch
 from abc import abstractmethod
-from typing import Union, Sequence, Optional
+from typing import Optional, Sequence, Union
+
+import torch
 
 from rising.utils.shape import reshape
 

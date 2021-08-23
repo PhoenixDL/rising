@@ -1,1 +1,1 @@
-from .checktype import check_scalar
+from rising.utils.checktype import check_scalar
