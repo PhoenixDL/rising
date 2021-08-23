@@ -127,8 +127,7 @@ class Noise(PerChannelTransform):
     """
     Add noise to data
 
-    .. warning:: This transform will apply different noise patterns to
-        different keys.
+    .. warning:: This transform will apply different noise patterns to different keys.
     """
 
     def __init__(self, noise_type: str, per_channel: bool = False,
@@ -153,8 +152,7 @@ class ExponentialNoise(Noise):
     """
     Add exponential noise to data
 
-    .. warning:: This transform will apply different noise patterns to
-        different keys.
+    .. warning:: This transform will apply different noise patterns to different keys.
     """
 
     def __init__(self, lambd: float, keys: Sequence = ('data',),
@@ -174,8 +172,7 @@ class GaussianNoise(Noise):
     """
     Add gaussian noise to data
 
-    .. warning:: This transform will apply different noise patterns to
-        different keys.
+    .. warning:: This transform will apply different noise patterns to different keys.
     """
 
     def __init__(self, mean: float, std: float, keys: Sequence = ('data',),
@@ -211,8 +208,7 @@ class GammaCorrection(BaseTransform):
 
 class RandomValuePerChannel(PerChannelTransform):
     """
-    Apply augmentations which take random values as input by keyword
-    :attr:`value`
+    Apply augmentations which take random values as input by keyword :attr:`value`
 
     .. warning:: This transform will apply different values to different keys.
     """
@@ -311,11 +307,7 @@ class RandomScaleValue(RandomValuePerChannel):
 
 
 class RandomBezierTransform(BaseTransform):
-    """
-    Apply a random 3rd order bezier spline to the intensity values,
-    as proposed in Models Genesis
-
-    """
+    """Apply a random 3rd order bezier spline to the intensity values, as proposed in Models Genesis."""
 
     def __init__(self, maxv: float = 1.0, minv: float = 0.0, keys: Sequence = ('data',), **kwargs):
         super().__init__(
@@ -332,7 +324,6 @@ class InvertAmplitude(BaseTransform):
     """
     Inverts the amplitude with probability p according to the following formula:
     out = maxv + minv - data
-
     """
 
     def __init__(self, prob: float = 0.5, maxv: float = 1.0, minv: float = 0.0,

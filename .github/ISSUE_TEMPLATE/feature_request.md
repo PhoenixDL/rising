@@ -11,7 +11,7 @@ assignees: ''
 What should be added/changed?
 
 **Proposal**
-How could the feature be implemented? 
+How could the feature be implemented?
 *Are you able/willing to implement the feature yourself (with some guidance from us)?
 
 **Additional context**

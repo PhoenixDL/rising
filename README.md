@@ -19,7 +19,7 @@
 ## What is `rising`?
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
 Our goal is to provide a seamless integration into the PyTorch Ecosystem without sacrificing usability or features.
-Multiple examples for different use cases can be found in our [tutorial docs](https://rising.readthedocs.io/en/latest/tutorials.html) e.g. 
+Multiple examples for different use cases can be found in our [tutorial docs](https://rising.readthedocs.io/en/latest/tutorials.html) e.g.
 [2D Classification on MedNIST](https://github.com/PhoenixDL/rising/blob/master/notebooks/classification_2d_mednist.ipynb),
 [3D Segmentation of Hippocampus (Medical Decathlon)](https://github.com/PhoenixDL/rising/blob/master/notebooks/lightning_segmentation.ipynb),
 [Example Transformation Output](https://rising.readthedocs.io/en/latest/transformations.html),
@@ -87,7 +87,7 @@ dataset = torchvision.datasets.MNIST('./', train=True, download=True,
 
 In the next step, the transformations/augmentations need to be defined.
 The first transforms converts the Sequence from the torchvision dataset into a dict for the following `rising` transform which work on dicts.
-At the end, the transforms are compose to one callable transform which can be passed to the `Dataloader`. 
+At the end, the transforms are compose to one callable transform which can be passed to the `Dataloader`.
 
 ```python3
 import rising.transforms as rtr
@@ -163,4 +163,4 @@ Because the `rising` augmentation pipeline is a superset of the currently used m
 `General Project Future`: Most of the features and the milestone organisation can be found inside the `projects` tab.
 Features which are planned for the next release/milestone are listed under `TODO Next Release` while features which are not scheduled yet are under `Todo`.
 
-`Slack`: Join our Slack for the most up to date news or just to have a chat with us :) 
+`Slack`: Join our Slack for the most up to date news or just to have a chat with us :)

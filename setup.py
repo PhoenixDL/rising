@@ -39,7 +39,7 @@ requirements_async = resolve_requirements(
 readme = read_file(os.path.join(os.path.dirname(__file__), "README.md")
                    ).replace('.svg', '.png')
 
-import rising
+import rising  # noqa: E402
 
 setup(
     name='rising',

@@ -95,4 +95,3 @@ Collation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: do_nothing_collate
-
