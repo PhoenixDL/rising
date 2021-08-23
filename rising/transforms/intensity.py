@@ -329,7 +329,7 @@ class RandomBezierTransform(BaseTransform):
 
 
 class InvertAmplitude(BaseTransform):
-    """ 
+    """
     Inverts the amplitude with probability p according to the following formula:
     out = maxv + minv - data
 
