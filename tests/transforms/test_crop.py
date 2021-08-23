@@ -4,8 +4,8 @@ import unittest
 import torch
 
 from rising.random import DiscreteParameter
-from rising.transforms.crop import *
-from rising.transforms.functional.crop import center_crop, random_crop
+from rising.transforms import CenterCrop, RandomCrop
+from rising.transforms.functional import center_crop, random_crop
 
 
 class TestCrop(unittest.TestCase):

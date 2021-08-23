@@ -14,13 +14,12 @@ Implementations include:
 * Utility Transforms
 """
 
-from rising.transforms.functional.channel import one_hot_batch, torch_one_hot
-from rising.transforms.functional.crop import center_crop, check_scalar, crop, random, random_crop
+from rising.transforms.functional.channel import one_hot_batch
+from rising.transforms.functional.crop import center_crop, crop, random, random_crop
 from rising.transforms.functional.intensity import (
     add_noise,
     add_value,
     bezier_3rd_order,
-    check_scalar,
     clamp,
     gamma_correction,
     norm_mean_std,
@@ -31,6 +30,6 @@ from rising.transforms.functional.intensity import (
     scale_by_value,
 )
 from rising.transforms.functional.painting import local_pixel_shuffle, random_inpainting, random_outpainting
-from rising.transforms.functional.spatial import check_scalar, mirror, resize_native, rot90
+from rising.transforms.functional.spatial import mirror, resize_native, rot90
 from rising.transforms.functional.tensor import tensor_op, to_device_dtype
 from rising.transforms.functional.utility import box_to_seg, filter_keys, instance_to_semantic, pop_keys, seg_to_box

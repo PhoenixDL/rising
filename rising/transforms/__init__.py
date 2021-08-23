@@ -20,7 +20,6 @@ Implementations include:
 """
 
 from rising.transforms.abstract import (
-    AbstractParameter,
     AbstractTransform,
     BaseTransform,
     BaseTransformSeeded,

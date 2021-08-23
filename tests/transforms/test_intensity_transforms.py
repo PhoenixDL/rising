@@ -6,7 +6,19 @@ from unittest.mock import call, Mock
 import torch
 
 from rising.random import DiscreteParameter
-from rising.transforms.intensity import *
+from rising.transforms import (
+    ExponentialNoise,
+    GammaCorrection,
+    GaussianNoise,
+    Noise,
+    NormMeanStd,
+    NormMinMax,
+    NormRange,
+    NormZeroMeanUnitStd,
+    RandomAddValue,
+    RandomScaleValue,
+    RandomValuePerChannel,
+)
 from tests.transforms import chech_data_preservation
 
 

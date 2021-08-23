@@ -1,10 +1,9 @@
-import random
 import unittest
 from unittest.mock import call, Mock
 
 import torch
 
-from rising.transforms.abstract import *
+from rising.transforms import AbstractTransform, BaseTransform, PerChannelTransform, PerSampleTransform
 
 
 class AddTransform(AbstractTransform):

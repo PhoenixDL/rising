@@ -3,7 +3,7 @@ import unittest
 
 import torch
 
-from rising.transforms.kernel import *
+from rising.transforms import GaussianSmoothing, KernelTransform
 
 
 class TestKernelTransforms(unittest.TestCase):

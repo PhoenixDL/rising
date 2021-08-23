@@ -3,8 +3,7 @@ from copy import deepcopy
 
 import torch
 
-from rising.transforms.format import *
-from rising.transforms.utility import *
+from rising.transforms import BoxToSeg, DoNothing, FilterKeys, InstanceToSemantic, PopKeys, SegToBox
 
 
 class TestUtilityTransforms(unittest.TestCase):

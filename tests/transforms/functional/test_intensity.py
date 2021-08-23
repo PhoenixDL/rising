@@ -3,7 +3,16 @@ from math import isclose
 
 import torch
 
-from rising.transforms.functional.intensity import *
+from rising.transforms.functional import (
+    add_noise,
+    add_value,
+    gamma_correction,
+    norm_mean_std,
+    norm_min_max,
+    norm_range,
+    norm_zero_mean_unit_std,
+    scale_by_value,
+)
 
 
 class TestIntensityFunctional(unittest.TestCase):

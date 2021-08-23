@@ -5,8 +5,8 @@ import torch
 
 from rising.loading import DataLoader
 from rising.random import UniformParameter
-from rising.transforms.functional.spatial import resize_native
-from rising.transforms.spatial import *
+from rising.transforms import Mirror, ProgressiveResize, ResizeNative, Rot90, SizeStepScheduler, Zoom
+from rising.transforms.functional import resize_native
 from tests.transforms import chech_data_preservation
 
 

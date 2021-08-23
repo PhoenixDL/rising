@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import torch
 
-from rising.transforms.functional import *
+from rising.transforms.functional import box_to_seg, filter_keys, instance_to_semantic, pop_keys, seg_to_box
 
 
 class TestSegBox(unittest.TestCase):

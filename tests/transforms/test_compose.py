@@ -4,7 +4,7 @@ import unittest
 
 import torch
 
-from rising.transforms.compose import _TransformWrapper, AbstractTransform, Compose, DropoutCompose, OneOf
+from rising.transforms.compose import Compose, DropoutCompose, OneOf
 from rising.transforms.spatial import Mirror
 
 

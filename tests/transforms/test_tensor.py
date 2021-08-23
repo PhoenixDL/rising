@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import torch
 
-from rising.transforms import *
+from rising.transforms import OneHot, TensorOp, ToDevice, ToDtype, ToTensor
 
 
 class MyTestCase(unittest.TestCase):

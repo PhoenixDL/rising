@@ -3,7 +3,7 @@ import unittest
 
 import torch
 
-from rising.transforms.functional.crop import *
+from rising.transforms.functional import center_crop, random_crop
 
 
 class MyTestCase(unittest.TestCase):
