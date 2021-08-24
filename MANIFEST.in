@@ -3,3 +3,14 @@ include *.md
 include LICENSE
 include versioneer.py
 include rising/_version.py
+
+# Exclude build configs
+exclude *.yml
+exclude *.yaml
+exclude *.toml
+exclude Makefile
+
+prune .git
+prune .github
+prune notebook*
+prune test*

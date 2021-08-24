@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+
+[tool.black]
+# https://github.com/psf/black
+line-length = 120
+exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
+
+[tool.isort]
+known_first_party = [
+    "torchmetrics",
+    "tests",
+    "integrations",
+]
+skip_glob = []
+profile = "black"
+line_length = 120
+
+[tool.autopep8]
+ignore = ["E731"]
