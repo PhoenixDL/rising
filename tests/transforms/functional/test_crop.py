@@ -22,7 +22,7 @@ class MyTestCase(unittest.TestCase):
         torch.manual_seed(0)
         h = torch.randint(0, 7, (1,)).item()
         w = torch.randint(0, 7, (1,)).item()
-        expected = self.data[:, :, h : h + 3, w : w + 3]
+        expected = self.data[:, :, h: h + 3, w: w + 3]
         torch.manual_seed(0)
         crop = random_crop(self.data, size=3.0)
         self.assertTrue((crop == expected).all())
