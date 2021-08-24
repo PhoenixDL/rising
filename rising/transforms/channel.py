@@ -15,9 +15,14 @@ class OneHot(BaseTransform):
     have shape N x 1 x [arbitrary additional dimensions]
     """
 
-    def __init__(self, num_classes: int, keys: Sequence = ('seg',),
-                 dtype: Optional[torch.dtype] = None,
-                 grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        num_classes: int,
+        keys: Sequence = ("seg",),
+        dtype: Optional[torch.dtype] = None,
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             num_classes: number of classes. If :attr:`num_classes` is None,
@@ -33,9 +38,7 @@ class OneHot(BaseTransform):
             Input tensor needs to be of type torch.long. This could
             be achieved by applying `TenorOp("long", keys=("seg",))`.
         """
-        super().__init__(augment_fn=one_hot_batch, keys=keys, grad=grad,
-                         num_classes=num_classes, dtype=dtype,
-                         **kwargs)
+        super().__init__(augment_fn=one_hot_batch, keys=keys, grad=grad, num_classes=num_classes, dtype=dtype, **kwargs)
 
 
 class ArgMax(BaseTransform):
@@ -44,9 +47,7 @@ class ArgMax(BaseTransform):
     Can be used to revert OneHot encoding.
     """
 
-    def __init__(self, dim: int, keepdim: bool = True,
-                 keys: Sequence = ('seg',),
-                 grad: bool = False, **kwargs):
+    def __init__(self, dim: int, keepdim: bool = True, keys: Sequence = ("seg",), grad: bool = False, **kwargs):
         """
         Args:
             dim: dimension to apply argmax
@@ -59,5 +60,4 @@ class ArgMax(BaseTransform):
         Warnings
             The output of the argmax function is always a tensor of dtype long.
         """
-        super().__init__(augment_fn=torch.argmax, keys=keys, grad=grad,
-                         dim=dim, keepdim=keepdim, **kwargs)
+        super().__init__(augment_fn=torch.argmax, keys=keys, grad=grad, dim=dim, keepdim=keepdim, **kwargs)

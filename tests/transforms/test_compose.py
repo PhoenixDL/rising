@@ -5,17 +5,14 @@ import unittest
 import torch
 
 from rising.transforms import AbstractTransform
-from rising.transforms.compose import _TransformWrapper, Compose, DropoutCompose, OneOf
+from rising.transforms.compose import Compose, DropoutCompose, OneOf, _TransformWrapper
 from rising.transforms.spatial import Mirror
 
 
 class TestCompose(unittest.TestCase):
     def setUp(self) -> None:
         self.batch = {"data": torch.rand(1, 1, 10, 10)}
-        self.transforms = [
-            Mirror(dims=(0,)),
-            Mirror(dims=(0,))
-        ]
+        self.transforms = [Mirror(dims=(0,)), Mirror(dims=(0,))]
 
     def test_multiple_grad_context(self):
         aten = torch.rand(10, 10)
@@ -77,14 +74,14 @@ class TestCompose(unittest.TestCase):
         class DummyTrafo(AbstractTransform):
             def __init__(self, a):
                 super().__init__(False)
-                self.register_buffer('tmp', a)
+                self.register_buffer("tmp", a)
 
             def __call__(self, *args, **kwargs):
                 return self.tmp
 
-        trafo_a = DummyTrafo(torch.tensor([1.], dtype=torch.float32))
+        trafo_a = DummyTrafo(torch.tensor([1.0], dtype=torch.float32))
         trafo_a = trafo_a.to(torch.float32)
-        trafo_b = DummyTrafo(torch.tensor([2.], dtype=torch.float32))
+        trafo_b = DummyTrafo(torch.tensor([2.0], dtype=torch.float32))
         trafo_b = trafo_b.to(torch.float32)
         self.assertEqual(trafo_a.tmp.dtype, torch.float32)
         self.assertEqual(trafo_b.tmp.dtype, torch.float32)
@@ -120,7 +117,7 @@ class TestCompose(unittest.TestCase):
             comp = OneOf(trafo, trafo, weights=[0.33, 0.33, 0.33])
 
     def test_one_of_weight(self):
-        for weight in [[1., 0.], torch.tensor([1., 0.])]:
+        for weight in [[1.0, 0.0], torch.tensor([1.0, 0.0])]:
             with self.subTest(weight=weight):
                 trafo0 = Mirror((0,))
                 trafo1 = Mirror((1,))
@@ -138,5 +135,5 @@ class TestCompose(unittest.TestCase):
                     comp = trafo_cls()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

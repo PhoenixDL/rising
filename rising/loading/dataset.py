@@ -33,8 +33,7 @@ def dill_helper(payload: Any) -> Any:
 
     """
     if not DILL_AVAILABLE:
-        raise RuntimeError('dill is not installed. For async loading '
-                           'please install it')
+        raise RuntimeError("dill is not installed. For async loading " "please install it")
 
     fn, args, kwargs = dill.loads(payload)
     return fn(*args, **kwargs)
@@ -57,8 +56,7 @@ def load_async(pool: Pool, fn: Callable, *args, callback: Callable = None, **kwa
     """
 
     if not DILL_AVAILABLE:
-        raise RuntimeError('dill is not installed. For async loading '
-                           'please install it')
+        raise RuntimeError("dill is not installed. For async loading " "please install it")
 
     payload = dill.dumps((fn, args, kwargs))
     return pool.apply_async(dill_helper, (payload,), callback=callback)
@@ -104,11 +102,15 @@ class AsyncDataset(Dataset):
     lifetime of this class.
     """
 
-    def __init__(self,
-                 data_path: Union[pathlib.Path, str, list],
-                 load_fn: Callable, mode: str = "append",
-                 num_workers: Optional[int] = 0, verbose: bool = False,
-                 **load_kwargs):
+    def __init__(
+        self,
+        data_path: Union[pathlib.Path, str, list],
+        load_fn: Callable,
+        mode: str = "append",
+        num_workers: Optional[int] = 0,
+        verbose: bool = False,
+        **load_kwargs,
+    ):
         """
 
         Args:
@@ -154,7 +156,7 @@ class AsyncDataset(Dataset):
 
         data = []
         if not isinstance(path, list):
-            assert os.path.isdir(path), '%s is not a valid directory' % path
+            assert os.path.isdir(path), "%s is not a valid directory" % path
             path = [os.path.join(path, p) for p in os.listdir(path)]
 
         # sort for reproducibility (this is done explicitly since the listdir
@@ -187,7 +189,7 @@ class AsyncDataset(Dataset):
         """
 
         if self._verbosity:
-            path = tqdm(path, unit='samples', desc="Loading Samples")
+            path = tqdm(path, unit="samples", desc="Loading Samples")
 
         return map(load_fn, path)
 
@@ -207,7 +209,7 @@ class AsyncDataset(Dataset):
         _processes = cpu_count() if self._num_workers is None else self._num_workers
 
         if self._verbosity:
-            pbar = tqdm(total=len(path), unit='samples', desc="Loading Samples")
+            pbar = tqdm(total=len(path), unit="samples", desc="Loading Samples")
 
             def update(*a):
                 pbar.update(1)
@@ -238,9 +240,9 @@ class AsyncDataset(Dataset):
 
         _mode = mode.lower()
 
-        if _mode == 'append':
+        if _mode == "append":
             data.append(item)
-        elif _mode == 'extend':
+        elif _mode == "extend":
             data.extend(item)
         else:
             raise TypeError(f"Unknown mode detected: {mode} not supported.")

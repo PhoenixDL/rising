@@ -45,12 +45,13 @@ def center_crop(data: torch.Tensor, size: Union[int, Sequence[int]]) -> torch.Te
     if not isinstance(size[0], int):
         size = [int(s) for s in size]
 
-    corner = [int(round((img_dim - crop_dim) / 2.)) for img_dim, crop_dim in zip(data.shape[2:], size)]
+    corner = [int(round((img_dim - crop_dim) / 2.0)) for img_dim, crop_dim in zip(data.shape[2:], size)]
     return crop(data, corner, size)
 
 
-def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
-                dist: Union[int, Sequence[int]] = 0) -> torch.Tensor:
+def random_crop(
+    data: torch.Tensor, size: Union[int, Sequence[int]], dist: Union[int, Sequence[int]] = 0
+) -> torch.Tensor:
     """
     Crop random patch/volume from input tensor
 
@@ -75,6 +76,8 @@ def random_crop(data: torch.Tensor, size: Union[int, Sequence[int]],
     if any([crop_dim + dist_dim >= img_dim for img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)]):
         raise TypeError(f"Crop can not be realized with given size {size} and dist {dist}.")
 
-    corner = [torch.randint(0, img_dim - crop_dim - dist_dim, (1,)).item() for
-              img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)]
+    corner = [
+        torch.randint(0, img_dim - crop_dim - dist_dim, (1,)).item()
+        for img_dim, crop_dim, dist_dim in zip(data.shape[2:], size, dist)
+    ]
     return crop(data, corner, size)

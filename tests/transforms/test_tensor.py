@@ -13,7 +13,7 @@ class MyTestCase(unittest.TestCase):
             "data": torch.arange(1, 10).reshape(1, 1, 3, 3).float(),
             "seg": torch.rand(1, 1, 3, 3),
             "label": torch.arange(3, device="cpu"),
-            "id": "str"
+            "id": "str",
         }
 
     @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
@@ -43,8 +43,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue((outp["seg"] == exp).all())
 
     def test_to_tensor(self):
-        inp = {"data": np.random.rand(10, 10), "seg": np.random.rand(10, 10),
-               "bbox": (0, 1, 2)}
+        inp = {"data": np.random.rand(10, 10), "seg": np.random.rand(10, 10), "bbox": (0, 1, 2)}
         trafo = ToTensor(("data", "seg"))
         outp = trafo(**inp)
         self.assertTrue(torch.is_tensor(outp["data"]))
@@ -58,5 +57,5 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(tuple(outp["data"].shape), (1, 3, 1, 3))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

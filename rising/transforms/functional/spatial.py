@@ -41,11 +41,14 @@ def rot90(data: torch.Tensor, k: int, dims: Union[int, Sequence[int]]):
     return torch.rot90(data, int(k), dims)
 
 
-def resize_native(data: torch.Tensor,
-                  size: Optional[Union[int, Sequence[int]]] = None,
-                  scale_factor: Optional[Union[float, Sequence[float]]] = None,
-                  mode: str = 'nearest', align_corners: Optional[bool] = None,
-                  preserve_range: bool = False):
+def resize_native(
+    data: torch.Tensor,
+    size: Optional[Union[int, Sequence[int]]] = None,
+    scale_factor: Optional[Union[float, Sequence[float]]] = None,
+    mode: str = "nearest",
+    align_corners: Optional[bool] = None,
+    preserve_range: bool = False,
+):
     """
     Down/up-sample sample to either the given :attr:`size` or the given
     :attr:`scale_factor`
@@ -74,8 +77,8 @@ def resize_native(data: torch.Tensor,
         # pytorch internally checks for an iterable. Single value tensors are still iterable
         scale_factor = float(scale_factor)
     out = torch.nn.functional.interpolate(
-        data, size=size, scale_factor=scale_factor, mode=mode,
-        align_corners=align_corners)
+        data, size=size, scale_factor=scale_factor, mode=mode, align_corners=align_corners
+    )
 
     if preserve_range:
         out.clamp_(data.min(), data.max())

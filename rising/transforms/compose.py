@@ -61,10 +61,12 @@ class Compose(AbstractTransform):
     Compose multiple transforms
     """
 
-    def __init__(self,
-                 *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
-                 shuffle: bool = False,
-                 transform_call: Callable[[Any, Callable], Any] = dict_call):
+    def __init__(
+        self,
+        *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
+        shuffle: bool = False,
+        transform_call: Callable[[Any, Callable], Any] = dict_call,
+    ):
         """
         Args:
             transforms: one or multiple transformations which are applied
@@ -119,8 +121,7 @@ class Compose(AbstractTransform):
         return self._transforms
 
     @transforms.setter
-    def transforms(self, transforms: Union[AbstractTransform,
-                                           Sequence[AbstractTransform]]):
+    def transforms(self, transforms: Union[AbstractTransform, Sequence[AbstractTransform]]):
         """
         Transforms setter
 
@@ -168,13 +169,15 @@ class DropoutCompose(Compose):
     Compose multiple transforms to one and randomly apply them
     """
 
-    def __init__(self,
-                 *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
-                 dropout: Union[float, Sequence[float]] = 0.5,
-                 shuffle: bool = False,
-                 random_sampler: ContinuousParameter = None,
-                 transform_call: Callable[[Any, Callable], Any] = dict_call,
-                 **kwargs):
+    def __init__(
+        self,
+        *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
+        dropout: Union[float, Sequence[float]] = 0.5,
+        shuffle: bool = False,
+        random_sampler: ContinuousParameter = None,
+        transform_call: Callable[[Any, Callable], Any] = dict_call,
+        **kwargs,
+    ):
         """
         Args:
             *transforms: one or multiple transformations which are applied in
@@ -194,22 +197,23 @@ class DropoutCompose(Compose):
             ValueError: if dropout is a sequence it must have the same length
                 as transforms
         """
-        super().__init__(*transforms, transform_call=transform_call,
-                         shuffle=shuffle, **kwargs)
+        super().__init__(*transforms, transform_call=transform_call, shuffle=shuffle, **kwargs)
 
         if random_sampler is None:
-            random_sampler = UniformParameter(0., 1.)
+            random_sampler = UniformParameter(0.0, 1.0)
 
-        self.register_sampler('prob', random_sampler, size=(len(self.transforms),))
+        self.register_sampler("prob", random_sampler, size=(len(self.transforms),))
 
         if check_scalar(dropout):
             dropout = [dropout] * len(self.transforms)
         self.dropout = dropout
         if len(dropout) != len(self.transforms):
-            raise TypeError(f"If dropout is a sequence it must specify the "
-                            f"dropout probability for each transform, "
-                            f"found {len(dropout)} probabilities "
-                            f"and {len(self.transforms)} transforms.")
+            raise TypeError(
+                f"If dropout is a sequence it must specify the "
+                f"dropout probability for each transform, "
+                f"found {len(dropout)} probabilities "
+                f"and {len(self.transforms)} transforms."
+            )
 
     def forward(self, *seq_like, **map_like) -> Union[Sequence, Mapping]:
         """
@@ -240,10 +244,13 @@ class OneOf(AbstractTransform):
     Apply one of the given transforms.
     """
 
-    def __init__(self, *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
-                 weights: Optional[Sequence[float]] = None,
-                 p: float = 1.,
-                 transform_call: Callable[[Any, Callable], Any] = dict_call):
+    def __init__(
+        self,
+        *transforms: Union[AbstractTransform, Sequence[AbstractTransform]],
+        weights: Optional[Sequence[float]] = None,
+        p: float = 1.0,
+        transform_call: Callable[[Any, Callable], Any] = dict_call,
+    ):
         """
         Args:
             *transforms: transforms to choose from
@@ -261,11 +268,12 @@ class OneOf(AbstractTransform):
         self.transforms = transforms
 
         if weights is not None and len(weights) != len(transforms):
-            raise ValueError("If weights are porvided, every transform needs a weight. "
-                             f"Found {len(weights)} weights and {len(transforms)} transforms")
+            raise ValueError(
+                "If weights are porvided, every transform needs a weight. "
+                f"Found {len(weights)} weights and {len(transforms)} transforms"
+            )
         if weights is None:
-            self.weights = torch.tensor(
-                [1 / len(self.transforms)] * len(self.transforms))
+            self.weights = torch.tensor([1 / len(self.transforms)] * len(self.transforms))
         else:
             self.weights = torch.tensor(weights)
 

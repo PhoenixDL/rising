@@ -12,7 +12,7 @@ class TestAbstract(unittest.TestCase):
         self.assertIsNone(res)
 
     def test_tensor_like(self):
-        param = DiscreteParameter([0., 1., 2.], replacement=True)
+        param = DiscreteParameter([0.0, 1.0, 2.0], replacement=True)
         tensor_like = torch.tensor([1, 1, 1]).long()
         res = param(size=(10, 10), tensor_like=tensor_like)
         self.assertEqual(res.dtype, torch.long)
@@ -24,5 +24,5 @@ class TestAbstract(unittest.TestCase):
             param.sample((1,))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

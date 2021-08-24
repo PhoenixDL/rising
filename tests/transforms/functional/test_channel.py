@@ -14,8 +14,7 @@ class TestChannel(unittest.TestCase):
         self.assertTrue(outp.dtype == torch.long)
 
     def test_one_hot_batch_2dim(self):
-        for dtype, expected_dtype in zip(
-                [None, torch.float], [torch.long, torch.float]):
+        for dtype, expected_dtype in zip([None, torch.float], [torch.long, torch.float]):
             with self.subTest(dtype=dtype, expected_dtype=expected_dtype):
                 inp = torch.zeros(1, 1, 3, 3).long()
                 inp[0, 0, 0, 0] = 1
@@ -33,5 +32,5 @@ class TestChannel(unittest.TestCase):
             one_hot_batch(inp)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

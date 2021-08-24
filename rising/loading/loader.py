@@ -22,7 +22,7 @@ except ImportError:
 from rising.loading.collate import do_nothing_collate
 from rising.transforms import Compose, ToDevice
 
-__all__ = ['DataLoader', 'default_transform_call']
+__all__ = ["DataLoader", "default_transform_call"]
 
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:
@@ -82,26 +82,29 @@ class DataLoader(_DataLoader):
         GPU Processing (e.g. training a neural network)
     """
 
-    def __init__(self, dataset: Union[Sequence, Dataset],
-                 batch_size: int = 1, shuffle: bool = False,
-                 batch_transforms: Optional[Callable] = None,
-                 gpu_transforms: Optional[Callable] = None,
-                 sample_transforms: Optional[Callable] = None,
-                 pseudo_batch_dim: bool = False,
-                 device: Optional[Union[str, torch.device]] = None,
-                 sampler: Optional[Sampler] = None,
-                 batch_sampler: Optional[Sampler] = None,
-                 num_workers: int = 0,
-                 collate_fn: Optional[Callable] = None,
-                 pin_memory: bool = False,
-                 drop_last: bool = False,
-                 timeout: Union[int, float] = 0,
-                 worker_init_fn: Optional[Callable] = None,
-                 multiprocessing_context=None,
-                 auto_convert: bool = True,
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        dataset: Union[Sequence, Dataset],
+        batch_size: int = 1,
+        shuffle: bool = False,
+        batch_transforms: Optional[Callable] = None,
+        gpu_transforms: Optional[Callable] = None,
+        sample_transforms: Optional[Callable] = None,
+        pseudo_batch_dim: bool = False,
+        device: Optional[Union[str, torch.device]] = None,
+        sampler: Optional[Sampler] = None,
+        batch_sampler: Optional[Sampler] = None,
+        num_workers: int = 0,
+        collate_fn: Optional[Callable] = None,
+        pin_memory: bool = False,
+        drop_last: bool = False,
+        timeout: Union[int, float] = 0,
+        worker_init_fn: Optional[Callable] = None,
+        multiprocessing_context=None,
+        auto_convert: bool = True,
+        transform_call: Callable[[Any, Callable], Any] = default_transform_call,
+        **kwargs
+    ):
         """
         Args:
             dataset: dataset from which to load the data
@@ -159,23 +162,30 @@ class DataLoader(_DataLoader):
                 called. By default Mappings and Sequences are unpacked during
                 the transform.
         """
-        super().__init__(dataset=dataset, batch_size=batch_size,
-                         shuffle=shuffle, sampler=sampler,
-                         batch_sampler=batch_sampler, num_workers=num_workers,
-                         collate_fn=collate_fn, pin_memory=pin_memory,
-                         drop_last=drop_last, timeout=timeout,
-                         worker_init_fn=worker_init_fn,
-                         multiprocessing_context=multiprocessing_context, **kwargs)
+        super().__init__(
+            dataset=dataset,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            sampler=sampler,
+            batch_sampler=batch_sampler,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=pin_memory,
+            drop_last=drop_last,
+            timeout=timeout,
+            worker_init_fn=worker_init_fn,
+            multiprocessing_context=multiprocessing_context,
+            **kwargs
+        )
 
         if gpu_transforms is not None and not torch.cuda.is_available():
-            if hasattr(gpu_transforms, 'to'):
-                gpu_transforms = gpu_transforms.to('cpu')
-            transforms = (
-                batch_transforms, gpu_transforms) if batch_transforms is not None else gpu_transforms
+            if hasattr(gpu_transforms, "to"):
+                gpu_transforms = gpu_transforms.to("cpu")
+            transforms = (batch_transforms, gpu_transforms) if batch_transforms is not None else gpu_transforms
             batch_transforms = Compose(transforms)
-            warnings.warn("No CUDA-capable device was found. "
-                          "Applying GPU-Transforms on CPU instead.",
-                          RuntimeWarning)
+            warnings.warn(
+                "No CUDA-capable device was found. " "Applying GPU-Transforms on CPU instead.", RuntimeWarning
+            )
             gpu_transforms = None
 
         self.batch_transforms = batch_transforms
@@ -209,7 +219,8 @@ class DataLoader(_DataLoader):
             self.collate_fn,
             transforms=self.batch_transforms,
             auto_convert=self.auto_convert,
-            transform_call=self.transform_call)
+            transform_call=self.transform_call,
+        )
 
     def get_gpu_batch_transformer(self) -> Callable:
         """
@@ -222,11 +233,12 @@ class DataLoader(_DataLoader):
         """
         # this is a function on purpose, since frameworks like ignite parse
         # the class dict to specify what to treat as args during reinit
-        return BatchTransformer(do_nothing_collate,
-                                transforms=self.gpu_transforms,
-                                auto_convert=self.auto_convert,
-                                transform_call=self.transform_call
-                                )
+        return BatchTransformer(
+            do_nothing_collate,
+            transforms=self.gpu_transforms,
+            auto_convert=self.auto_convert,
+            transform_call=self.transform_call,
+        )
 
     def get_sample_transformer(self) -> Callable:
         """
@@ -239,8 +251,7 @@ class DataLoader(_DataLoader):
         """
         # this is a function on purpose, since frameworks like ignite parse
         # the class dict to specify what to treat as args during reinit
-        return SampleTransformer(self.dataset, self.sample_transforms,
-                                 self.pseudo_batch_dim, self.transform_call)
+        return SampleTransformer(self.dataset, self.sample_transforms, self.pseudo_batch_dim, self.transform_call)
 
     def __iter__(self) -> Iterator:
         """
@@ -331,9 +342,13 @@ class BatchTransformer(object):
     batch-basis.
     """
 
-    def __init__(self, collate_fn: Callable, transforms: Optional[Callable] = None,
-                 auto_convert: bool = True,
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
+    def __init__(
+        self,
+        collate_fn: Callable,
+        transforms: Optional[Callable] = None,
+        auto_convert: bool = True,
+        transform_call: Callable[[Any, Callable], Any] = default_transform_call,
+    ):
         """
         Args:
             collate_fn: merges a list of samples to form a
@@ -381,10 +396,13 @@ class SampleTransformer(object):
     dataset
     """
 
-    def __init__(self, dataset: Dataset,
-                 transforms: Optional[Callable] = None,
-                 pseudo_batch_dim: bool = False,
-                 transform_call: Callable[[Any, Callable], Any] = default_transform_call):
+    def __init__(
+        self,
+        dataset: Dataset,
+        transforms: Optional[Callable] = None,
+        pseudo_batch_dim: bool = False,
+        transform_call: Callable[[Any, Callable], Any] = default_transform_call,
+    ):
         """
 
         Args:
@@ -447,15 +465,11 @@ class SampleTransformer(object):
             # don't add pseudo batchsize for these types since you"d have to convert.
             return sample
         elif isinstance(sample, collections.abc.Mapping):
-            return {key: self._change_pseudo_batch_dim(sample[key], add=add)
-                    for key in sample}
-        elif isinstance(sample, tuple) and hasattr(sample, '_fields'):  # namedtuple
-            return type(sample)(*[self._change_pseudo_batch_dim(_sample,
-                                                                add=add)
-                                  for _sample in sample])
+            return {key: self._change_pseudo_batch_dim(sample[key], add=add) for key in sample}
+        elif isinstance(sample, tuple) and hasattr(sample, "_fields"):  # namedtuple
+            return type(sample)(*[self._change_pseudo_batch_dim(_sample, add=add) for _sample in sample])
         elif isinstance(sample, collections.abc.Sequence):
-            return type(sample)([self._change_pseudo_batch_dim(elem, add=add)
-                                 for elem in sample])
+            return type(sample)([self._change_pseudo_batch_dim(elem, add=add) for elem in sample])
 
         return sample
 
@@ -484,8 +498,7 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
             # generate numpy seed. The range comes so that the seed in each
             # worker (which is this baseseed plus the worker id) is always an
             # uint32. This is because numpy only accepts uint32 as valid seeds
-            npy_seed = np.random.randint(0, (2 ** 32) - (1 + loader.num_workers),
-                                         dtype=np.uint32)
+            npy_seed = np.random.randint(0, (2 ** 32) - (1 + loader.num_workers), dtype=np.uint32)
         except ImportError:
             # we don't generate a numpy seed here with torch, since we don't
             # need one; if the import fails in the main process it should
@@ -497,14 +510,12 @@ class _MultiProcessingDataLoaderIter(__MultiProcessingDataLoaderIter):
         if npy_seed is None:
             new_worker_init_fn = old_worker_init
         else:
-            new_worker_init_fn = partial(_seed_npy_before_worker_init,
-                                         seed=npy_seed,
-                                         worker_init_fn=old_worker_init)
+            new_worker_init_fn = partial(_seed_npy_before_worker_init, seed=npy_seed, worker_init_fn=old_worker_init)
 
         with patch_dataset(loader) as loader:
             with patch_worker_init_fn(loader, new_worker_init_fn) as loader:
                 with patch_collate_fn(loader) as loader:
-                    with threadpool_limits(limits=1, user_api='blas'):
+                    with threadpool_limits(limits=1, user_api="blas"):
                         super().__init__(loader)
 
         self._gpu_transforms = loader.get_gpu_batch_transformer()
@@ -551,8 +562,7 @@ class _SingleProcessDataLoaderIter(__SingleProcessDataLoaderIter):
         return sample
 
 
-def _seed_npy_before_worker_init(worker_id: int, seed: int,
-                                 worker_init_fn: Optional[Callable] = None) -> Any:
+def _seed_npy_before_worker_init(worker_id: int, seed: int, worker_init_fn: Optional[Callable] = None) -> Any:
     """
     Wrapper Function to wrap the existing worker_init_fn and seed numpy before
     calling the actual ``worker_init_fn``
@@ -571,11 +581,14 @@ def _seed_npy_before_worker_init(worker_id: int, seed: int,
 
     """
     import sys
+
     if not sys.warnoptions and worker_id > 0:
         import warnings
+
         warnings.simplefilter("ignore")
     try:
         import numpy as np
+
         np.random.seed(seed + worker_id)
     except ImportError:
         pass

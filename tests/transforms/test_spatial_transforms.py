@@ -17,15 +17,14 @@ class TestSpatialTransforms(unittest.TestCase):
         self.batch_dict = {
             "data": torch.arange(1, 10).reshape(1, 1, 3, 3).float(),
             "seg": torch.randint(0, 3, (1, 1, 3, 3)).long(),
-            "label": torch.arange(3)
+            "label": torch.arange(3),
         }
 
     def test_mirror_transform(self):
         trafo = Mirror((0, 1))
         outp = trafo(**self.batch_dict)
 
-        self.assertTrue(outp["data"][0, 0].allclose(
-            torch.tensor([[9, 8, 7], [6, 5, 4], [3, 2, 1]]).float()))
+        self.assertTrue(outp["data"][0, 0].allclose(torch.tensor([[9, 8, 7], [6, 5, 4], [3, 2, 1]]).float()))
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
     def test_rot90_transform(self):
@@ -47,7 +46,7 @@ class TestSpatialTransforms(unittest.TestCase):
         self.assertTrue((out["data"] == expected).all())
 
     def test_zoom_transform(self):
-        _range = (2., 3.)
+        _range = (2.0, 3.0)
         torch.manual_seed(0)
         scale_factor = UniformParameter(*_range)()
 
@@ -96,5 +95,5 @@ class TestSpatialTransforms(unittest.TestCase):
         self.assertIn((1, 1, 6, 6, 6), data_shape)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -5,9 +5,7 @@ import torch
 
 from rising.utils.shape import reshape
 
-__all__ = [
-    'AbstractParameter'
-]
+__all__ = ["AbstractParameter"]
 
 
 class AbstractParameter(torch.nn.Module):
@@ -43,11 +41,13 @@ class AbstractParameter(torch.nn.Module):
         """
         raise NotImplementedError
 
-    def forward(self,
-                size: Optional[Union[Sequence, torch.Size]] = None,
-                device: Union[torch.device, str] = None,
-                dtype: Union[torch.dtype, str] = None,
-                tensor_like: torch.Tensor = None) -> Union[None, list, torch.Tensor]:
+    def forward(
+        self,
+        size: Optional[Union[Sequence, torch.Size]] = None,
+        device: Union[torch.device, str] = None,
+        dtype: Union[torch.dtype, str] = None,
+        tensor_like: torch.Tensor = None,
+    ) -> Union[None, list, torch.Tensor]:
         """
         Forward function (will also be called if the module is called).
         Calculates the number of samples from the given shape, performs the

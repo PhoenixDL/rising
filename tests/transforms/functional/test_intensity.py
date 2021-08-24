@@ -98,7 +98,7 @@ class TestIntensityFunctional(unittest.TestCase):
         outp = norm_mean_std(inp, inp.mean().item(), inp.std().item(), per_channel=True)
 
     def test_add_noise(self):
-        outp = add_noise(self.batch_2d.clone(), 'normal', mean=75, std=1)
+        outp = add_noise(self.batch_2d.clone(), "normal", mean=75, std=1)
         diff = (outp - self.batch_2d).abs().mean()
         self.assertTrue(diff > 50)
 
@@ -115,5 +115,5 @@ class TestIntensityFunctional(unittest.TestCase):
         self.assertTrue((torch.mul(self.batch_2d, 2) == outp).all())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

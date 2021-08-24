@@ -25,17 +25,16 @@ def tensor_op(data: data_type, fn: str, *args, **kwargs) -> data_type:
     if torch.is_tensor(data):
         return getattr(data, fn)(*args, **kwargs)
     elif isinstance(data, Mapping):
-        return {key: tensor_op(item, fn, *args, **kwargs)
-                for key, item in data.items()}
+        return {key: tensor_op(item, fn, *args, **kwargs) for key, item in data.items()}
     elif isinstance(data, (list, tuple)):
-        return type(data)([tensor_op(item, fn, *args, **kwargs)
-                           for item in data])
+        return type(data)([tensor_op(item, fn, *args, **kwargs) for item in data])
     else:
         return data
 
 
-def to_device_dtype(data: data_type, dtype: Union[torch.dtype, str] = None,
-                    device: Union[torch.device, str] = None, **kwargs) -> data_type:
+def to_device_dtype(
+    data: data_type, dtype: Union[torch.dtype, str] = None, device: Union[torch.device, str] = None, **kwargs
+) -> data_type:
     """
     Pushes data to device
 

@@ -6,9 +6,7 @@ from typing import List, Sequence
 
 from rising.random.abstract import AbstractParameter
 
-__all__ = [
-    'DiscreteParameter', 'DiscreteCombinationsParameter'
-]
+__all__ = ["DiscreteParameter", "DiscreteCombinationsParameter"]
 
 
 def combinations_all(data: Sequence) -> List:
@@ -33,9 +31,9 @@ class DiscreteParameter(AbstractParameter):
     replacement
     """
 
-    def __init__(self, population: Sequence,
-                 replacement: bool = False, weights: Sequence = None,
-                 cum_weights: Sequence = None):
+    def __init__(
+        self, population: Sequence, replacement: bool = False, weights: Sequence = None, cum_weights: Sequence = None
+    ):
         """
         Args:
             population : the parameter population to sample from
@@ -45,13 +43,10 @@ class DiscreteParameter(AbstractParameter):
         """
         super().__init__()
         if replacement:
-            sample_fn = partial(sample_with_replacement, weights=weights,
-                                cum_weights=cum_weights)
+            sample_fn = partial(sample_with_replacement, weights=weights, cum_weights=cum_weights)
         else:
             if weights is not None or cum_weights is not None:
-                raise ValueError(
-                    'weights and cum_weights should only be specified if '
-                    'replacement is set to True!')
+                raise ValueError("weights and cum_weights should only be specified if " "replacement is set to True!")
 
             sample_fn = sample_without_replacement
 

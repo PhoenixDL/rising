@@ -5,11 +5,7 @@ from torch.distributions import Distribution as TorchDistribution
 
 from rising.random.abstract import AbstractParameter
 
-__all__ = [
-    'ContinuousParameter',
-    'NormalParameter',
-    'UniformParameter'
-]
+__all__ = ["ContinuousParameter", "NormalParameter", "UniformParameter"]
 
 
 class ContinuousParameter(AbstractParameter):
@@ -42,8 +38,7 @@ class NormalParameter(ContinuousParameter):
     For details have a look at :class:`torch.distributions.Normal`
     """
 
-    def __init__(self, mu: Union[float, torch.Tensor],
-                 sigma: Union[float, torch.Tensor]):
+    def __init__(self, mu: Union[float, torch.Tensor], sigma: Union[float, torch.Tensor]):
         """
         Args:
             mu : the distributions mean
@@ -58,8 +53,7 @@ class UniformParameter(ContinuousParameter):
     For details have a look at :class:`torch.distributions.Uniform`
     """
 
-    def __init__(self, low: Union[float, torch.Tensor],
-                 high: Union[float, torch.Tensor]):
+    def __init__(self, low: Union[float, torch.Tensor], high: Union[float, torch.Tensor]):
         """
         Args:
             low : the lower range (inclusive)
