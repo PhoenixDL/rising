@@ -29,14 +29,14 @@ def local_pixel_shuffle(
             window = data[
                 b,
                 c,
-                x: x + block_size_x,
-                y: y + block_size_y,
-                z: z + block_size_z,
+                x : x + block_size_x,
+                y : y + block_size_y,
+                z : z + block_size_z,
             ]
             idx = torch.randperm(window.numel())
             window = window.view(-1)[idx].view(window.size())
 
-            data[b, c, x: x + block_size_x, y: y + block_size_y, z: z + block_size_z] = window
+            data[b, c, x : x + block_size_x, y : y + block_size_y, z : z + block_size_z] = window
 
     return data
 
@@ -56,7 +56,7 @@ def random_inpainting(data: torch.Tensor, n: int = 5, maxv: float = 1.0, minv: f
 
             block = torch.rand((1, channels, block_size_x, block_size_y, block_size_z)) * (maxv - minv) + minv
 
-            data[b, :, x: x + block_size_x, y: y + block_size_y, z: z + block_size_z] = block
+            data[b, :, x : x + block_size_x, y : y + block_size_y, z : z + block_size_z] = block
 
             n = n - 1
 
@@ -76,8 +76,8 @@ def random_outpainting(data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0)
     y = torch.randint(3, int(img_cols - block_size_y - 3), (1,))
     z = torch.randint(3, int(img_deps - block_size_z - 3), (1,))
 
-    out[:, :, x: x + block_size_x, y: y + block_size_y, z: z + block_size_z] = data[
-        :, :, x: x + block_size_x, y: y + block_size_y, z: z + block_size_z
+    out[:, :, x : x + block_size_x, y : y + block_size_y, z : z + block_size_z] = data[
+        :, :, x : x + block_size_x, y : y + block_size_y, z : z + block_size_z
     ]
 
     return out
