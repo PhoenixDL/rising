@@ -36,9 +36,9 @@ def box_to_seg(
 
     for _idx, box in enumerate(boxes, 1):
         if len(box) == 4:
-            out[..., box[0]: box[2] + 1, box[1]: box[3] + 1] = _idx
+            out[..., box[0] : box[2] + 1, box[1] : box[3] + 1] = _idx
         elif (len(box)) == 6:
-            out[..., box[0]: box[2] + 1, box[1]: box[3] + 1, box[4]: box[5] + 1] = _idx
+            out[..., box[0] : box[2] + 1, box[1] : box[3] + 1, box[4] : box[5] + 1] = _idx
         else:
             raise TypeError(f"Boxes must have length 4 (2D) or 6(3D) found len {len(box)}")
     return out
@@ -65,7 +65,7 @@ def seg_to_box(seg: torch.Tensor, dim: int) -> List[torch.Tensor]:
         _maxs = instance_map.max(dim=0)[0]
         box = [_mins[-dim], _mins[-dim + 1], _maxs[-dim], _maxs[-dim + 1]]
         if dim > 2:
-            box = box + [c for cv in zip(_mins[-dim + 2:], _maxs[-dim + 2:]) for c in cv]
+            box = box + [c for cv in zip(_mins[-dim + 2 :], _maxs[-dim + 2 :]) for c in cv]
         boxes.append(torch.tensor(box).to(dtype=torch.float, device=seg.device))
     return boxes
 
