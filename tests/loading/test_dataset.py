@@ -14,9 +14,7 @@ from rising.loading.dataset import AsyncDataset, dill_helper, load_async
 
 class LoadDummySample:
     def __call__(self, path, *args, **kwargs):
-        data = {'data': np.random.rand(1, 256, 256),
-                'label': np.random.randint(2),
-                'id': f"sample{path}"}
+        data = {"data": np.random.rand(1, 256, 256), "label": np.random.randint(2), "id": f"sample{path}"}
         return data
 
 
@@ -52,8 +50,7 @@ class TestBaseDataset(unittest.TestCase):
         self.paths = list(range(10))
 
     def test_async_dataset(self):
-        dataset = AsyncDataset(self.paths, LoadDummySample(), verbose=True,
-                               label_load_fct=None)
+        dataset = AsyncDataset(self.paths, LoadDummySample(), verbose=True, label_load_fct=None)
         self.assertEqual(len(dataset), 10)
         self.check_dataset_access(dataset, [0, 5, 9])
         self.check_dataset_outside_access(dataset, [10, 20])
@@ -61,9 +58,7 @@ class TestBaseDataset(unittest.TestCase):
 
     def test_async_verbose_multiprocessing(self):
         # TODO: add tqdm mock to f progress bar is invoked correctly (do this when dataset tests are reworked)
-        dataset = AsyncDataset(self.paths, LoadDummySample(),
-                               num_workers=4, verbose=True,
-                               label_load_fct=None)
+        dataset = AsyncDataset(self.paths, LoadDummySample(), num_workers=4, verbose=True, label_load_fct=None)
         self.assertEqual(len(dataset), 10)
         self.check_dataset_access(dataset, [0, 5, 9])
         self.check_dataset_outside_access(dataset, [10, 20])
@@ -73,9 +68,7 @@ class TestBaseDataset(unittest.TestCase):
         def load_mul_sample(path) -> list:
             return [LoadDummySample()(path, None)] * 4
 
-        dataset = AsyncDataset(self.paths, load_mul_sample,
-                               num_workers=4, verbose=False,
-                               mode='extend')
+        dataset = AsyncDataset(self.paths, load_mul_sample, num_workers=4, verbose=False, mode="extend")
         self.assertEqual(len(dataset), 40)
         self.check_dataset_access(dataset, [0, 20, 39])
         self.check_dataset_outside_access(dataset, [40, 45])
@@ -83,8 +76,7 @@ class TestBaseDataset(unittest.TestCase):
 
     def test_async_dataset_mode_error(self):
         with self.assertRaises(TypeError):
-            dataset = AsyncDataset(self.paths, LoadDummySample(),
-                                   label_load_fct=None, mode="no_mode:P")
+            dataset = AsyncDataset(self.paths, LoadDummySample(), label_load_fct=None, mode="no_mode:P")
 
     def check_dataset_access(self, dataset, inside_idx):
         try:
@@ -102,17 +94,16 @@ class TestBaseDataset(unittest.TestCase):
         try:
             j = 0
             for i in dataset:
-                self.assertIn('data', i)
-                self.assertIn('label', i)
+                self.assertIn("data", i)
+                self.assertIn("label", i)
                 j += 1
             assert j == len(dataset)
         except BaseException:
-            raise AssertionError('Dataset iteration failed.')
+            raise AssertionError("Dataset iteration failed.")
 
     def test_subset_dataset(self):
         idx = [0, 1, 2, 5, 6]
-        dataset = AsyncDataset(self.paths, LoadDummySample(),
-                               label_load_fct=None)
+        dataset = AsyncDataset(self.paths, LoadDummySample(), label_load_fct=None)
         subset = dataset.get_subset(idx)
         self.assertEqual(len(subset), len(idx))
         for _i, _idx in enumerate(idx):
@@ -132,7 +123,7 @@ class TestHelperFunctions(unittest.TestCase):
         callback.assert_called_once()
 
     def test_dill_helper(self):
-        payload = dill.dumps((lambda x: x, (1, ), {}))
+        payload = dill.dumps((lambda x: x, (1,), {}))
         res = dill_helper(payload)
         self.assertEqual(res, 1)
 

@@ -17,9 +17,7 @@ def points_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
         torch.Tensor: the batch of points in homogeneous coordinates
 
     """
-    return torch.cat([batch,
-                      batch.new_ones((*batch.size()[:-1], 1))],
-                     dim=-1)
+    return torch.cat([batch, batch.new_ones((*batch.size()[:-1], 1))], dim=-1)
 
 
 def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
@@ -39,16 +37,15 @@ def matrix_to_homogeneous(batch: torch.Tensor) -> torch.Tensor:
         batch = torch.cat([batch, missing], dim=-1)
 
     missing = torch.zeros(
-        (batch.size(0), *[1 for tmp in batch.shape[1:-1]], batch.size(-1)),
-        device=batch.device, dtype=batch.dtype)
+        (batch.size(0), *[1 for tmp in batch.shape[1:-1]], batch.size(-1)), device=batch.device, dtype=batch.dtype
+    )
 
     missing[..., -1] = 1
 
     return torch.cat([batch, missing], dim=-2)
 
 
-def matrix_to_cartesian(batch: torch.Tensor, keep_square: bool = False
-                        ) -> torch.Tensor:
+def matrix_to_cartesian(batch: torch.Tensor, keep_square: bool = False) -> torch.Tensor:
     """
     Transforms a matrix for a homogeneous transformation back to cartesian
     coordinates.
@@ -105,9 +102,12 @@ def matrix_revert_coordinate_order(batch: torch.Tensor) -> torch.Tensor:
     return batch
 
 
-def get_batched_eye(batchsize: int, ndim: int,
-                    device: Optional[Union[torch.device, str]] = None,
-                    dtype: Optional[Union[torch.dtype, str]] = None) -> torch.Tensor:
+def get_batched_eye(
+    batchsize: int,
+    ndim: int,
+    device: Optional[Union[torch.device, str]] = None,
+    dtype: Optional[Union[torch.dtype, str]] = None,
+) -> torch.Tensor:
     """
     Produces a batched matrix containing 1s on the diagonal
 
@@ -126,12 +126,10 @@ def get_batched_eye(batchsize: int, ndim: int,
         torch.Tensor: batched eye matrix
 
     """
-    return torch.eye(ndim, device=device, dtype=dtype).view(
-        1, ndim, ndim).expand(batchsize, -1, -1).clone()
+    return torch.eye(ndim, device=device, dtype=dtype).view(1, ndim, ndim).expand(batchsize, -1, -1).clone()
 
 
-def deg_to_rad(angles: Union[torch.Tensor, float, int]
-               ) -> Union[torch.Tensor, float, int]:
+def deg_to_rad(angles: Union[torch.Tensor, float, int]) -> Union[torch.Tensor, float, int]:
     """
     Converts from degree to radians.
 
@@ -156,8 +154,7 @@ def unit_box(n: int, scale: Optional[torch.Tensor] = None) -> torch.Tensor:
     Returns:
         torch.Tensor: scaled unit box
     """
-    box = torch.tensor(
-        [list(i) for i in itertools.product([0, 1], repeat=n)])
+    box = torch.tensor([list(i) for i in itertools.product([0, 1], repeat=n)])
     if scale is not None:
         box = box.to(scale) * scale[None]
     return box

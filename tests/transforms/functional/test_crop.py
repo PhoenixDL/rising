@@ -22,9 +22,9 @@ class MyTestCase(unittest.TestCase):
         torch.manual_seed(0)
         h = torch.randint(0, 7, (1,)).item()
         w = torch.randint(0, 7, (1,)).item()
-        expected = self.data[:, :, h: h + 3, w: w + 3]
+        expected = self.data[:, :, h : h + 3, w : w + 3]
         torch.manual_seed(0)
-        crop = random_crop(self.data, size=3.)
+        crop = random_crop(self.data, size=3.0)
         self.assertTrue((crop == expected).all())
         self.assertTrue(all([_s == 3 for _s in crop.shape[2:]]))
 
@@ -44,5 +44,5 @@ class MyTestCase(unittest.TestCase):
             self.assertTrue(all([_s == s for _s in crop.shape[2:]]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

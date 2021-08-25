@@ -56,8 +56,7 @@ class TestSegBox(unittest.TestCase):
                         __pop_keys = deepcopy(_pop_keys)
                     else:
                         __pop_keys = _pop_keys
-                    result = pop_keys(data=deepcopy(data), keys=__pop_keys,
-                                      return_popped=return_pop)
+                    result = pop_keys(data=deepcopy(data), keys=__pop_keys, return_popped=return_pop)
 
                     if return_pop:
                         result, popped = result
@@ -81,8 +80,7 @@ class TestSegBox(unittest.TestCase):
                         __filter_keys = deepcopy(_filter_keys)
                     else:
                         __filter_keys = _filter_keys
-                    result = filter_keys(data=deepcopy(data), keys=__filter_keys,
-                                         return_popped=return_pop)
+                    result = filter_keys(data=deepcopy(data), keys=__filter_keys, return_popped=return_pop)
 
                     if return_pop:
                         result, popped = result
@@ -93,5 +91,5 @@ class TestSegBox(unittest.TestCase):
                             self.assertIn(k, keys_to_filter_list)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

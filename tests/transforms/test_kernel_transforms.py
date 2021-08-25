@@ -13,7 +13,7 @@ class TestKernelTransforms(unittest.TestCase):
         self.batch_dict = {
             "data": torch.zeros(1, 1, 3, 3).float(),
             "seg": torch.rand(1, 1, 3, 3),
-            "label": torch.arange(3)
+            "label": torch.arange(3),
         }
 
     def test_kernel_transform_get_conv(self):
@@ -31,16 +31,14 @@ class TestKernelTransforms(unittest.TestCase):
 
     def test_kernel_transform_error(self):
         with self.assertRaises(NotImplementedError):
-            trafo = KernelTransform(in_channels=1, kernel_size=3, std=1,
-                                    dim=2, stride=1, padding=1)
+            trafo = KernelTransform(in_channels=1, kernel_size=3, std=1, dim=2, stride=1, padding=1)
 
     def test_gaussian_smoothing_transform(self):
         # TODO: Test: !!!!Implement sensitive tests!!!!
-        trafo = GaussianSmoothing(in_channels=1, kernel_size=3, std=1,
-                                  dim=2, stride=1, padding=1)
+        trafo = GaussianSmoothing(in_channels=1, kernel_size=3, std=1, dim=2, stride=1, padding=1)
         self.batch_dict["data"][0, 0, 1] = 1
         outp = trafo(**self.batch_dict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

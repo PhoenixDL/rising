@@ -37,5 +37,5 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(obj.abstract)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

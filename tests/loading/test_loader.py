@@ -7,13 +7,13 @@ import torch
 
 from rising.loading.dataset import Dataset
 from rising.loading.loader import (
+    BatchTransformer,
+    DataLoader,
+    SampleTransformer,
     _MultiProcessingDataLoaderIter,
     _seed_npy_before_worker_init,
     _SingleProcessDataLoaderIter,
-    BatchTransformer,
-    DataLoader,
     default_transform_call,
-    SampleTransformer,
 )
 from rising.transforms import Mirror
 
@@ -25,24 +25,22 @@ class TestLoader(unittest.TestCase):
         expected = np.random.rand(1)
         worker_init = Mock(return_value=expected_return)
 
-        output_return = _seed_npy_before_worker_init(worker_id=1, seed=0,
-                                                     worker_init_fn=worker_init)
+        output_return = _seed_npy_before_worker_init(worker_id=1, seed=0, worker_init_fn=worker_init)
         output = np.random.rand(1)
         self.assertEqual(output, expected)
         self.assertEqual(output_return, expected_return)
         worker_init.assert_called_once_with(1)
 
     def test_seed_npy_before_worker_init_import_error(self):
-        with patch.dict('sys.modules', {'numpy': None}):
+        with patch.dict("sys.modules", {"numpy": None}):
             expected_return = 100
             worker_init = Mock(return_value=expected_return)
-            output_return = _seed_npy_before_worker_init(worker_id=1, seed=0,
-                                                         worker_init_fn=worker_init)
+            output_return = _seed_npy_before_worker_init(worker_id=1, seed=0, worker_init_fn=worker_init)
             self.assertEqual(output_return, expected_return)
             worker_init.assert_called_once_with(1)
 
     def test_dataloader_np_import_error(self):
-        with patch.dict('sys.modules', {'numpy': None}):
+        with patch.dict("sys.modules", {"numpy": None}):
             loader = DataLoader([0, 1, 2], num_workers=2)
             iterator = iter(loader)
             self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
@@ -62,14 +60,14 @@ class TestLoader(unittest.TestCase):
         device = torch.cuda.current_device()
         self.check_output_device(device=device)
 
-    @patch('torch.cuda.is_available', side_effect=lambda: False)
+    @patch("torch.cuda.is_available", side_effect=lambda: False)
     def test_dataloader_gpu_transforms_no_cuda(self, fn):
-        self.check_output_device(device='cpu')
+        self.check_output_device(device="cpu")
 
     def check_output_device(self, device):
         data = torch.rand(1, 3, 3)
         dset = [{"data": data}] * 5
-        gpu_transforms = Mirror((0, ))
+        gpu_transforms = Mirror((0,))
         loader = DataLoader(dset, num_workers=0, gpu_transforms=gpu_transforms)
         iterator = iter(loader)
         outp = next(iterator)
@@ -81,8 +79,7 @@ class BatchTransformerTest(unittest.TestCase):
     def check_batch_transformer(self, collate_output):
         collate = Mock(return_value=collate_output)
         transforms = Mock(return_value=2)
-        transformer = BatchTransformer(collate_fn=collate, transforms=transforms,
-                                       auto_convert=False)
+        transformer = BatchTransformer(collate_fn=collate, transforms=transforms, auto_convert=False)
 
         output = transformer(0)
 
@@ -107,8 +104,7 @@ class BatchTransformerTest(unittest.TestCase):
     def test_batch_transformer_auto_convert(self):
         collate = Mock(return_value=0)
         transforms = Mock(return_value=np.array([0, 1]))
-        transformer = BatchTransformer(collate_fn=collate, transforms=transforms,
-                                       auto_convert=True)
+        transformer = BatchTransformer(collate_fn=collate, transforms=transforms, auto_convert=True)
         output = transformer(0)
         self.assertTrue((output == torch.tensor([0, 1])).all())
 
@@ -121,8 +117,7 @@ class SampleTransformerTest(unittest.TestCase):
             def __init__(self, num_samples=10):
                 super().__init__()
 
-                self.samples = [{'data': np.random.rand(1, 28, 28)}
-                                for idx in range(num_samples)]
+                self.samples = [{"data": np.random.rand(1, 28, 28)} for idx in range(num_samples)]
 
             def __getitem__(self, item):
                 return self.samples[item]
@@ -136,8 +131,7 @@ class SampleTransformerTest(unittest.TestCase):
         transformer = SampleTransformer(self.dset, None)
         for i in range(len(self.dset)):
             with self.subTest(idx=i):
-                self.assertTrue(np.allclose(transformer[0]['data'],
-                                            self.dset[0]['data']))
+                self.assertTrue(np.allclose(transformer[0]["data"], self.dset[0]["data"]))
 
     def test_trafo_no_pseudo_batchdim(self):
         def trafo(**data):
@@ -149,8 +143,8 @@ class SampleTransformerTest(unittest.TestCase):
         transformer = SampleTransformer(self.dset, trafo)
         for i in range(len(self.dset)):
             with self.subTest(idx=i):
-                transformed = transformer[i]['data']
-                orig = self.dset[i]['data']
+                transformed = transformer[i]["data"]
+                orig = self.dset[i]["data"]
 
                 self.assertTrue(np.allclose(transformed, orig))
 
@@ -164,8 +158,8 @@ class SampleTransformerTest(unittest.TestCase):
         transformer = SampleTransformer(self.dset, trafo, pseudo_batch_dim=True)
         for i in range(len(self.dset)):
             with self.subTest(idx=i):
-                transformed = transformer[i]['data']
-                orig = self.dset[i]['data']
+                transformed = transformer[i]["data"]
+                orig = self.dset[i]["data"]
 
                 self.assertTrue(np.allclose(transformed, orig))
 
@@ -193,12 +187,11 @@ class SampleTransformerTest(unittest.TestCase):
 
     def test_pseudo_batching_str(self):
         transformer = SampleTransformer(self.dset)
-        input_str = 'abc'
+        input_str = "abc"
 
         for add in [True, False]:
             with self.subTest(add=add):
-                self.assertEqual(input_str,
-                                 transformer._change_pseudo_batch_dim(input_str, add=add))
+                self.assertEqual(input_str, transformer._change_pseudo_batch_dim(input_str, add=add))
 
     def test_pseudo_batching_int(self):
         transformer = SampleTransformer(self.dset)
@@ -206,21 +199,19 @@ class SampleTransformerTest(unittest.TestCase):
 
         for add in [True, False]:
             with self.subTest(add=add):
-                self.assertEqual(input_int,
-                                 transformer._change_pseudo_batch_dim(input_int, add=add))
+                self.assertEqual(input_int, transformer._change_pseudo_batch_dim(input_int, add=add))
 
     def test_pseudo_batching_float(self):
         transformer = SampleTransformer(self.dset)
-        input_float = 42.
+        input_float = 42.0
 
         for add in [True, False]:
             with self.subTest(add=add):
-                self.assertEqual(input_float,
-                                 transformer._change_pseudo_batch_dim(input_float, add=add))
+                self.assertEqual(input_float, transformer._change_pseudo_batch_dim(input_float, add=add))
 
     def test_pseudo_batching_mapping(self):
         transformer = SampleTransformer(self.dset)
-        mapping = {'a': torch.rand(2, 3, 4), 'b': torch.rand(3, 4, 5)}
+        mapping = {"a": torch.rand(2, 3, 4), "b": torch.rand(3, 4, 5)}
         batched = transformer._change_pseudo_batch_dim(mapping, add=True)
 
         self.assertIsInstance(batched, type(mapping))
@@ -246,7 +237,8 @@ class SampleTransformerTest(unittest.TestCase):
 
     def test_pseudo_batch_dim_named_tuple(self):
         from collections import namedtuple
-        Foo = namedtuple('Foo', 'bar')
+
+        Foo = namedtuple("Foo", "bar")
         transformer = SampleTransformer(self.dset)
 
         foo = Foo(torch.tensor([2, 3, 4]))
@@ -279,7 +271,7 @@ class SampleTransformerTest(unittest.TestCase):
 
     def test_pseudo_batch_dim_custom_obj(self):
         class Foo(object):
-            self.bar = 5.
+            self.bar = 5.0
 
         transformer = SampleTransformer(self.dset)
         foo = Foo()
@@ -314,5 +306,5 @@ class DefaultTransformCallTest(unittest.TestCase):
         mock.assert_called_once_with(**inp)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -17,18 +17,19 @@ from rising.utils.affine import (
 from rising.utils.checktype import check_scalar
 
 __all__ = [
-    'affine_image_transform',
-    'affine_point_transform',
+    "affine_image_transform",
+    "affine_point_transform",
     "create_rotation",
     "create_scale",
     "create_translation",
-    "parametrize_matrix"
+    "parametrize_matrix",
 ]
 
 from rising.utils.inverse import orthogonal_inverse
 
-AffineParamType = Union[int, Sequence[int], float, Sequence[float], torch.Tensor,
-                        AbstractParameter, Sequence[AbstractParameter]]
+AffineParamType = Union[
+    int, Sequence[int], float, Sequence[float], torch.Tensor, AbstractParameter, Sequence[AbstractParameter]
+]
 
 
 def expand_scalar_param(param: AffineParamType, batchsize: int, ndim: int) -> Tensor:
@@ -57,19 +58,21 @@ def expand_scalar_param(param: AffineParamType, batchsize: int, ndim: int) -> Te
         elif param.shape[0] == batchsize:  # scalar per batch
             param = param.reshape(-1, 1).expand(batchsize, ndim)
         else:
-            raise ValueError("Unknown param for expanding. "
-                             f"Found {param} for batchsize {batchsize} and ndim {ndim}")
-    assert all([i == j for i, j in zip(param.shape, (batchsize, ndim))]), \
-        (f"Affine param need to have shape (batchsize, ndim)"
-         f"({(batchsize, ndim)}) but found {param.shape}")
+            raise ValueError("Unknown param for expanding. " f"Found {param} for batchsize {batchsize} and ndim {ndim}")
+    assert all([i == j for i, j in zip(param.shape, (batchsize, ndim))]), (
+        f"Affine param need to have shape (batchsize, ndim)" f"({(batchsize, ndim)}) but found {param.shape}"
+    )
     return param.float()
 
 
-def create_scale(scale: AffineParamType,
-                 batchsize: int, ndim: int,
-                 device: Optional[Union[torch.device, str]] = None,
-                 dtype: Optional[Union[torch.dtype, str]] = None,
-                 image_transform: bool = True) -> torch.Tensor:
+def create_scale(
+    scale: AffineParamType,
+    batchsize: int,
+    ndim: int,
+    device: Optional[Union[torch.device, str]] = None,
+    dtype: Optional[Union[torch.dtype, str]] = None,
+    image_transform: bool = True,
+) -> torch.Tensor:
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -101,21 +104,23 @@ def create_scale(scale: AffineParamType,
     if scale is None:
         scale = 1
 
-    scale = expand_scalar_param(scale, batchsize, ndim).to(
-        device=device, dtype=dtype)
+    scale = expand_scalar_param(scale, batchsize, ndim).to(device=device, dtype=dtype)
     if image_transform:
         scale = 1 / scale
     scale_matrix = torch.stack(
-        [eye * s for eye, s in zip(get_batched_eye(
-            batchsize=batchsize, ndim=ndim, device=device, dtype=dtype), scale)])
+        [eye * s for eye, s in zip(get_batched_eye(batchsize=batchsize, ndim=ndim, device=device, dtype=dtype), scale)]
+    )
     return matrix_to_homogeneous(scale_matrix)
 
 
-def create_translation(offset: AffineParamType,
-                       batchsize: int, ndim: int,
-                       device: Optional[Union[torch.device, str]] = None,
-                       dtype: Optional[Union[torch.dtype, str]] = None,
-                       image_transform: bool = True) -> torch.Tensor:
+def create_translation(
+    offset: AffineParamType,
+    batchsize: int,
+    ndim: int,
+    device: Optional[Union[torch.device, str]] = None,
+    dtype: Optional[Union[torch.dtype, str]] = None,
+    image_transform: bool = True,
+) -> torch.Tensor:
     """
     Formats the given translation parameters to a homogeneous transformation
     matrix
@@ -148,22 +153,23 @@ def create_translation(offset: AffineParamType,
     """
     if offset is None:
         offset = 0
-    offset = expand_scalar_param(offset, batchsize, ndim).to(
-        device=device, dtype=dtype)
+    offset = expand_scalar_param(offset, batchsize, ndim).to(device=device, dtype=dtype)
     eye_batch = get_batched_eye(batchsize=batchsize, ndim=ndim, device=device, dtype=dtype)
-    translation_matrix = torch.stack([torch.cat([eye, o.view(-1, 1)], dim=1)
-                                      for eye, o in zip(eye_batch, offset)])
+    translation_matrix = torch.stack([torch.cat([eye, o.view(-1, 1)], dim=1) for eye, o in zip(eye_batch, offset)])
     if image_transform:
         translation_matrix[..., -1] = -translation_matrix[..., -1]
     return matrix_to_homogeneous(translation_matrix)
 
 
-def create_rotation(rotation: AffineParamType,
-                    batchsize: int, ndim: int,
-                    degree: bool = False,
-                    device: Optional[Union[torch.device, str]] = None,
-                    dtype: Optional[Union[torch.dtype, str]] = None,
-                    image_transform: bool = True) -> torch.Tensor:
+def create_rotation(
+    rotation: AffineParamType,
+    batchsize: int,
+    ndim: int,
+    degree: bool = False,
+    device: Optional[Union[torch.device, str]] = None,
+    dtype: Optional[Union[torch.dtype, str]] = None,
+    image_transform: bool = True,
+) -> torch.Tensor:
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -201,8 +207,7 @@ def create_rotation(rotation: AffineParamType,
         rotation = 0
     num_rot_params = 1 if ndim == 2 else ndim
 
-    rotation = expand_scalar_param(rotation, batchsize, num_rot_params).to(
-        device=device, dtype=dtype)
+    rotation = expand_scalar_param(rotation, batchsize, num_rot_params).to(device=device, dtype=dtype)
     if degree:
         rotation = deg_to_rad(rotation)
 
@@ -220,18 +225,16 @@ def create_rotation(rotation: AffineParamType,
 
 def create_rotation_2d(sin: Tensor, cos: Tensor) -> Tensor:
     """
-    Create a 2d rotation matrix
+     Create a 2d rotation matrix
 
-   Args:
-    sin: sin value to use for rotation matrix, [1]
-    cos: cos value to use for rotation matrix, [1]
+    Args:
+     sin: sin value to use for rotation matrix, [1]
+     cos: cos value to use for rotation matrix, [1]
 
-    Returns:
-        torch.Tensor: rotation matrix, [2, 2]
+     Returns:
+         torch.Tensor: rotation matrix, [2, 2]
     """
-    return torch.tensor([[cos.clone(), -sin.clone()],
-                         [sin.clone(), cos.clone()]],
-                        device=sin.device, dtype=sin.dtype)
+    return torch.tensor([[cos.clone(), -sin.clone()], [sin.clone(), cos.clone()]], device=sin.device, dtype=sin.dtype)
 
 
 def create_rotation_3d(sin: Tensor, cos: Tensor) -> Tensor:
@@ -263,10 +266,11 @@ def create_rotation_3d_0(sin: Tensor, cos: Tensor) -> Tensor:
     Returns:
         torch.Tensor: rotation matrix, [3, 3]
     """
-    return torch.tensor([[1., 0., 0.],
-                         [0., cos.clone(), -sin.clone()],
-                         [0., sin.clone(), cos.clone()]],
-                        device=sin.device, dtype=sin.dtype)
+    return torch.tensor(
+        [[1.0, 0.0, 0.0], [0.0, cos.clone(), -sin.clone()], [0.0, sin.clone(), cos.clone()]],
+        device=sin.device,
+        dtype=sin.dtype,
+    )
 
 
 def create_rotation_3d_1(sin: Tensor, cos: Tensor) -> Tensor:
@@ -280,10 +284,11 @@ def create_rotation_3d_1(sin: Tensor, cos: Tensor) -> Tensor:
     Returns:
         torch.Tensor: rotation matrix, [3, 3]
     """
-    return torch.tensor([[cos.clone(), 0., sin.clone()],
-                         [0., 1., 0.],
-                         [-sin.clone(), 0., cos.clone()]],
-                        device=sin.device, dtype=sin.dtype)
+    return torch.tensor(
+        [[cos.clone(), 0.0, sin.clone()], [0.0, 1.0, 0.0], [-sin.clone(), 0.0, cos.clone()]],
+        device=sin.device,
+        dtype=sin.dtype,
+    )
 
 
 def create_rotation_3d_2(sin: Tensor, cos: Tensor) -> Tensor:
@@ -297,21 +302,24 @@ def create_rotation_3d_2(sin: Tensor, cos: Tensor) -> Tensor:
     Returns:
         torch.Tensor: rotation matrix, [3, 3]
     """
-    return torch.tensor([[cos.clone(), -sin.clone(), 0.],
-                         [sin.clone(), cos.clone(), 0.],
-                         [0., 0., 1.]],
-                        device=sin.device, dtype=sin.dtype)
+    return torch.tensor(
+        [[cos.clone(), -sin.clone(), 0.0], [sin.clone(), cos.clone(), 0.0], [0.0, 0.0, 1.0]],
+        device=sin.device,
+        dtype=sin.dtype,
+    )
 
 
-def parametrize_matrix(scale: AffineParamType,
-                       rotation: AffineParamType,
-                       translation: AffineParamType,
-                       batchsize: int, ndim: int,
-                       degree: bool = False,
-                       device: Optional[Union[torch.device, str]] = None,
-                       dtype: Optional[Union[torch.dtype, str]] = None,
-                       image_transform: bool = True,
-                       ) -> torch.Tensor:
+def parametrize_matrix(
+    scale: AffineParamType,
+    rotation: AffineParamType,
+    translation: AffineParamType,
+    batchsize: int,
+    ndim: int,
+    degree: bool = False,
+    device: Optional[Union[torch.device, str]] = None,
+    dtype: Optional[Union[torch.dtype, str]] = None,
+    image_transform: bool = True,
+) -> torch.Tensor:
     """
     Formats the given scale parameters to a homogeneous transformation matrix
 
@@ -361,15 +369,21 @@ def parametrize_matrix(scale: AffineParamType,
         torch.Tensor: the transformation matrix [N, NDIM, NDIM+1], ``N`` is
             the batch size and ``NDIM`` is the number of spatial dimensions
     """
-    scale = create_scale(scale, batchsize=batchsize, ndim=ndim,
-                         device=device, dtype=dtype,
-                         image_transform=image_transform)
-    rotation = create_rotation(rotation, batchsize=batchsize, ndim=ndim,
-                               degree=degree, device=device, dtype=dtype,
-                               image_transform=image_transform)
-    translation = create_translation(translation, batchsize=batchsize,
-                                     ndim=ndim, device=device, dtype=dtype,
-                                     image_transform=image_transform)
+    scale = create_scale(
+        scale, batchsize=batchsize, ndim=ndim, device=device, dtype=dtype, image_transform=image_transform
+    )
+    rotation = create_rotation(
+        rotation,
+        batchsize=batchsize,
+        ndim=ndim,
+        degree=degree,
+        device=device,
+        dtype=dtype,
+        image_transform=image_transform,
+    )
+    translation = create_translation(
+        translation, batchsize=batchsize, ndim=ndim, device=device, dtype=dtype, image_transform=image_transform
+    )
     if image_transform:
         total_trafo = torch.bmm(torch.bmm(translation, rotation), scale)[:, :-1]
     else:
@@ -377,8 +391,7 @@ def parametrize_matrix(scale: AffineParamType,
     return total_trafo
 
 
-def affine_point_transform(point_batch: torch.Tensor,
-                           matrix_batch: torch.Tensor) -> torch.Tensor:
+def affine_point_transform(point_batch: torch.Tensor, matrix_batch: torch.Tensor) -> torch.Tensor:
     """
     Function to perform an affine transformation onto point batches
 
@@ -398,19 +411,20 @@ def affine_point_transform(point_batch: torch.Tensor,
     """
     point_batch = points_to_homogeneous(point_batch)
     matrix_batch = matrix_to_homogeneous(matrix_batch)
-    transformed_points = torch.bmm(point_batch,
-                                   matrix_batch.permute(0, 2, 1))
+    transformed_points = torch.bmm(point_batch, matrix_batch.permute(0, 2, 1))
     return points_to_cartesian(transformed_points)
 
 
-def affine_image_transform(image_batch: torch.Tensor,
-                           matrix_batch: torch.Tensor,
-                           output_size: Optional[tuple] = None,
-                           adjust_size: bool = False,
-                           interpolation_mode: str = 'bilinear',
-                           padding_mode: str = 'zeros',
-                           align_corners: bool = False,
-                           reverse_order: bool = False, ) -> torch.Tensor:
+def affine_image_transform(
+    image_batch: torch.Tensor,
+    matrix_batch: torch.Tensor,
+    output_size: Optional[tuple] = None,
+    adjust_size: bool = False,
+    interpolation_mode: str = "bilinear",
+    padding_mode: str = "zeros",
+    align_corners: bool = False,
+    reverse_order: bool = False,
+) -> torch.Tensor:
     """
     Performs an affine transformation on a batch of images
 
@@ -449,8 +463,7 @@ def affine_image_transform(image_batch: torch.Tensor,
     """
     # add batch dimension if necessary
     if len(matrix_batch.shape) < 3:
-        matrix_batch = matrix_batch[None, ...].expand(
-            image_batch.size(0), -1, -1).clone()
+        matrix_batch = matrix_batch[None, ...].expand(image_batch.size(0), -1, -1).clone()
 
     image_size = image_batch.shape[2:]
 
@@ -459,13 +472,10 @@ def affine_image_transform(image_batch: torch.Tensor,
             output_size = tuple([output_size] * matrix_batch.size(-2))
 
         if adjust_size:
-            warnings.warn("Adjust size is mutually exclusive with a "
-                          "given output size.", UserWarning)
+            warnings.warn("Adjust size is mutually exclusive with a " "given output size.", UserWarning)
         new_size = output_size
     elif adjust_size:
-        new_size = tuple([int(tmp.item())
-                          for tmp in _check_new_img_size(image_size,
-                                                         matrix_batch)])
+        new_size = tuple([int(tmp.item()) for tmp in _check_new_img_size(image_size, matrix_batch)])
     else:
         new_size = image_size
 
@@ -478,17 +488,14 @@ def affine_image_transform(image_batch: torch.Tensor,
     if reverse_order:
         matrix_batch = matrix_revert_coordinate_order(matrix_batch)
 
-    grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size,
-                                           align_corners=align_corners)
+    grid = torch.nn.functional.affine_grid(matrix_batch, size=new_size, align_corners=align_corners)
 
-    return torch.nn.functional.grid_sample(image_batch, grid,
-                                           mode=interpolation_mode,
-                                           padding_mode=padding_mode,
-                                           align_corners=align_corners)
+    return torch.nn.functional.grid_sample(
+        image_batch, grid, mode=interpolation_mode, padding_mode=padding_mode, align_corners=align_corners
+    )
 
 
-def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
-                        zero_border: bool = False) -> torch.Tensor:
+def _check_new_img_size(curr_img_size, matrix: torch.Tensor, zero_border: bool = False) -> torch.Tensor:
     """
     Calculates the image size so that the whole image content fits the image.
     The resulting size will be the maximum size of the batch, so that the
@@ -509,9 +516,8 @@ def _check_new_img_size(curr_img_size, matrix: torch.Tensor,
     possible_points = unit_box(n_dim, torch.tensor(curr_img_size)).to(matrix)
 
     transformed_edges = affine_point_transform(
-        possible_points[None].expand(
-            matrix.size(0), *[-1 for _ in possible_points.shape]).clone(),
-        matrix)
+        possible_points[None].expand(matrix.size(0), *[-1 for _ in possible_points.shape]).clone(), matrix
+    )
 
     if zero_border:
         substr = 0

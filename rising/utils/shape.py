@@ -3,8 +3,7 @@ from typing import Sequence, Union
 import torch
 
 
-def reshape(value: Union[list, torch.Tensor],
-            size: Union[Sequence, torch.Size]) -> Union[torch.Tensor, list]:
+def reshape(value: Union[list, torch.Tensor], size: Union[Sequence, torch.Size]) -> Union[torch.Tensor, list]:
     """
     Reshape sequence (list or tensor) to given size
 

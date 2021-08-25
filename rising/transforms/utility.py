@@ -64,9 +64,15 @@ class SegToBox(AbstractTransform):
 class BoxToSeg(AbstractTransform):
     """Convert bounding boxes to instance segmentation"""
 
-    def __init__(self, keys: Mapping[Hashable, Hashable], shape: Sequence[int],
-                 dtype: torch.dtype, device: Union[torch.device, str],
-                 grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        keys: Mapping[Hashable, Hashable],
+        shape: Sequence[int],
+        dtype: torch.dtype,
+        device: Union[torch.device, str],
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             keys: the key specifies which item to use as the bounding boxes and
@@ -95,8 +101,7 @@ class BoxToSeg(AbstractTransform):
             dict: transformed data
         """
         for source, target in self.keys.items():
-            out = torch.zeros((len(data[source]), 1, *self.seg_shape), dtype=self.seg_dtype,
-                              device=self.seg_device)
+            out = torch.zeros((len(data[source]), 1, *self.seg_shape), dtype=self.seg_dtype, device=self.seg_device)
             for b in range(len(data[source])):
                 box_to_seg(data[source][b], out=out[b])
             data[target] = out
@@ -131,6 +136,10 @@ class InstanceToSemantic(AbstractTransform):
 
         """
         for source, target in self.keys.items():
-            data[target] = torch.cat([instance_to_semantic(data, mapping)
-                                      for data, mapping in zip(data[source].split(1), data[self.cls_key])])
+            data[target] = torch.cat(
+                [
+                    instance_to_semantic(data, mapping)
+                    for data, mapping in zip(data[source].split(1), data[self.cls_key])
+                ]
+            )
         return data

@@ -10,7 +10,7 @@ class TestChannel(unittest.TestCase):
         self.batch_dict = {
             "data": torch.arange(1, 10).reshape(1, 1, 3, 3).float(),
             "seg": torch.rand(1, 1, 3, 3),
-            "label": torch.rand(3, 3)
+            "label": torch.rand(3, 3),
         }
 
     def test_permute(self):
@@ -41,5 +41,5 @@ class TestChannel(unittest.TestCase):
                 self.assertTrue(out["seg"].allclose(expected_out))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

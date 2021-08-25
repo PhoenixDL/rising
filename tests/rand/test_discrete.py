@@ -7,7 +7,7 @@ from rising.random.discrete import combinations_all
 class TestDiscrete(unittest.TestCase):
     def test_discrete_error(self):
         with self.assertRaises(ValueError):
-            param = DiscreteParameter((1., 2.), replacement=False, weights=(0.3, 0.7))
+            param = DiscreteParameter((1.0, 2.0), replacement=False, weights=(0.3, 0.7))
 
     def test_discrete_parameter(self):
         param = DiscreteParameter((1,))
@@ -27,5 +27,5 @@ class TestDiscrete(unittest.TestCase):
         self.assertEqual(len(combs), 3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

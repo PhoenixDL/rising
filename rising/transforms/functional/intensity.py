@@ -5,13 +5,22 @@ import torch
 from rising.utils import check_scalar
 from rising.utils.torchinterp1d import Interp1d
 
-__all__ = ["norm_range", "norm_min_max", "norm_zero_mean_unit_std", "norm_mean_std",
-           "add_noise", "add_value", "gamma_correction", "scale_by_value", "clamp",
-           "bezier_3rd_order", "random_inversion"]
+__all__ = [
+    "norm_range",
+    "norm_min_max",
+    "norm_zero_mean_unit_std",
+    "norm_mean_std",
+    "add_noise",
+    "add_value",
+    "gamma_correction",
+    "scale_by_value",
+    "clamp",
+    "bezier_3rd_order",
+    "random_inversion",
+]
 
 
-def clamp(data: torch.Tensor, min: float, max: float,
-          out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def clamp(data: torch.Tensor, min: float, max: float, out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Clamp tensor to minimal and maximal value
 
@@ -27,9 +36,9 @@ def clamp(data: torch.Tensor, min: float, max: float,
     return torch.clamp(data, min=float(min), max=float(max), out=out)
 
 
-def norm_range(data: torch.Tensor, min: float, max: float,
-               per_channel: bool = True,
-               out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def norm_range(
+    data: torch.Tensor, min: float, max: float, per_channel: bool = True, out: Optional[torch.Tensor] = None
+) -> torch.Tensor:
     """
     Scale range of tensor
 
@@ -52,9 +61,9 @@ def norm_range(data: torch.Tensor, min: float, max: float,
     return out
 
 
-def norm_min_max(data: torch.Tensor, per_channel: bool = True,
-                 out: Optional[torch.Tensor] = None,
-                 eps: Optional[float] = 1e-8) -> torch.Tensor:
+def norm_min_max(
+    data: torch.Tensor, per_channel: bool = True, out: Optional[torch.Tensor] = None, eps: Optional[float] = 1e-8
+) -> torch.Tensor:
     """
     Scale range to [0,1]
 
@@ -68,6 +77,7 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True,
     Returns:
         torch.Tensor: scaled data
     """
+
     def _norm(_data: torch.Tensor, _out: torch.Tensor):
         _min = _data.min()
         _range = _data.max() - _min
@@ -87,9 +97,9 @@ def norm_min_max(data: torch.Tensor, per_channel: bool = True,
     return out
 
 
-def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
-                            out: Optional[torch.Tensor] = None,
-                            eps: Optional[float] = 1e-8) -> torch.Tensor:
+def norm_zero_mean_unit_std(
+    data: torch.Tensor, per_channel: bool = True, out: Optional[torch.Tensor] = None, eps: Optional[float] = 1e-8
+) -> torch.Tensor:
     """
     Normalize mean to zero and std to one
 
@@ -103,6 +113,7 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
     Returns:
         torch.Tensor: normalized data
     """
+
     def _norm(_data: torch.Tensor, _out: torch.Tensor):
         denom = _data.std()
         if eps is not None:
@@ -121,10 +132,13 @@ def norm_zero_mean_unit_std(data: torch.Tensor, per_channel: bool = True,
     return out
 
 
-def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence],
-                  std: Union[float, Sequence],
-                  per_channel: bool = True,
-                  out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def norm_mean_std(
+    data: torch.Tensor,
+    mean: Union[float, Sequence],
+    std: Union[float, Sequence],
+    per_channel: bool = True,
+    out: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
     """
     Normalize mean and std with provided values
 
@@ -154,8 +168,7 @@ def norm_mean_std(data: torch.Tensor, mean: Union[float, Sequence],
     return out
 
 
-def add_noise(data: torch.Tensor, noise_type: str,
-              out: Optional[torch.Tensor] = None, **kwargs) -> torch.Tensor:
+def add_noise(data: torch.Tensor, noise_type: str, out: Optional[torch.Tensor] = None, **kwargs) -> torch.Tensor:
     """
     Add noise to input
 
@@ -171,8 +184,8 @@ def add_noise(data: torch.Tensor, noise_type: str,
     See Also:
         :func:`torch.Tensor.normal_`, :func:`torch.Tensor.exponential_`
     """
-    if not noise_type.endswith('_'):
-        noise_type = noise_type + '_'
+    if not noise_type.endswith("_"):
+        noise_type = noise_type + "_"
     noise_tensor = torch.empty_like(data, requires_grad=False)
     getattr(noise_tensor, noise_type)(**kwargs)
     return torch.add(data, noise_tensor, out=out)
@@ -213,8 +226,7 @@ def add_value(data: torch.Tensor, value: float, out: Optional[torch.Tensor] = No
     return torch.add(data, value, out=out)
 
 
-def scale_by_value(data: torch.Tensor, value: float,
-                   out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def scale_by_value(data: torch.Tensor, value: float, out: Optional[torch.Tensor] = None) -> torch.Tensor:
     """
     Increase brightness scaled by value
     (currently this functions is intended as an interface in case
@@ -231,8 +243,9 @@ def scale_by_value(data: torch.Tensor, value: float,
     return torch.mul(data, value, out=out)
 
 
-def bezier_3rd_order(data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0,
-                     out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def bezier_3rd_order(
+    data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0, out: Optional[torch.Tensor] = None
+) -> torch.Tensor:
     p0 = torch.zeros((1, 2))
     p1 = torch.rand((1, 2))
     p2 = torch.rand((1, 2))
@@ -253,9 +266,13 @@ def bezier_3rd_order(data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0,
     return out_flat.view(data.shape)
 
 
-def random_inversion(data: torch.Tensor, prob_inversion: float = 0.5,
-                     maxv: float = 1.0, minv: float = 0.0,
-                     out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def random_inversion(
+    data: torch.Tensor,
+    prob_inversion: float = 0.5,
+    maxv: float = 1.0,
+    minv: float = 0.0,
+    out: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
 
     if torch.rand((1)) < prob_inversion:
         # Inversion of curve

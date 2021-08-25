@@ -5,11 +5,13 @@ import torch
 __all__ = ["box_to_seg", "seg_to_box", "instance_to_semantic", "pop_keys", "filter_keys"]
 
 
-def box_to_seg(boxes: Sequence[Sequence[int]],
-               shape: Optional[Sequence[int]] = None,
-               dtype: Optional[Union[torch.dtype, str]] = None,
-               device: Optional[Union[torch.device, str]] = None,
-               out: Optional[torch.Tensor] = None) -> torch.Tensor:
+def box_to_seg(
+    boxes: Sequence[Sequence[int]],
+    shape: Optional[Sequence[int]] = None,
+    dtype: Optional[Union[torch.dtype, str]] = None,
+    device: Optional[Union[torch.device, str]] = None,
+    out: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
     """
     Convert a sequence of bounding boxes to a segmentation
 
@@ -34,9 +36,9 @@ def box_to_seg(boxes: Sequence[Sequence[int]],
 
     for _idx, box in enumerate(boxes, 1):
         if len(box) == 4:
-            out[..., box[0]:box[2] + 1, box[1]:box[3] + 1] = _idx
+            out[..., box[0] : box[2] + 1, box[1] : box[3] + 1] = _idx
         elif (len(box)) == 6:
-            out[..., box[0]:box[2] + 1, box[1]:box[3] + 1, box[4]:box[5] + 1] = _idx
+            out[..., box[0] : box[2] + 1, box[1] : box[3] + 1, box[4] : box[5] + 1] = _idx
         else:
             raise TypeError(f"Boxes must have length 4 (2D) or 6(3D) found len {len(box)}")
     return out
@@ -63,13 +65,12 @@ def seg_to_box(seg: torch.Tensor, dim: int) -> List[torch.Tensor]:
         _maxs = instance_map.max(dim=0)[0]
         box = [_mins[-dim], _mins[-dim + 1], _maxs[-dim], _maxs[-dim + 1]]
         if dim > 2:
-            box = box + [c for cv in zip(_mins[-dim + 2:], _maxs[-dim + 2:]) for c in cv]
+            box = box + [c for cv in zip(_mins[-dim + 2 :], _maxs[-dim + 2 :]) for c in cv]
         boxes.append(torch.tensor(box).to(dtype=torch.float, device=seg.device))
     return boxes
 
 
-def instance_to_semantic(instance: torch.Tensor,
-                         cls: Sequence[int]) -> torch.Tensor:
+def instance_to_semantic(instance: torch.Tensor, cls: Sequence[int]) -> torch.Tensor:
     """
     Convert an instance segmentation to a semantic segmentation
 
@@ -91,8 +92,7 @@ def instance_to_semantic(instance: torch.Tensor,
     return seg
 
 
-def pop_keys(data: dict, keys: Union[Callable, Sequence],
-             return_popped=False) -> Union[dict, Tuple[dict, dict]]:
+def pop_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
     """
     Pops keys from a given data dict
 
@@ -123,8 +123,7 @@ def pop_keys(data: dict, keys: Union[Callable, Sequence],
         return data
 
 
-def filter_keys(data: dict, keys: Union[Callable, Sequence],
-                return_popped=False) -> Union[dict, Tuple[dict, dict]]:
+def filter_keys(data: dict, keys: Union[Callable, Sequence], return_popped=False) -> Union[dict, Tuple[dict, dict]]:
     """
     Filters keys from a given data dict
 

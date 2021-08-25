@@ -11,13 +11,14 @@
 
 </div>
 
-| Python Version                                                 | Platform                                             | Unittests                                                                                         |
-|----------------------------------------------------------------|------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| Python Version                                                    | Platform                                             | Unittests                                                                                         |
+| ----------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/Linux-blue)   | ![Unittests Linux](https://github.com/PhoenixDL/rising/workflows/Unittests%20Linux/badge.svg)     |
 | ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/Windows-blue) | ![Unittests Windows](https://github.com/PhoenixDL/rising/workflows/Unittests%20Windows/badge.svg) |
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)    |
+| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)     |
 
 ## What is `rising`?
+
 Rising is a high-performance data loading and augmentation library for 2D *and* 3D data completely written in PyTorch.
 Our goal is to provide a seamless integration into the PyTorch Ecosystem without sacrificing usability or features.
 Multiple examples for different use cases can be found in our [tutorial docs](https://rising.readthedocs.io/en/latest/tutorials.html) e.g.
@@ -27,18 +28,22 @@ Multiple examples for different use cases can be found in our [tutorial docs](ht
 [Integration of External Frameworks](https://rising.readthedocs.io/en/latest/external_augmentation.html)
 
 ## Why another framework?
-|  | rising | TorchIO | Batchgenerators | Kornia | DALI | Vanilla PyTorch | Albumentations |
-|:----------:|:-------:|:------------:|:---------------:|:-------:|:----:|:---------------:|:--------------:|
-| Volumetric | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Gradients | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| GPU | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
-| Backend | PyTorch | PyTorch/SITK | NumPy | PyTorch | C++ | PyTorch | NumPy |
+
+|            | rising  |   TorchIO    | Batchgenerators | Kornia  | DALI | Vanilla PyTorch | Albumentations |
+| :--------: | :-----: | :----------: | :-------------: | :-----: | :--: | :-------------: | :------------: |
+| Volumetric |    ✅    |      ✅       |        ✅        |    ❌    |  ❌   |        ❌        |       ❌        |
+| Gradients  |    ✅    |      ❌       |        ❌        |    ✅    |  ❌   |        ❌        |       ❌        |
+|    GPU     |    ✅    |      ❌       |        ❌        |    ✅    |  ✅   |        ❌        |       ❌        |
+|  Backend   | PyTorch | PyTorch/SITK |      NumPy      | PyTorch | C++  |     PyTorch     |     NumPy      |
 
 ## Docs
+
 [master](https://rising.readthedocs.io/en/latest/)
 
 ## Installation
+
 Pypi Installation
+
 ```bash
 pip install rising
 ```
@@ -52,6 +57,7 @@ pip install -e .
 ```
 
 Running tests inside rising directory (top directory not the package directory)
+
 ```bash
 python -m unittest
 ```
@@ -59,9 +65,11 @@ python -m unittest
 Check out our [contributing guide](https://rising.readthedocs.io/en/latest/contributing.html) for more information or additional help.
 
 ## What can I do with `rising`?
+
 Rising currently consists out of two main modules:
 
 ### `rising.loading`
+
 The `Dataloader` of rising will be your new best friend because it handles all your transformations and applies them efficiently to the data either on CPU or GPU.
 On CPU you can easily switch between transformations which can only be performed per sample and transformations which can be applied per batch.
 In contrast to the native PyTorch datasets you don't need to integrate your augmentation into your dataset.
@@ -69,6 +77,7 @@ Hence, the only purpose of the dataset is to provide an interface to access indi
 Our `DataLoader` is a direct subclass of the PyTorch's dataloader and handles the batch assembly and applies the augmentations/transformations to the data.
 
 ### `rising.transforms`
+
 This module implements many transformations which can be used during training for preprocessing and augmentation.
 All of them are implemented directly in PyTorch such that gradients can be propagated through the transformations and (optionally) it can be applied on the GPU.
 Finally, all transforms are implemented for 2D (natural images) and 3D (volumetric) data.
@@ -76,7 +85,9 @@ Finally, all transforms are implemented for 2D (natural images) and 3D (volumetr
 In the future, support for keypoints and other geometric primitives which can be assembled by connected points will be added.
 
 ## `rising` MNIST Example with CPU and GPU augmentation
+
 `rising` uses the same `Dataset` structure as PyTorch and thus we can just reuse the MNIST dataset from torchvision.
+
 ```python3
 import torchvision
 from torchvision.transforms import ToTensor
@@ -110,18 +121,21 @@ composed = rtr.Compose(transforms, transform_call=default_transform_call)
 ```
 
 The `Dataloader` from `rising` automatically applies the specified transformations to the batches inside the multiprocessing context of the CPU.
+
 ```python3
 dataloader = DataLoader(
     dataset, batch_size=8, num_workers=8, batch_transforms=composed)
 ```
 
 Alternatively, the augmentations can easily be applied on the GPU as well.
+
 ```python3
 dataloader = DataLoader(
     dataset, batch_size=8, num_workers=8, gpu_transforms=composed)
 ```
 
 If either the GPU or CPU is the bottleneck of the pipeline, the `Dataloader` can be used to balance the augmentations load between them.
+
 ```python3
 transforms_cpu = rtr.Compose(transforms[:2])
 transforms_gpu = rtr.Compose(transforms[2:])
@@ -138,6 +152,7 @@ You can also check out our example Notebooks for [2D Classification](https://git
 and [Transformation Examples](https://rising.readthedocs.io/en/latest/transformations.html).
 
 ## Dataloading with `rising`
+
 In general you do not need to be familiar with the whole augmentation process which runs in the background but if you are still curious about the
 detailed pipeline this section will give a very short introduction into the backend of the `Dataloader`.
 The flow charts below highlight the differences between a conventional augmentation pipeline and the pipeline used in `rising`.
@@ -159,6 +174,7 @@ Optionally, the `Dataloader` can still be used to apply transformations on a per
 Because the `rising` augmentation pipeline is a superset of the currently used methods, external frameworks can be integrated into `rising`.
 
 ## Project Organization
+
 `Issues`: If you find any bugs, want some additional features or maybe just have a question don't hesitate to open an issue :)
 
 `General Project Future`: Most of the features and the milestone organisation can be found inside the `projects` tab.

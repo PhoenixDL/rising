@@ -7,9 +7,9 @@ from rising.ops import torch_one_hot
 __all__ = ["one_hot_batch"]
 
 
-def one_hot_batch(target: torch.Tensor,
-                  num_classes: Optional[int] = None,
-                  dtype: Optional[torch.dtype] = None) -> torch.Tensor:
+def one_hot_batch(
+    target: torch.Tensor, num_classes: Optional[int] = None, dtype: Optional[torch.dtype] = None
+) -> torch.Tensor:
     """
     Compute one hot for input tensor (assumed to a be batch and thus saved
     into first dimension -> input should only have one channel)
@@ -24,8 +24,7 @@ def one_hot_batch(target: torch.Tensor,
         torch.Tensor: one hot encoded tensor
     """
     if target.dtype != torch.long:
-        raise TypeError(
-            f"Target tensor needs to be of type torch.long, found {target.dtype}")
+        raise TypeError(f"Target tensor needs to be of type torch.long, found {target.dtype}")
 
     if target.ndim in [0, 1]:
         return torch_one_hot(target, num_classes)
@@ -35,6 +34,5 @@ def one_hot_batch(target: torch.Tensor,
         _dtype, device, shape = target.dtype, target.device, target.shape
         if dtype is None:
             dtype = _dtype
-        target_onehot = torch.zeros(shape[0], num_classes, *shape[2:],
-                                    dtype=dtype, device=device)
+        target_onehot = torch.zeros(shape[0], num_classes, *shape[2:], dtype=dtype, device=device)
         return target_onehot.scatter_(1, target, 1.0)

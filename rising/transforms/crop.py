@@ -10,9 +10,9 @@ __all__ = ["CenterCrop", "RandomCrop"]
 
 
 class CenterCrop(BaseTransform):
-    def __init__(self, size: Union[int, Sequence, AbstractParameter],
-                 keys: Sequence = ('data',),
-                 grad: bool = False, **kwargs):
+    def __init__(
+        self, size: Union[int, Sequence, AbstractParameter], keys: Sequence = ("data",), grad: bool = False, **kwargs
+    ):
         """
         Args:
             size: size of crop
@@ -20,15 +20,18 @@ class CenterCrop(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=center_crop, keys=keys,
-                         grad=grad, property_names=('size', ), size=size,
-                         **kwargs)
+        super().__init__(augment_fn=center_crop, keys=keys, grad=grad, property_names=("size",), size=size, **kwargs)
 
 
 class RandomCrop(BaseTransformSeeded):
-    def __init__(self, size: Union[int, Sequence, AbstractParameter],
-                 dist: Union[int, Sequence, AbstractParameter] = 0,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        size: Union[int, Sequence, AbstractParameter],
+        dist: Union[int, Sequence, AbstractParameter] = 0,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             size: size of crop
@@ -37,6 +40,12 @@ class RandomCrop(BaseTransformSeeded):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=random_crop,
-                         keys=keys, size=size, dist=dist, grad=grad,
-                         property_names=('size', 'dist'), **kwargs)
+        super().__init__(
+            augment_fn=random_crop,
+            keys=keys,
+            size=size,
+            dist=dist,
+            grad=grad,
+            property_names=("size", "dist"),
+            **kwargs
+        )

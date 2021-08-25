@@ -23,7 +23,7 @@ class TestSpatialFunctional(unittest.TestCase):
 
     @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
     def test_to_device_iterable(self):
-        outp = to_device_dtype((self.batch_2d, ), device=self.device)
+        outp = to_device_dtype((self.batch_2d,), device=self.device)
         self.assertEqual(outp[0].device, torch.device(self.device))
         self.assertIsInstance(outp, tuple)
 
@@ -33,5 +33,5 @@ class TestSpatialFunctional(unittest.TestCase):
         self.assertIsInstance(outp, str)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

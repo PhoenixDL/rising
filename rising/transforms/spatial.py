@@ -8,8 +8,7 @@ from torch.multiprocessing import Value
 from rising.random import AbstractParameter, DiscreteParameter
 from rising.transforms.abstract import AbstractTransform, BaseTransform
 
-__all__ = ["Mirror", "Rot90", "ResizeNative",
-           "Zoom", "ProgressiveResize", "SizeStepScheduler"]
+__all__ = ["Mirror", "Rot90", "ResizeNative", "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
 from rising.transforms.functional import mirror, resize_native, rot90
 
@@ -19,9 +18,14 @@ scheduler_type = Callable[[int], Union[int, Sequence[int]]]
 class Mirror(AbstractTransform):
     """Random mirror transform"""
 
-    def __init__(self, dims: Union[int, DiscreteParameter, Sequence[Union[int, DiscreteParameter]]],
-                 keys: Sequence[str] = ('data',), prob: float = 0.5,
-                 grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        dims: Union[int, DiscreteParameter, Sequence[Union[int, DiscreteParameter]]],
+        keys: Sequence[str] = ("data",),
+        prob: float = 0.5,
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             dims: axes which should be mirrored
@@ -67,10 +71,15 @@ class Mirror(AbstractTransform):
 class Rot90(AbstractTransform):
     """Rotate 90 degree around dims"""
 
-    def __init__(self, dims: Union[Sequence[int], DiscreteParameter],
-                 keys: Sequence[str] = ('data',),
-                 num_rots: Sequence[int] = (0, 1, 2, 3),
-                 prob: float = 0.5, grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        dims: Union[Sequence[int], DiscreteParameter],
+        keys: Sequence[str] = ("data",),
+        num_rots: Sequence[int] = (0, 1, 2, 3),
+        prob: float = 0.5,
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             dims: dims/axis ro rotate. If more than two dims are
@@ -118,9 +127,16 @@ class Rot90(AbstractTransform):
 class ResizeNative(BaseTransform):
     """Resize data to given size"""
 
-    def __init__(self, size: Union[int, Sequence[int]], mode: str = 'nearest',
-                 align_corners: Optional[bool] = None, preserve_range: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        size: Union[int, Sequence[int]],
+        mode: str = "nearest",
+        align_corners: Optional[bool] = None,
+        preserve_range: bool = False,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             size: spatial output size (excluding batch size and
@@ -136,21 +152,34 @@ class ResizeNative(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=resize_native, size=size, mode=mode,
-                         align_corners=align_corners, preserve_range=preserve_range,
-                         keys=keys, grad=grad, **kwargs)
+        super().__init__(
+            augment_fn=resize_native,
+            size=size,
+            mode=mode,
+            align_corners=align_corners,
+            preserve_range=preserve_range,
+            keys=keys,
+            grad=grad,
+            **kwargs
+        )
 
 
 class Zoom(BaseTransform):
     """Apply augment_fn to keys. By default the scaling factor is sampled
-       from a uniform distribution with the range specified by
-       :attr:`random_args`
+    from a uniform distribution with the range specified by
+    :attr:`random_args`
     """
 
-    def __init__(self, scale_factor: Union[Sequence, AbstractParameter] = (0.75, 1.25),
-                 mode: str = 'nearest', align_corners: bool = None,
-                 preserve_range: bool = False, keys: Sequence = ('data',),
-                 grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        scale_factor: Union[Sequence, AbstractParameter] = (0.75, 1.25),
+        mode: str = "nearest",
+        align_corners: bool = None,
+        preserve_range: bool = False,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             scale_factor: positional arguments passed for random function.
@@ -171,18 +200,32 @@ class Zoom(BaseTransform):
         See Also:
             :func:`random.uniform`, :func:`torch.nn.functional.interpolate`
         """
-        super().__init__(augment_fn=resize_native, scale_factor=scale_factor,
-                         mode=mode, align_corners=align_corners,
-                         preserve_range=preserve_range, keys=keys, grad=grad,
-                         property_names=('scale_factor',), **kwargs)
+        super().__init__(
+            augment_fn=resize_native,
+            scale_factor=scale_factor,
+            mode=mode,
+            align_corners=align_corners,
+            preserve_range=preserve_range,
+            keys=keys,
+            grad=grad,
+            property_names=("scale_factor",),
+            **kwargs
+        )
 
 
 class ProgressiveResize(ResizeNative):
     """Resize data to sizes specified by scheduler"""
 
-    def __init__(self, scheduler: scheduler_type, mode: str = 'nearest',
-                 align_corners: bool = None, preserve_range: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        scheduler: scheduler_type,
+        mode: str = "nearest",
+        align_corners: bool = None,
+        preserve_range: bool = False,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             scheduler: scheduler which determined the current size.
@@ -206,11 +249,17 @@ class ProgressiveResize(ResizeNative):
             As a result the step count my jump between values
             in a range of the number of processes used.
         """
-        super().__init__(size=0, mode=mode, align_corners=align_corners,
-                         preserve_range=preserve_range,
-                         keys=keys, grad=grad, **kwargs)
+        super().__init__(
+            size=0,
+            mode=mode,
+            align_corners=align_corners,
+            preserve_range=preserve_range,
+            keys=keys,
+            grad=grad,
+            **kwargs
+        )
         self.scheduler = scheduler
-        self._step = Value('i', 0)
+        self._step = Value("i", 0)
 
     def reset_step(self) -> ResizeNative:
         """
@@ -262,16 +311,14 @@ class ProgressiveResize(ResizeNative):
 class SizeStepScheduler:
     """Scheduler return size when milestone is reached"""
 
-    def __init__(self, milestones: Sequence[int],
-                 sizes: Union[Sequence[int], Sequence[Sequence[int]]]):
+    def __init__(self, milestones: Sequence[int], sizes: Union[Sequence[int], Sequence[Sequence[int]]]):
         """
         Args:
             milestones: contains number of iterations where size should be changed
             sizes: sizes corresponding to milestones
         """
         if len(milestones) != len(sizes) - 1:
-            raise TypeError("Sizes must include initial size and thus "
-                            "has one element more than miltstones.")
+            raise TypeError("Sizes must include initial size and thus " "has one element more than miltstones.")
         self.targets = sorted(zip((0, *milestones), sizes), key=lambda x: x[0], reverse=True)
 
     def __call__(self, step) -> Union[int, Sequence[int], Sequence[Sequence[int]]]:

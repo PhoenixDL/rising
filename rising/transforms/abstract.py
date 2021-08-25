@@ -4,8 +4,7 @@ import torch
 
 from rising.random import AbstractParameter, DiscreteParameter
 
-__all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform",
-           "PerChannelTransform", "BaseTransformSeeded"]
+__all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform", "PerChannelTransform", "BaseTransformSeeded"]
 
 augment_callable = Callable[[torch.Tensor], Any]
 augment_axis_callable = Callable[[torch.Tensor, Union[float, Sequence]], Any]
@@ -25,9 +24,7 @@ class AbstractTransform(torch.nn.Module):
         for key, item in kwargs.items():
             setattr(self, key, item)
 
-    def register_sampler(self, name: str,
-                         sampler: Union[Sequence, AbstractParameter],
-                         *args, **kwargs):
+    def register_sampler(self, name: str, sampler: Union[Sequence, AbstractParameter], *args, **kwargs):
         """
         Registers a parameter sampler to the transform.
         Internally a property is created to forward calls to the attribute to
@@ -44,7 +41,7 @@ class AbstractTransform(torch.nn.Module):
         """
         self._registered_samplers.append(name)
         if hasattr(self, name):
-            raise NameError('Name %s already exists' % name)
+            raise NameError("Name %s already exists" % name)
         if not isinstance(sampler, (tuple, list)):
             sampler = [sampler]
 
@@ -128,9 +125,15 @@ class BaseTransform(AbstractTransform):
         result in different augmentations per key.
     """
 
-    def __init__(self, augment_fn: augment_callable, *args,
-                 keys: Sequence = ('data',), grad: bool = False,
-                 property_names: Sequence[str] = (), **kwargs):
+    def __init__(
+        self,
+        augment_fn: augment_callable,
+        *args,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        property_names: Sequence[str] = (),
+        **kwargs
+    ):
         """
         Args:
             augment_fn: function for augmentation
@@ -242,9 +245,15 @@ class PerChannelTransform(BaseTransform):
         result in different augmentations per channel and key.
     """
 
-    def __init__(self, augment_fn: augment_callable, per_channel: bool = False,
-                 keys: Sequence = ('data',), grad: bool = False,
-                 property_names: Tuple[str] = (), **kwargs):
+    def __init__(
+        self,
+        augment_fn: augment_callable,
+        per_channel: bool = False,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        property_names: Tuple[str] = (),
+        **kwargs
+    ):
         """
         Args:
             augment_fn: function for augmentation
@@ -253,8 +262,7 @@ class PerChannelTransform(BaseTransform):
             grad: enable gradient computation inside transformation
             kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=augment_fn, keys=keys, grad=grad,
-                         property_names=property_names, **kwargs)
+        super().__init__(augment_fn=augment_fn, keys=keys, grad=grad, property_names=property_names, **kwargs)
         self.per_channel = per_channel
 
     def forward(self, **data) -> dict:
@@ -276,8 +284,7 @@ class PerChannelTransform(BaseTransform):
             for _key in self.keys:
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    out[:, _i] = self.augment_fn(data[_key][:, _i],
-                                                 out=out[:, _i], **kwargs)
+                    out[:, _i] = self.augment_fn(data[_key][:, _i], out=out[:, _i], **kwargs)
                 data[_key] = out
             return data
         else:

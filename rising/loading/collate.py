@@ -7,8 +7,8 @@ import torch
 __all__ = ["numpy_collate", "do_nothing_collate"]
 
 default_collate_err_msg_format = (
-    "default_collate: batch must contain tensors, numpy arrays, numbers, "
-    "dicts or lists; found {}")
+    "default_collate: batch must contain tensors, numpy arrays, numbers, " "dicts or lists; found {}"
+)
 
 
 def numpy_collate(batch: Any) -> Any:
@@ -40,7 +40,7 @@ def numpy_collate(batch: Any) -> Any:
         return batch
     elif isinstance(elem, collections.abc.Mapping):
         return {key: numpy_collate([d[key] for d in batch]) for key in elem}
-    elif isinstance(elem, tuple) and hasattr(elem, '_fields'):  # namedtuple
+    elif isinstance(elem, tuple) and hasattr(elem, "_fields"):  # namedtuple
         return type(elem)(*(numpy_collate(samples) for samples in zip(*batch)))
     elif isinstance(elem, collections.abc.Sequence):
         transposed = zip(*batch)

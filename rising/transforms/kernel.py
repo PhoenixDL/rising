@@ -16,10 +16,18 @@ class KernelTransform(AbstractTransform):
     each channel individually)
     """
 
-    def __init__(self, in_channels: int, kernel_size: Union[int, Sequence], dim: int = 2,
-                 stride: Union[int, Sequence] = 1, padding: Union[int, Sequence] = 0,
-                 padding_mode: str = 'zero', keys: Sequence = ('data',), grad: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        in_channels: int,
+        kernel_size: Union[int, Sequence],
+        dim: int = 2,
+        stride: Union[int, Sequence] = 1,
+        padding: Union[int, Sequence] = 0,
+        padding_mode: str = "zero",
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             in_channels: number of input channels
@@ -55,7 +63,7 @@ class KernelTransform(AbstractTransform):
         self.keys = keys
 
         kernel = self.create_kernel()
-        self.register_buffer('weight', kernel)
+        self.register_buffer("weight", kernel)
         self.groups = in_channels
         self.conv = self.get_conv(dim)
 
@@ -77,7 +85,7 @@ class KernelTransform(AbstractTransform):
         elif dim == 3:
             return torch.nn.functional.conv3d
         else:
-            raise TypeError('Only 1, 2 and 3 dimensions are supported. Received {}.'.format(dim))
+            raise TypeError("Only 1, 2 and 3 dimensions are supported. Received {}.".format(dim))
 
     def create_kernel(self) -> torch.Tensor:
         """
@@ -111,11 +119,19 @@ class GaussianSmoothing(KernelTransform):
     'gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10'
     """
 
-    def __init__(self, in_channels: int, kernel_size: Union[int, Sequence],
-                 std: Union[int, Sequence], dim: int = 2,
-                 stride: Union[int, Sequence] = 1, padding: Union[int, Sequence] = 0,
-                 padding_mode: str = 'reflect', keys: Sequence = ('data',), grad: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        in_channels: int,
+        kernel_size: Union[int, Sequence],
+        std: Union[int, Sequence],
+        dim: int = 2,
+        stride: Union[int, Sequence] = 1,
+        padding: Union[int, Sequence] = 0,
+        padding_mode: str = "reflect",
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             in_channels: number of input channels
@@ -136,8 +152,17 @@ class GaussianSmoothing(KernelTransform):
         if check_scalar(std):
             std = [std] * dim
         self.std = std
-        super().__init__(in_channels=in_channels, kernel_size=kernel_size, dim=dim, stride=stride,
-                         padding=padding, padding_mode=padding_mode, keys=keys, grad=grad, **kwargs)
+        super().__init__(
+            in_channels=in_channels,
+            kernel_size=kernel_size,
+            dim=dim,
+            stride=stride,
+            padding=padding,
+            padding_mode=padding_mode,
+            keys=keys,
+            grad=grad,
+            **kwargs
+        )
 
     def create_kernel(self) -> torch.Tensor:
         """
@@ -145,14 +170,11 @@ class GaussianSmoothing(KernelTransform):
         """
         # The gaussian kernel is the product of the gaussian function of each dimension.
         kernel = 1
-        meshgrids = torch.meshgrid([
-            torch.arange(size, dtype=torch.float32)
-            for size in self.kernel_size
-        ])
+        meshgrids = torch.meshgrid([torch.arange(size, dtype=torch.float32) for size in self.kernel_size])
 
         for size, std, mgrid in zip(self.kernel_size, self.std, meshgrids):
             mean = (size - 1) / 2
-            kernel *= 1 / (std * math.sqrt(2 * math.pi)) * torch.exp(-((mgrid - mean) / std) ** 2 / 2)
+            kernel *= 1 / (std * math.sqrt(2 * math.pi)) * torch.exp(-(((mgrid - mean) / std) ** 2) / 2)
 
         # Make sure sum of values in gaussian kernel equals 1.
         kernel = kernel / kernel.sum()

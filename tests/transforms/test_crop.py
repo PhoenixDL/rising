@@ -59,8 +59,7 @@ class TestCrop(unittest.TestCase):
     def test_center_crop_random_size_2_transform(self):
         for _ in range(10):
             random.seed(0)
-            trafo = CenterCrop([DiscreteParameter([3, 4, 5]),
-                                DiscreteParameter([6, 7, 8])])
+            trafo = CenterCrop([DiscreteParameter([3, 4, 5]), DiscreteParameter([6, 7, 8])])
             crop = trafo(**self.batch)["data"]
 
             random.seed(0)
@@ -71,5 +70,5 @@ class TestCrop(unittest.TestCase):
             self.assertSequenceEqual(crop.shape[2:], s)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

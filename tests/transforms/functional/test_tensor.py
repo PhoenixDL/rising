@@ -26,5 +26,5 @@ class TestSpatialFunctional(unittest.TestCase):
         self.assertIsInstance(outp, str)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

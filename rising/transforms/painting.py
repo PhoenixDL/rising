@@ -9,11 +9,10 @@ __all__ = ["RandomInpainting", "RandomOutpainting", "RandomInOrOutpainting", "Lo
 
 
 class LocalPixelShuffle(BaseTransform):
-    """ Shuffels Pixels locally in n patches,
-    as proposed in Models Genesis """
+    """Shuffels Pixels locally in n patches,
+    as proposed in Models Genesis"""
 
-    def __init__(self, n: int = -1,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(self, n: int = -1, keys: Sequence = ("data",), grad: bool = False, **kwargs):
         """
         Args:
             n: number of local patches to shuffle, default = 1000*channels
@@ -21,17 +20,16 @@ class LocalPixelShuffle(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=local_pixel_shuffle, n=n,
-                         keys=keys, grad=grad, **kwargs)
+        super().__init__(augment_fn=local_pixel_shuffle, n=n, keys=keys, grad=grad, **kwargs)
 
 
 class RandomInpainting(BaseTransform):
-    """ In n local areas, the image is replaced by uniform noise in range (minv, maxv),
-    as proposed in Models Genesis """
+    """In n local areas, the image is replaced by uniform noise in range (minv, maxv),
+    as proposed in Models Genesis"""
 
-    def __init__(self, n: int = 5,
-                 maxv: float = 1.0, minv: float = 0.0,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(
+        self, n: int = 5, maxv: float = 1.0, minv: float = 0.0, keys: Sequence = ("data",), grad: bool = False, **kwargs
+    ):
         """
         Args:
             minv, maxv: range of uniform noise
@@ -40,16 +38,22 @@ class RandomInpainting(BaseTransform):
             grad: enable gradient computation inside transformation
             **kwargs: keyword arguments passed to augment_fn
         """
-        super().__init__(augment_fn=random_inpainting, n=n, maxv=maxv, minv=minv,
-                         keys=keys, grad=grad, **kwargs)
+        super().__init__(augment_fn=random_inpainting, n=n, maxv=maxv, minv=minv, keys=keys, grad=grad, **kwargs)
 
 
 class RandomOutpainting(AbstractTransform):
-    """ The border of the images will be replaced by uniform noise,
-    as proposed in Models Genesis """
+    """The border of the images will be replaced by uniform noise,
+    as proposed in Models Genesis"""
 
-    def __init__(self, prob: float = 0.5, maxv: float = 1.0, minv: float = 0.0,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        prob: float = 0.5,
+        maxv: float = 1.0,
+        minv: float = 0.0,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             minv, maxv: range of uniform noise
@@ -73,11 +77,18 @@ class RandomOutpainting(AbstractTransform):
 
 class RandomInOrOutpainting(AbstractTransform):
     """Applies either random inpainting or random outpainting to the image,
-    as proposed in Models Genesis """
+    as proposed in Models Genesis"""
 
-    def __init__(self, prob: float = 0.5, n: int = 5,
-                 maxv: float = 1.0, minv: float = 0.0,
-                 keys: Sequence = ('data',), grad: bool = False, **kwargs):
+    def __init__(
+        self,
+        prob: float = 0.5,
+        n: int = 5,
+        maxv: float = 1.0,
+        minv: float = 0.0,
+        keys: Sequence = ("data",),
+        grad: bool = False,
+        **kwargs
+    ):
         """
         Args:
             minv, maxv: range of uniform noise

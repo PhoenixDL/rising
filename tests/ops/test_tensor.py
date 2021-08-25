@@ -26,5 +26,5 @@ class TestOneHot(unittest.TestCase):
         self.assertTrue((expected_onehot == target_onehot).all())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

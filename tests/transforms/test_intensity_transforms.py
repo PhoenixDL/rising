@@ -1,7 +1,7 @@
 import random
 import unittest
 from math import isclose
-from unittest.mock import call, Mock
+from unittest.mock import Mock, call
 
 import torch
 
@@ -30,7 +30,7 @@ class MyTestCase(unittest.TestCase):
         self.batch_dict = {
             "data": torch.arange(1, 10).reshape(1, 1, 3, 3).float(),
             "seg": torch.rand(1, 1, 3, 3),
-            "label": torch.arange(3)
+            "label": torch.arange(3),
         }
 
     def test_clamp_transform(self):
@@ -60,8 +60,8 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
         outp = trafo(**self.batch_dict)
-        self.assertTrue(isclose(outp["data"].min().item(), 0., abs_tol=1e-6))
-        self.assertTrue(isclose(outp["data"].max().item(), 1., abs_tol=1e-6))
+        self.assertTrue(isclose(outp["data"].min().item(), 0.0, abs_tol=1e-6))
+        self.assertTrue(isclose(outp["data"].max().item(), 1.0, abs_tol=1e-6))
 
     def test_norm_zero_mean_transform(self):
         trafo = NormZeroMeanUnitStd(per_channel=False)
@@ -71,8 +71,8 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
         outp = trafo(**self.batch_dict)
-        self.assertTrue(isclose(outp["data"].mean().item(), 0., abs_tol=1e-6))
-        self.assertTrue(isclose(outp["data"].std().item(), 1., abs_tol=1e-6))
+        self.assertTrue(isclose(outp["data"].mean().item(), 0.0, abs_tol=1e-6))
+        self.assertTrue(isclose(outp["data"].std().item(), 1.0, abs_tol=1e-6))
 
     def test_norm_std_transform(self):
         mean = self.batch_dict["data"].mean().item()
@@ -84,11 +84,11 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
         outp = trafo(**self.batch_dict)
-        self.assertTrue(isclose(outp["data"].mean().item(), 0., abs_tol=1e-6))
-        self.assertTrue(isclose(outp["data"].std().item(), 1., abs_tol=1e-6))
+        self.assertTrue(isclose(outp["data"].mean().item(), 0.0, abs_tol=1e-6))
+        self.assertTrue(isclose(outp["data"].std().item(), 1.0, abs_tol=1e-6))
 
     def test_noise_transform(self):
-        trafo = Noise('normal', mean=75, std=1)
+        trafo = Noise("normal", mean=75, std=1)
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
         self.check_noise_distance(trafo)
 
@@ -115,12 +115,15 @@ class MyTestCase(unittest.TestCase):
             return mock(inp)
 
         trafo = RandomValuePerChannel(
-            augment_fn, random_sampler=DiscreteParameter((1,)),
-            per_channel=True, keys=('label',))
+            augment_fn, random_sampler=DiscreteParameter((1,)), per_channel=True, keys=("label",)
+        )
         self.batch_dict["label"] = self.batch_dict["label"][None]
         output = trafo(**self.batch_dict)
-        calls = [call(torch.tensor([0])), call(torch.tensor([1])),
-                 call(torch.tensor([2])), ]
+        calls = [
+            call(torch.tensor([0])),
+            call(torch.tensor([1])),
+            call(torch.tensor([2])),
+        ]
         mock.assert_has_calls(calls)
 
     def test_random_add_value(self):
@@ -128,7 +131,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
         outp = trafo(**self.batch_dict)
-        expected_out = self.batch_dict["data"] + 2.
+        expected_out = self.batch_dict["data"] + 2.0
         self.assertTrue((outp["data"] == expected_out).all())
 
     def test_random_scale_value(self):
@@ -136,7 +139,7 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(chech_data_preservation(trafo, self.batch_dict))
 
         outp = trafo(**self.batch_dict)
-        expected_out = self.batch_dict["data"] * 2.
+        expected_out = self.batch_dict["data"] * 2.0
         self.assertTrue((outp["data"] == expected_out).all())
 
     def test_gamma_transform_scalar(self):
@@ -149,5 +152,5 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue((outp["data"] == expected_out).all())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
