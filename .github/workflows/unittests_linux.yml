@@ -1,9 +1,6 @@
 name: Unittests Linux
 
-on:  # Trigger the workflow on push or pull request, but only for the main branch
-  push:
-    branches: [master]
-  pull_request: {}
+on:  [push, pull_request] # Trigger the workflow on push or pull request
 
 jobs:
   build:
