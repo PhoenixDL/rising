@@ -446,6 +446,7 @@ def affine_image_transform(
             pixels. If set to False, they are instead considered as referring
             to the corner points of the input’s corner pixels,
             making the sampling more resolution agnostic.
+        reverse_order: todo to add the specific details.
 
     Returns:
         torch.Tensor: transformed image

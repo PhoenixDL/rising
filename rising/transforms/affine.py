@@ -2,7 +2,8 @@ from typing import Any, Optional, Sequence, Tuple, Union
 
 import torch
 
-from rising.transforms.abstract import BaseTransform
+from rising.transforms.abstract import BaseTransform, item_or_sequence
+from rising.transforms.format import ntuple
 from rising.transforms.functional.affine import AffineParamType, affine_image_transform, parametrize_matrix
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 from rising.utils.checktype import check_scalar
@@ -32,9 +33,9 @@ class Affine(BaseTransform):
         grad: bool = False,
         output_size: Optional[tuple] = None,
         adjust_size: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         reverse_order: bool = False,
         per_sample: bool = True,
         **kwargs,
@@ -73,12 +74,14 @@ class Affine(BaseTransform):
                 affine transform
         """
         super().__init__(augment_fn=affine_image_transform, keys=keys, grad=grad, **kwargs)
+        self._tuple_generator = ntuple(len(self.keys))
+
         self.matrix = matrix
         self.register_sampler("output_size", output_size)
         self.adjust_size = adjust_size
-        self.interpolation_mode = interpolation_mode
-        self.padding_mode = padding_mode
-        self.align_corners = align_corners
+        self.interpolation_mode = self._tuple_generator(interpolation_mode)
+        self.padding_mode = self._tuple_generator(padding_mode)
+        self.align_corners = self._tuple_generator(align_corners)
         self.reverse_order = reverse_order
         self.per_sample = per_sample
 
@@ -130,15 +133,16 @@ class Affine(BaseTransform):
         """
         matrix = self.assemble_matrix(**data)
 
-        for key in self.keys:
+        for key, interpolation, padding, align_corners in zip(
+            self.keys, self.interpolation_mode, self.padding_mode, self.align_corners):
             data[key] = self.augment_fn(
                 data[key],
                 matrix_batch=matrix,
                 output_size=self.output_size,
                 adjust_size=self.adjust_size,
-                interpolation_mode=self.interpolation_mode,
-                padding_mode=self.padding_mode,
-                align_corners=self.align_corners,
+                interpolation_mode=interpolation,  # this can be different
+                padding_mode=padding,  # this can be different
+                align_corners=align_corners,  # this can be different
                 reverse_order=self.reverse_order,
                 **self.kwargs,
             )
@@ -232,9 +236,9 @@ class StackedAffine(Affine):
         grad: bool = False,
         output_size: Optional[tuple] = None,
         adjust_size: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         reverse_order: bool = False,
         **kwargs,
     ):
@@ -332,9 +336,9 @@ class BaseAffine(Affine):
         grad: bool = False,
         output_size: Optional[tuple] = None,
         adjust_size: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         reverse_order: bool = False,
         per_sample: bool = True,
         **kwargs,
@@ -476,9 +480,9 @@ class Rotate(BaseAffine):
         degree: bool = False,
         output_size: Optional[tuple] = None,
         adjust_size: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         reverse_order: bool = False,
         **kwargs,
     ):
@@ -552,9 +556,9 @@ class Translate(BaseAffine):
         grad: bool = False,
         output_size: Optional[tuple] = None,
         adjust_size: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         unit: str = "pixel",
         reverse_order: bool = False,
         **kwargs,
@@ -647,9 +651,9 @@ class Scale(BaseAffine):
         grad: bool = False,
         output_size: Optional[tuple] = None,
         adjust_size: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         reverse_order: bool = False,
         **kwargs,
     ):
@@ -718,11 +722,11 @@ class Resize(Scale):
     def __init__(
         self,
         size: Union[int, Tuple[int]],
-        keys: Sequence = ("data",),
+        keys: Sequence[str] = ("data",),
         grad: bool = False,
-        interpolation_mode: str = "bilinear",
-        padding_mode: str = "zeros",
-        align_corners: bool = False,
+        interpolation_mode: item_or_sequence[str] = "bilinear",
+        padding_mode: item_or_sequence[str] = "zeros",
+        align_corners: item_or_sequence[bool] = False,
         reverse_order: bool = False,
         **kwargs,
     ):

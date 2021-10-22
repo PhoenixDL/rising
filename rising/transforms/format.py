@@ -1,10 +1,15 @@
+import collections
+from itertools import repeat
 from typing import Callable, Dict, Hashable, Mapping, Sequence, Tuple, Union
 
-from rising.transforms.functional.utility import filter_keys, pop_keys
+import numpy as np
+from torch import Tensor
 
+from rising.transforms.functional.utility import filter_keys, pop_keys
 from .abstract import AbstractTransform
 
-__all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys", "RenameKeys"]
+__all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys", "RenameKeys", "ntuple", "single", "pair", "triple",
+           "quadruple"]
 
 
 class MapToSeq(AbstractTransform):
@@ -127,3 +132,27 @@ class RenameKeys(AbstractTransform):
         for old_key, new_key in self.keys.items():
             data[new_key] = data.pop(old_key)
         return data
+
+
+def ntuple(n):
+    def parse(x):
+        if isinstance(x, (Tensor, np.ndarray, str)):
+            return tuple(repeat(x, n))
+        if isinstance(x, collections.abc.Iterable):
+            item_list = list(x)
+            if len(item_list) == n:
+                return item_list
+            if len(item_list) == 1:
+                return tuple(repeat(item_list[0], n))
+            if len(list(x)) != n:
+                raise RuntimeError(f"Iterable shape inconsistent, n = {n}, given {len(list(x))}")
+
+        return tuple(repeat(x, n))
+
+    return parse
+
+
+single = ntuple(1)
+pair = ntuple(2)
+triple = ntuple(3)
+quadruple = ntuple(4)
