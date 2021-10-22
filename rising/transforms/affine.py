@@ -131,7 +131,8 @@ class Affine(BaseTransform):
         matrix = self.assemble_matrix(**data)
 
         for key, interpolation, padding, align_corners in zip(
-            self.keys, self.interpolation_mode, self.padding_mode, self.align_corners):
+            self.keys, self.interpolation_mode, self.padding_mode, self.align_corners
+        ):
             data[key] = self.augment_fn(
                 data[key],
                 matrix_batch=matrix,

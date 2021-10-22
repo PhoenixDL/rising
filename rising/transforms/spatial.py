@@ -10,8 +10,8 @@ from rising.transforms.abstract import AbstractTransform, BaseTransform
 
 __all__ = ["Mirror", "Rot90", "ResizeNative", "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
-from rising.transforms.functional import mirror, resize_native, rot90
 from rising.transforms.abstract import item_or_sequence
+from rising.transforms.functional import mirror, resize_native, rot90
 
 scheduler_type = Callable[[int], Union[int, Sequence[int]]]
 
@@ -177,8 +177,7 @@ class ResizeNative(BaseTransform):
             dict: dictionary containing the transformed data
         """
 
-        for key, mode, align_corners in zip(
-            self.keys, self.mode, self.align_corners):
+        for key, mode, align_corners in zip(self.keys, self.mode, self.align_corners):
             data[key] = self.augment_fn(
                 data[key],
                 size=self.size,

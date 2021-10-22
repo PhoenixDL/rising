@@ -1,4 +1,4 @@
-from typing import Any, Callable, Sequence, Tuple, Union, TypeVar
+from typing import Any, Callable, Sequence, Tuple, TypeVar, Union
 
 import torch
 
@@ -204,7 +204,7 @@ class BaseTransformSeeded(BaseTransform):
 
         seed = torch.random.get_rng_state()
         for _key in self.keys:
-            torch.random.set_rng_state(seed)  # noqa
+            torch.random.set_rng_state(seed)
             data[_key] = self.augment_fn(data[_key], *self.args, **kwargs)
         return data
 
@@ -236,7 +236,7 @@ class PerSampleTransform(BaseTransform):
         for _key in self.keys:
             out = torch.empty_like(data[_key])
             for _i in range(data[_key].shape[0]):
-                out[_i] = self.augment_fn(data[_key][_i], out=out[_i], **kwargs)  # noqa
+                out[_i] = self.augment_fn(data[_key][_i], out=out[_i], **kwargs)
             data[_key] = out
         return data
 
@@ -289,7 +289,7 @@ class PerChannelTransform(BaseTransform):
             for _key in self.keys:
                 out = torch.empty_like(data[_key])
                 for _i in range(data[_key].shape[1]):
-                    out[:, _i] = self.augment_fn(data[_key][:, _i], out=out[:, _i], **kwargs)  # noqa
+                    out[:, _i] = self.augment_fn(data[_key][:, _i], out=out[:, _i], **kwargs)
                 data[_key] = out
             return data
         else:

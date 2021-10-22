@@ -6,10 +6,21 @@ import numpy as np
 from torch import Tensor
 
 from rising.transforms.functional.utility import filter_keys, pop_keys
+
 from .abstract import AbstractTransform
 
-__all__ = ["MapToSeq", "SeqToMap", "PopKeys", "FilterKeys", "RenameKeys", "ntuple", "single", "pair", "triple",
-           "quadruple"]
+__all__ = [
+    "MapToSeq",
+    "SeqToMap",
+    "PopKeys",
+    "FilterKeys",
+    "RenameKeys",
+    "ntuple",
+    "single",
+    "pair",
+    "triple",
+    "quadruple",
+]
 
 
 class MapToSeq(AbstractTransform):
