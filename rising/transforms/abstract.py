@@ -3,6 +3,7 @@ from typing import Any, Callable, Sequence, Tuple, Union, TypeVar
 import torch
 
 from rising.random import AbstractParameter, DiscreteParameter
+from rising.transforms.format import ntuple
 
 __all__ = ["AbstractTransform", "BaseTransform", "PerSampleTransform", "PerChannelTransform", "BaseTransformSeeded"]
 
@@ -156,6 +157,7 @@ class BaseTransform(AbstractTransform):
         self.kwargs = kwargs
         for name, val in zip(property_names, sampler_vals):
             self.register_sampler(name, val)
+        self._tuple_generator = ntuple(len(self.keys))
 
     def forward(self, **data) -> dict:
         """

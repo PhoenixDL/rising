@@ -1,6 +1,6 @@
 # from __future__ import annotations
 from itertools import combinations
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Sequence, Union
 
 import torch
 from torch.multiprocessing import Value
@@ -11,6 +11,7 @@ from rising.transforms.abstract import AbstractTransform, BaseTransform
 __all__ = ["Mirror", "Rot90", "ResizeNative", "Zoom", "ProgressiveResize", "SizeStepScheduler"]
 
 from rising.transforms.functional import mirror, resize_native, rot90
+from rising.transforms.abstract import item_or_sequence
 
 scheduler_type = Callable[[int], Union[int, Sequence[int]]]
 
@@ -130,10 +131,10 @@ class ResizeNative(BaseTransform):
     def __init__(
         self,
         size: Union[int, Sequence[int]],
-        mode: str = "nearest",
-        align_corners: Optional[bool] = None,
+        mode: item_or_sequence[str] = "nearest",
+        align_corners: item_or_sequence[bool] = None,
         preserve_range: bool = False,
-        keys: Sequence = ("data",),
+        keys: Sequence[str] = ("data",),
         grad: bool = False,
         **kwargs
     ):
@@ -143,10 +144,10 @@ class ResizeNative(BaseTransform):
                 number of channels)
             mode: one of ``nearest``, ``linear``, ``bilinear``, ``bicubic``,
                 ``trilinear``, ``area`` (for more inforamtion see
-                :func:`torch.nn.functional.interpolate`)
+                :func:`torch.nn.functional.interpolate`) or their sequence, for different keys.
             align_corners: input and output tensors are aligned by the center \
                 points of their corners pixels, preserving the values at the
-                corner pixels.
+                corner pixels. Input can be sequence, for different keys.
             preserve_range: output tensor has same range as input tensor
             keys: keys which should be augmented
             grad: enable gradient computation inside transformation
@@ -162,6 +163,31 @@ class ResizeNative(BaseTransform):
             grad=grad,
             **kwargs
         )
+        self.align_corners = self._tuple_generator(align_corners)
+        self.mode = self._tuple_generator(mode)
+
+    def forward(self, **data) -> dict:
+        """
+        calling interpolate function by passing the right parameters
+
+        Args:
+            **data: the data to transform
+
+        Returns:
+            dict: dictionary containing the transformed data
+        """
+
+        for key, mode, align_corners in zip(
+            self.keys, self.mode, self.align_corners):
+            data[key] = self.augment_fn(
+                data[key],
+                size=self.size,
+                mode=mode,
+                align_corners=align_corners,
+                preserve_range=self.preserve_range,
+            )
+
+        return data
 
 
 class Zoom(BaseTransform):
@@ -219,8 +245,8 @@ class ProgressiveResize(ResizeNative):
     def __init__(
         self,
         scheduler: scheduler_type,
-        mode: str = "nearest",
-        align_corners: bool = None,
+        mode: item_or_sequence[str] = "nearest",
+        align_corners: item_or_sequence[bool] = None,
         preserve_range: bool = False,
         keys: Sequence = ("data",),
         grad: bool = False,

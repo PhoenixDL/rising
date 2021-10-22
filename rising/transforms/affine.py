@@ -3,7 +3,6 @@ from typing import Any, Optional, Sequence, Tuple, Union
 import torch
 
 from rising.transforms.abstract import BaseTransform, item_or_sequence
-from rising.transforms.format import ntuple
 from rising.transforms.functional.affine import AffineParamType, affine_image_transform, parametrize_matrix
 from rising.utils.affine import matrix_to_cartesian, matrix_to_homogeneous
 from rising.utils.checktype import check_scalar
@@ -74,8 +73,6 @@ class Affine(BaseTransform):
                 affine transform
         """
         super().__init__(augment_fn=affine_image_transform, keys=keys, grad=grad, **kwargs)
-        self._tuple_generator = ntuple(len(self.keys))
-
         self.matrix = matrix
         self.register_sampler("output_size", output_size)
         self.adjust_size = adjust_size
