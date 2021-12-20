@@ -1,16 +1,18 @@
-cff-version: 1.1.0
-message: "If you use this software, please cite it as below."
+cff-version: 1.2.0
+title: >-
+  PhoenixDL/rising: High-Performance Differentiable
+  Medical Data Augmentation
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
 authors:
-  - family-names: Schock
-    given-names: Justus
-    orcid: https://orcid.org/0000-0003-0512-3053
-    affiliation: "Contributed Equally"
-  - family-names: Baumgartner
-    given-names: Michael
-    affiliation: "Contributed Equally"
-  - family-names: Weninger
-    given-names: Leon
-    
-title: PhoenixDL/rising: High-Performance Differentiable Medical Data Augmentation
-date-released: 2017-12-18
-            
+  - given-names: Justus
+    family-names: Schock
+    affiliation: Contributed Equally
+    orcid: 'https://orcid.org/0000-0003-0512-3053'
+  - given-names: Michael
+    family-names: Baumgartner
+    affiliation: Contributed Equally
+  - given-names: Leon
+    family-names: Weninger
