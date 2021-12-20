@@ -7,7 +7,7 @@
 ![PyPI - License](https://img.shields.io/pypi/l/rising)
 [![Chat](https://img.shields.io/badge/Slack-PhoenixDL-orange)](https://join.slack.com/t/phoenixdl/shared_invite/enQtODgwODI0MTE1MjgzLTJkZDE4N2NhM2VmNzVhYTEyMzI3NzFmMDY0NjM3MzJlZWRmMTk5ZWM1YzY2YjY5ZGQ1NWI1YmJmOTdiYTdhYTE)
 [![Documentation Status](https://readthedocs.org/projects/rising/badge/?version=latest)](https://rising.readthedocs.io/en/latest/?badge=latest)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PhoenixDL/rising/master.svg)](https://results.pre-commit.ci/latest/github/PhoenixDL/rising/master)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PhoenixDL/rising/master.svg)](https://results.pre-commit.ci/latest/github/PhoenixDL/rising/master)[![DOI](https://zenodo.org/badge/222287924.svg)](https://zenodo.org/badge/latestdoi/222287924)
 
 </div>
 
