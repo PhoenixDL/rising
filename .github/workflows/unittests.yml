@@ -1,4 +1,4 @@
-name: Unittests Linux
+name: Unittests
 
 on:  [push, pull_request] # Trigger the workflow on push or pull request
 
@@ -9,11 +9,10 @@ jobs:
       max-parallel: 4
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.7, 3.8]
-        pytorch-version: [1.3, 1.5] # test on minimal and latest version
+        python-version: [3.8, 3.9, 3.10]
+        pytorch-version: [1.5, 1.13] # test on minimal and latest version
         exclude: # no pip wheel for torch=1.3 with py3.8
           - python-version: 3.8
-            pytorch-version: 1.3
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
