@@ -1,4 +1,5 @@
 import unittest
+from functools import partial
 from typing import Mapping, Sequence
 from unittest.mock import Mock, patch
 
@@ -15,7 +16,17 @@ from rising.loading.loader import (
     _SingleProcessDataLoaderIter,
     default_transform_call,
 )
-from rising.transforms import Mirror
+from rising.transforms import Mirror, BaseTransform, Compose, ToDevice
+
+
+def check_on_device(x: torch.Tensor, device: str):
+    assert x.device.kind == device
+    return x
+
+
+class DeviceChecker(BaseTransform):
+    def __init__(self, device: str, keys=('data',)):
+        super().__init__(augment_fn=partial(check_on_device, device=device), keys=keys)
 
 
 class TestLoader(unittest.TestCase):
@@ -73,6 +84,28 @@ class TestLoader(unittest.TestCase):
         outp = next(iterator)
         expected = data[None].flip([2]).to(device=device)
         self.assertTrue(torch.allclose(outp["data"], expected))
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_data_moved_to_gpu(self):
+        data = [
+           {'data': 1, 'label': 1},
+           {'data': 2, 'label': 2},
+           {'data': 3, 'label': 3}
+        ]
+        loader = DataLoader(data, gpu_transforms=Compose[DeviceChecker(keys=("data",), device="cuda"), DeviceChecker(keys=("label",), device="cpu")])
+        for x in loader:
+            pass
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_label_and_data_moved_to_gpu(self):
+        data = [
+            {'data': 1, 'label': 1},
+            {'data': 2, 'label': 2},
+            {'data': 3, 'label': 3}
+        ]
+        loader = DataLoader(data, gpu_transforms=DeviceChecker(keys=("data", "label"), device="cuda"), to_gpu_trafo=ToDevice(device="cuda", keys=("data", "label")))
+        for x in loader:
+            pass
 
 
 class BatchTransformerTest(unittest.TestCase):

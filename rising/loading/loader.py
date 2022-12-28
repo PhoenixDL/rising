@@ -103,6 +103,7 @@ class DataLoader(_DataLoader):
         multiprocessing_context=None,
         auto_convert: bool = True,
         transform_call: Callable[[Any, Callable], Any] = default_transform_call,
+        to_gpu_trafo: Optional[ToDevice] = None,
         **kwargs
     ):
         """
@@ -161,6 +162,7 @@ class DataLoader(_DataLoader):
             transform_call: function which determines how transforms are
                 called. By default Mappings and Sequences are unpacked during
                 the transform.
+            to_gpu_trafo: if set to ``None``, only 'data' key will be moved to gpu.
         """
         super().__init__(
             dataset=dataset,
@@ -194,7 +196,7 @@ class DataLoader(_DataLoader):
             if device is None:
                 device = torch.cuda.current_device()
 
-            to_gpu_trafo = ToDevice(device=device, non_blocking=pin_memory)
+            to_gpu_trafo = to_gpu_trafo or ToDevice(device=device, non_blocking=pin_memory)
 
             gpu_transforms = Compose(to_gpu_trafo, gpu_transforms)
             gpu_transforms = gpu_transforms.to(device)
