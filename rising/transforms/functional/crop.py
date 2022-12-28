@@ -62,7 +62,6 @@ def random_crop(
 
     Returns:
         torch.Tensor: cropped output
-        List[int]: top left corner used for crop
     """
     if check_scalar(dist):
         dist = [dist] * (data.ndim - 2)
