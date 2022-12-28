@@ -20,6 +20,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Get pip cache dir
+      if: runner.os != 'Windows'
       id: pip-cache
       run: echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
 
