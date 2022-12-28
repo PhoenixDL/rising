@@ -1,4 +1,4 @@
-sphinx>=2.0, <3.0
+sphinx
 recommonmark  # fails with badges
 nbsphinx
 pandoc
@@ -8,5 +8,5 @@ sphinxcontrib-fulltoc
 sphinxcontrib-mockautodoc
 git+https://github.com/PhoenixDL/rising_sphinx_theme.git
 sphinx-autodoc-typehints
-sphinx-paramlinks<0.4.0
+sphinx-paramlinks
 jupyter
