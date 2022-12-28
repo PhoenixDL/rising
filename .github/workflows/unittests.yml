@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.8", "3.9", "3.10"]
-  
+
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -36,7 +36,7 @@ jobs:
         pip install -U pip wheel;
         pip install -r requirements/install.txt -r requirements/install_async.txt -r requirements/unittests.txt --extra-index-url https://download.pytorch.org/whl/cpu;
         pip install --no-deps .
-        
+
     - name: Run Tests
       run: |
         coverage run -m unittest
