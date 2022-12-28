@@ -21,7 +21,7 @@ class TestSpatialTransforms(unittest.TestCase):
         }
 
     def test_mirror_transform(self):
-        trafo = Mirror((0, 1))
+        trafo = Mirror((0, 1), prob=1)
         outp = trafo(**self.batch_dict)
 
         self.assertTrue(outp["data"][0, 0].allclose(torch.tensor([[9, 8, 7], [6, 5, 4], [3, 2, 1]]).float()))

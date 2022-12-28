@@ -68,7 +68,7 @@ class AffineHelperTests(unittest.TestCase):
 
         for inp, exp in zip(inputs, expectations):
             with self.subTest(input=inp, expected=exp):
-                self.assertTrue(torch.allclose(points_to_cartesian(inp), exp))
+                self.assertTrue(torch.allclose(points_to_cartesian(inp), exp.to(torch.float)))
 
     def test_matrix_to_homogeneous(self):
         inputs = [

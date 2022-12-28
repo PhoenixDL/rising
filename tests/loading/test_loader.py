@@ -72,7 +72,7 @@ class TestLoader(unittest.TestCase):
         iterator = iter(loader)
         outp = next(iterator)
         expected = data[None].flip([2]).to(device=device)
-        self.assertTrue(outp["data"].allclose(expected))
+        self.assertTrue(torch.allclose(outp["data"], expected))
 
 
 class BatchTransformerTest(unittest.TestCase):

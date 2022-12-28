@@ -12,7 +12,7 @@ from rising.transforms.spatial import Mirror
 class TestCompose(unittest.TestCase):
     def setUp(self) -> None:
         self.batch = {"data": torch.rand(1, 1, 10, 10)}
-        self.transforms = [Mirror(dims=(0,)), Mirror(dims=(0,))]
+        self.transforms = [Mirror(dims=(0,), prob=1), Mirror(dims=(0,), prob=1)]
 
     def test_multiple_grad_context(self):
         aten = torch.rand(10, 10)
@@ -26,7 +26,7 @@ class TestCompose(unittest.TestCase):
     def test_compose_single(self):
         single_compose = Compose(self.transforms[0])
         outp = single_compose(**self.batch)
-        expected = Mirror(dims=(0,))(**self.batch)
+        expected = Mirror(dims=(0,), prob=1)(**self.batch)
         self.assertTrue((expected["data"] == outp["data"]).all())
 
     def test_compose_multiple(self):
@@ -105,7 +105,7 @@ class TestCompose(unittest.TestCase):
         self.assertIsInstance(compose.transforms[0].trafo, DummyTrafo)
 
     def test_one_of_no_weight(self):
-        trafo = Mirror((0,))
+        trafo = Mirror((0,), prob=1)
         comp = OneOf(trafo, trafo)
         out = comp(**self.batch)
         expected_out = trafo(**self.batch)
@@ -119,8 +119,8 @@ class TestCompose(unittest.TestCase):
     def test_one_of_weight(self):
         for weight in [[1.0, 0.0], torch.tensor([1.0, 0.0])]:
             with self.subTest(weight=weight):
-                trafo0 = Mirror((0,))
-                trafo1 = Mirror((1,))
+                trafo0 = Mirror((0,), prob=1)
+                trafo1 = Mirror((1,), prob=1)
                 comp = OneOf(trafo0, trafo1, weights=weight)
                 out = comp(**self.batch)
                 expected_out = trafo0(**self.batch)

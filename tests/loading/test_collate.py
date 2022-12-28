@@ -33,7 +33,7 @@ class TestCollate(unittest.TestCase):
         arr = [True, False]
         collated = numpy_collate(arr)
         self.assertTrue(all(collated == np.array(arr)))
-        self.assertEqual(collated.dtype, np.bool)
+        self.assertEqual(collated.dtype, np.dtype("bool"))
 
     @unittest.skipIf(np is None, "numpy is not available")
     def test_numpy_collate_str(self):
