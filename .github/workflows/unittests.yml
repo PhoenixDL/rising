@@ -25,6 +25,7 @@ jobs:
 
     - name: pip cache
       uses: actions/cache@v3
+      if: runner.os != 'windows-latest'
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
         key: ${{ runner.os }}-pip-py${{ matrix.python-version }}-${{ hashFiles('requirements/*.txt') }}
