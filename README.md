@@ -1,6 +1,7 @@
 <div align="center">
 
 ![logo](docs/source/images/logo/rising_logo.svg "rising")
+[![Unittests](https://github.com/PhoenixDL/rising/actions/workflows/unittests.yml/badge.svg)](https://github.com/PhoenixDL/rising/actions/workflows/unittests.yml)
 
 ![PyPI](https://img.shields.io/pypi/v/rising)
 [![codecov](https://codecov.io/gh/PhoenixDL/rising/branch/master/graph/badge.svg)](https://codecov.io/gh/PhoenixDL/rising)
@@ -10,12 +11,6 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/PhoenixDL/rising/master.svg)](https://results.pre-commit.ci/latest/github/PhoenixDL/rising/master)[![DOI](https://zenodo.org/badge/222287924.svg)](https://zenodo.org/badge/latestdoi/222287924)
 
 </div>
-
-| Python Version                                                    | Platform                                             | Unittests                                                                                         |
-| ----------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/Linux-blue)   | ![Unittests Linux](https://github.com/PhoenixDL/rising/workflows/Unittests%20Linux/badge.svg)     |
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/Windows-blue) | ![Unittests Windows](https://github.com/PhoenixDL/rising/workflows/Unittests%20Windows/badge.svg) |
-| ![Python](https://img.shields.io/badge/python-3.6/3.7/3.8-orange) | ![System](https://img.shields.io/badge/MacOS-blue)   | ![Unittests macOS](https://github.com/PhoenixDL/rising/workflows/Unittests%20MacOS/badge.svg)     |
 
 ## What is `rising`?
 
