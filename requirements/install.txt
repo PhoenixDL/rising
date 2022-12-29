@@ -3,3 +3,4 @@ torch>=1.6 # before 1.6 torch.searchsorted is not present
 threadpoolctl
 tqdm
 numpy
+lightning-utilities>=0.4.2, <0.5.0

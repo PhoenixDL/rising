@@ -93,6 +93,7 @@ class TestLoader(unittest.TestCase):
             gpu_transforms=Compose[
                 DeviceChecker(keys=("data",), device="cuda"), DeviceChecker(keys=("label",), device="cpu")
             ],
+            to_gpu_trafo=ToDevice(device="cuda", keys=("data",)),
         )
         for x in loader:
             pass
@@ -104,6 +105,16 @@ class TestLoader(unittest.TestCase):
             data,
             gpu_transforms=DeviceChecker(keys=("data", "label"), device="cuda"),
             to_gpu_trafo=ToDevice(device="cuda", keys=("data", "label")),
+        )
+        for x in loader:
+            pass
+
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_label_and_data_moved_to_gpu_default(self):
+        data = [{"data": 1, "label": 1}, {"data": 2, "label": 2}, {"data": 3, "label": 3}]
+        loader = DataLoader(
+            data,
+            gpu_transforms=DeviceChecker(keys=("data", "label"), device="cuda"),
         )
         for x in loader:
             pass

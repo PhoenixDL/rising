@@ -11,6 +11,7 @@ from torch.utils.data import Dataset, Sampler
 from torch.utils.data._utils.collate import default_convert
 from torch.utils.data.dataloader import _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
 from torch.utils.data.dataloader import _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter
+from typing_extensions import Protocol, Self, runtime_checkable
 
 try:
     import numpy as np
@@ -19,10 +20,39 @@ try:
 except ImportError:
     NUMPY_AVAILABLE = False
 
+from lightning_utilities.core.apply_func import apply_to_collection
+
 from rising.loading.collate import do_nothing_collate
-from rising.transforms import Compose, ToDevice
+from rising.transforms import AbstractTransform, Compose, ToDevice
 
 __all__ = ["DataLoader", "default_transform_call"]
+
+
+@runtime_checkable
+class _TensorLike(Protocol):
+    def to(
+        self, device: Optional[Union[str, torch.device]], dtype: Optional[Union[str, torch.dtype]], **kwargs
+    ) -> Self:
+        ...
+
+
+def _to_device(x: _TensorLike, device: Union[str, torch.device], **kwargs) -> _TensorLike:
+    return x.to(device, **kwargs)
+
+
+def _all_to_device(x: Any, device: Union[str, torch.device], **kwargs) -> Any:
+    return apply_to_collection(x, _TensorLike, _to_device, device=device, **kwargs)
+
+
+class _AllToDevice(AbstractTransform):
+    def __init__(self, device: Union[str, torch.device], **kwargs):
+        super().__init__(grad=True)
+
+        self.device = device
+        self.kwargs = kwargs
+
+    def forward(self, **data: Any) -> Any:
+        return _all_to_device(data, self.device, **self.kwargs)
 
 
 def default_transform_call(batch: Any, transform: Callable) -> Any:
@@ -160,9 +190,11 @@ class DataLoader(_DataLoader):
                 transformed to :class:`torch.Tensors`, if possible.
                 (default: ``True``)
             transform_call: function which determines how transforms are
-                called. By default Mappings and Sequences are unpacked during
+                called. By default, Mappings and Sequences are unpacked during
                 the transform.
-            to_gpu_trafo: if set to ``None``, only 'data' key will be moved to gpu.
+            to_gpu_trafo: if set to ``None``, all keys will be moved to gpu.
+                This may not be optimal in terms of performance,
+                but gives the best default in terms of flexibility.
         """
         super().__init__(
             dataset=dataset,
