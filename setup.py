@@ -49,7 +49,7 @@ setup(
     install_requires=requirements,
     extras_require={"async": requirements_async},
     tests_require=["coverage"],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     author=rising.__author__,
     author_email=rising.__author_email__,
     include_package_data=True,
