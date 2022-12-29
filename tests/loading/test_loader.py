@@ -20,6 +20,7 @@ from rising.transforms import BaseTransform, Compose, Mirror, ToDevice
 
 
 def check_on_device(x: torch.Tensor, device: str):
+    print(x.device.type, device)
     assert x.device.type == device
     return x
 
