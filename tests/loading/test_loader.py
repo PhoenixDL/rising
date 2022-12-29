@@ -52,7 +52,7 @@ class TestLoader(unittest.TestCase):
 
     def test_dataloader_np_import_error(self):
         with patch.dict("sys.modules", {"numpy": None}):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises((RuntimeError, ModuleNotFoundError)):
                 loader = DataLoader([0, 1, 2], num_workers=2)
                 iterator = iter(loader)
             self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
