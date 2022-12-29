@@ -228,7 +228,7 @@ class DataLoader(_DataLoader):
             if device is None:
                 device = torch.cuda.current_device()
 
-            to_gpu_trafo = to_gpu_trafo or ToDevice(device=device, non_blocking=pin_memory)
+            to_gpu_trafo = to_gpu_trafo or _AllToDevice(device=device, non_blocking=pin_memory)
 
             gpu_transforms = Compose(to_gpu_trafo, gpu_transforms)
             gpu_transforms = gpu_transforms.to(device)
