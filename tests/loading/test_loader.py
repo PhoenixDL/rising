@@ -50,17 +50,6 @@ class TestLoader(unittest.TestCase):
             self.assertEqual(output_return, expected_return)
             worker_init.assert_called_once_with(1)
 
-    def test_dataloader_np_import_error(self):
-        def create_loader():
-            loader = DataLoader([0, 1, 2], num_workers=2)
-            iterator = iter(loader)
-            return iterator
-
-        with patch.dict("sys.modules", {"numpy": None}):
-            iterator = self.assertRaises(ModuleNotFoundError, create_loader)
-
-            self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
-
     def test_dataloader_single_process(self):
         loader = DataLoader([0, 1, 2])
         iterator = iter(loader)
@@ -90,18 +79,18 @@ class TestLoader(unittest.TestCase):
         expected = data[None].flip([2]).to(device=device)
         self.assertTrue(torch.allclose(outp["data"], expected))
 
-    # @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
-    # def test_data_moved_to_gpu(self):
-    #     data = [{"data": 1, "label": 1}, {"data": 2, "label": 2}, {"data": 3, "label": 3}]
-    #     loader = DataLoader(
-    #         data,
-    #         gpu_transforms=Compose[
-    #             DeviceChecker(keys=("data",), device="cuda"), DeviceChecker(keys=("label",), device="cpu")
-    #         ],
-    #         to_gpu_trafo=ToDevice(device="cuda", keys=("data",)),
-    #     )
-    #     for x in loader:
-    #         pass
+    @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
+    def test_data_moved_to_gpu(self):
+        data = [{"data": 1, "label": 1}, {"data": 2, "label": 2}, {"data": 3, "label": 3}]
+        loader = DataLoader(
+            data,
+            gpu_transforms=Compose[
+                DeviceChecker(keys=("data",), device="cuda"), DeviceChecker(keys=("label",), device="cpu")
+            ],
+            to_gpu_trafo=ToDevice(device="cuda", keys=("data",)),
+        )
+        for x in loader:
+            pass
 
     @unittest.skipUnless(torch.cuda.is_available(), "No cuda gpu available")
     def test_label_and_data_moved_to_gpu(self):
