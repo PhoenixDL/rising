@@ -50,11 +50,12 @@ class TestLoader(unittest.TestCase):
             self.assertEqual(output_return, expected_return)
             worker_init.assert_called_once_with(1)
 
-    # def test_dataloader_np_import_error(self):
-    #     with patch.dict("sys.modules", {"numpy": None}):
-    #         loader = DataLoader([0, 1, 2], num_workers=2)
-    #         iterator = iter(loader)
-    #         self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
+    def test_dataloader_np_import_error(self):
+        with patch.dict("sys.modules", {"numpy": None}):
+            with self.assertRaises(RuntimeError):
+                loader = DataLoader([0, 1, 2], num_workers=2)
+                iterator = iter(loader)
+            self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
 
     def test_dataloader_single_process(self):
         loader = DataLoader([0, 1, 2])
