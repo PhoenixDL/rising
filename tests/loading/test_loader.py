@@ -84,9 +84,9 @@ class TestLoader(unittest.TestCase):
         data = [{"data": 1, "label": 1}, {"data": 2, "label": 2}, {"data": 3, "label": 3}]
         loader = DataLoader(
             data,
-            gpu_transforms=Compose[
-                DeviceChecker(keys=("data",), device="cuda"), DeviceChecker(keys=("label",), device="cpu")
-            ],
+            gpu_transforms=Compose([
+                DeviceChecker(keys=("data",), device="cuda"), DeviceChecker(keys=("label",), device="cpu")]
+        ),
             to_gpu_trafo=ToDevice(device="cuda", keys=("data",)),
         )
         for x in loader:
