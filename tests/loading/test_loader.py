@@ -51,10 +51,14 @@ class TestLoader(unittest.TestCase):
             worker_init.assert_called_once_with(1)
 
     def test_dataloader_np_import_error(self):
+        def create_loader():
+            loader = DataLoader([0, 1, 2], num_workers=2)
+            iterator = iter(loader)
+            return iterator
+
         with patch.dict("sys.modules", {"numpy": None}):
-            with self.assertRaises(ModuleNotFoundError):
-                loader = DataLoader([0, 1, 2], num_workers=2)
-                iterator = iter(loader)
+            iterator = self.assertRaises(ModuleNotFoundError, create_loader)
+
             self.assertIsInstance(iterator, _MultiProcessingDataLoaderIter)
 
     def test_dataloader_single_process(self):
