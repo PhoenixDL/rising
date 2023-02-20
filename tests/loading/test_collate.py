@@ -39,7 +39,7 @@ class TestCollate(unittest.TestCase):
     def test_numpy_collate_str(self):
         # Should be a no-op
         arr = ["a", "b", "c"]
-        self.assertTrue((arr == numpy_collate(arr)))
+        self.assertTrue(arr == numpy_collate(arr))
 
     @unittest.skipIf(np is None, "numpy is not available")
     def test_numpy_collate_ndarray(self):

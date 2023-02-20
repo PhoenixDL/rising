@@ -1,4 +1,4 @@
-class AbstractMixin(object):
+class AbstractMixin:
     """
     This class implements an interface which handles non processed arguments.
     Subclass all classes which mixin additional methods and attributes

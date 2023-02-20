@@ -3,13 +3,13 @@ import unittest
 from rising import AbstractMixin
 
 
-class Abstract(object):
+class Abstract:
     def __init__(self, **kwargs):
         super().__init__()
         self.abstract = True
 
 
-class AbstractForward(object):
+class AbstractForward:
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.abstract = True

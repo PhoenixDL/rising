@@ -26,7 +26,7 @@ class KernelTransform(AbstractTransform):
         padding_mode: str = "zero",
         keys: Sequence = ("data",),
         grad: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:
@@ -85,7 +85,7 @@ class KernelTransform(AbstractTransform):
         elif dim == 3:
             return torch.nn.functional.conv3d
         else:
-            raise TypeError("Only 1, 2 and 3 dimensions are supported. Received {}.".format(dim))
+            raise TypeError(f"Only 1, 2 and 3 dimensions are supported. Received {dim}.")
 
     def create_kernel(self) -> torch.Tensor:
         """
@@ -130,7 +130,7 @@ class GaussianSmoothing(KernelTransform):
         padding_mode: str = "reflect",
         keys: Sequence = ("data",),
         grad: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:
@@ -161,7 +161,7 @@ class GaussianSmoothing(KernelTransform):
             padding_mode=padding_mode,
             keys=keys,
             grad=grad,
-            **kwargs
+            **kwargs,
         )
 
     def create_kernel(self) -> torch.Tensor:

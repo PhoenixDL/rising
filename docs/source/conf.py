@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -298,7 +297,7 @@ ENABLE_DOWNLOAD_LINK = True
 
 nbsphinx_kernel_name = "python3"
 
-github_path = r"https://github.com/%s/%s/blob/master/notebooks/{{ env.doc2path(env.docname, base=None) }}" % (
+github_path = r"https://github.com/{}/{}/blob/master/notebooks/{{{{ env.doc2path(env.docname, base=None) }}}}".format(
     github_user,
     github_repo,
 )
@@ -321,21 +320,21 @@ if ENABLE_DOWNLOAD_LINK:
     .. raw:: html
 
             <div class="pytorch-call-to-action-links">
-                <a href="%s">
+                <a href="{}">
                 <div id="google-colab-link">
                 <img class="call-to-action-img" src="_static/images/pytorch-colab.svg"/>
                 <div class="call-to-action-desktop-view">Run in Google Colab</div>
                 <div class="call-to-action-mobile-view">Colab</div>
                 </div>
                 </a>
-                <a href="%s" download>
+                <a href="{}" download>
                 <div id="download-notebook-link">
                 <img class="call-to-action-notebook-img" src="_static/images/pytorch-download.svg"/>
                 <div class="call-to-action-desktop-view">Download Notebook</div>
                 <div class="call-to-action-mobile-view">Notebook</div>
                 </div>
                 </a>
-                <a href="%s">
+                <a href="{}">
                 <div id="github-view-link">
                 <img class="call-to-action-img" src="_static/images/pytorch-github.svg"/>
                 <div class="call-to-action-desktop-view">View on GitHub</div>
@@ -344,7 +343,7 @@ if ENABLE_DOWNLOAD_LINK:
                 </a>
             </div>
 
-    """ % (
+    """.format(
         colab_path,
         r"{{ env.doc2path(env.docname, base=None) }}",
         github_path,
@@ -356,14 +355,14 @@ else:
     .. raw:: html
 
             <div class="pytorch-call-to-action-links">
-                <a href="%s">
+                <a href="{}">
                 <div id="google-colab-link">
                 <img class="call-to-action-img" src="_static/images/pytorch-colab.svg"/>
                 <div class="call-to-action-desktop-view">Run in Google Colab</div>
                 <div class="call-to-action-mobile-view">Colab</div>
                 </div>
                 </a>
-                <a href="%s">
+                <a href="{}">
                 <div id="github-view-link">
                 <img class="call-to-action-img" src="_static/images/pytorch-github.svg"/>
                 <div class="call-to-action-desktop-view">View on GitHub</div>
@@ -371,7 +370,7 @@ else:
                 </div>
                 </a>
             </div>
-    """ % (
+    """.format(
         colab_path,
         github_path,
     )
@@ -389,14 +388,14 @@ doctest_default_flags = sphinx.ext.doctest.doctest.ELLIPSIS
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
 
 MOCK_REQUIRE_PACKAGES = []
-with open(os.path.join(PATH_ROOT, "requirements", "install.txt"), "r") as fp:
+with open(os.path.join(PATH_ROOT, "requirements", "install.txt")) as fp:
     for ln in fp.readlines():
         found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
         pkg = ln[: min(found)] if found else ln
         if pkg.rstrip():
             MOCK_REQUIRE_PACKAGES.append(pkg.rstrip())
 
-with open(os.path.join(PATH_ROOT, "requirements", "install_async.txt"), "r") as fp:
+with open(os.path.join(PATH_ROOT, "requirements", "install_async.txt")) as fp:
     for ln in fp.readlines():
         found = [ln.index(ch) for ch in list(",=<>#") if ch in ln]
         pkg = ln[: min(found)] if found else ln
@@ -443,7 +442,7 @@ def linkcode_resolve(domain, info):
     # do mapping from latest tags to master
     branch = {"latest": "master", "stable": "master"}.get(branch, branch)
     filename = "/".join([branch] + filename.split("/")[1:])
-    return "https://github.com/%s/%s/blob/%s" % (github_user, github_repo, filename)
+    return f"https://github.com/{github_user}/{github_repo}/blob/{filename}"
 
 
 autodoc_member_order = "groupwise"

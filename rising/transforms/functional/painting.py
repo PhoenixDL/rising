@@ -6,7 +6,6 @@ __all__ = ["local_pixel_shuffle", "random_inpainting", "random_outpainting"]
 def local_pixel_shuffle(
     data: torch.Tensor, n: int = -1, block_size: tuple = (0, 0, 0), rel_block_size: float = 0.1
 ) -> torch.Tensor:
-
     batch_size, channels, img_rows, img_cols, img_deps = data.size()
 
     if n < 0:
@@ -42,10 +41,9 @@ def local_pixel_shuffle(
 
 
 def random_inpainting(data: torch.Tensor, n: int = 5, maxv: float = 1.0, minv: float = 0.0) -> torch.Tensor:
-
     batch_size, channels, img_rows, img_cols, img_deps = data.size()
 
-    while n > 0 and torch.rand((1)) < 0.95:
+    while n > 0 and torch.rand(1) < 0.95:
         for b in range(batch_size):
             block_size_x = torch.randint(img_rows // 10, img_rows // 4, (1,))
             block_size_y = torch.randint(img_rows // 10, img_rows // 4, (1,))
@@ -64,7 +62,6 @@ def random_inpainting(data: torch.Tensor, n: int = 5, maxv: float = 1.0, minv: f
 
 
 def random_outpainting(data: torch.Tensor, maxv: float = 1.0, minv: float = 0.0) -> torch.Tensor:
-
     batch_size, channels, img_rows, img_cols, img_deps = data.size()
 
     out = torch.rand(data.size()) * (maxv - minv) + minv
