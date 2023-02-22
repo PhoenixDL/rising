@@ -273,8 +273,7 @@ def random_inversion(
     minv: float = 0.0,
     out: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
-
-    if torch.rand((1)) < prob_inversion:
+    if torch.rand(1) < prob_inversion:
         # Inversion of curve
         out = maxv + minv - data
     else:

@@ -2,7 +2,7 @@ import collections
 import warnings
 from contextlib import contextmanager
 from functools import partial
-from typing import Any, Callable, Generator, Iterator, Mapping, Optional, Sequence, Union
+from typing import Any, Callable, Generator, Iterator, Mapping, Optional, Protocol, Sequence, Union, runtime_checkable
 
 import torch
 from threadpoolctl import threadpool_limits
@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, Sampler
 from torch.utils.data._utils.collate import default_convert
 from torch.utils.data.dataloader import _MultiProcessingDataLoaderIter as __MultiProcessingDataLoaderIter
 from torch.utils.data.dataloader import _SingleProcessDataLoaderIter as __SingleProcessDataLoaderIter
-from typing_extensions import Protocol, Self, runtime_checkable
+from typing_extensions import Self
 
 try:
     import numpy as np
@@ -370,7 +370,7 @@ def patch_dataset(loader: DataLoader) -> Generator:
     loader._DataLoader__initialized = True
 
 
-class BatchTransformer(object):
+class BatchTransformer:
     """
     A callable wrapping the collate_fn to enable transformations on a
     batch-basis.
@@ -424,7 +424,7 @@ class BatchTransformer(object):
         return batch
 
 
-class SampleTransformer(object):
+class SampleTransformer:
     """
     A dataset wrapper applying transforms to each retrieved sample of the
     dataset

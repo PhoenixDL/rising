@@ -309,7 +309,7 @@ class SampleTransformerTest(unittest.TestCase):
                 self.assertTrue(torch.allclose(unbatched[idx], input_sequence[idx]))
 
     def test_pseudo_batch_dim_custom_obj(self):
-        class Foo(object):
+        class Foo:
             self.bar = 5.0
 
         transformer = SampleTransformer(self.dset)
