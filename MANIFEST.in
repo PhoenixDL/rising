@@ -4,6 +4,9 @@ include LICENSE
 include versioneer.py
 include rising/_version.py
 
+# Include the Requirements
+recursive-include requirements *.txt
+
 # Exclude build configs
 exclude *.yml
 exclude *.yaml
