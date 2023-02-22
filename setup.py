@@ -13,13 +13,12 @@ builtins.__RISING_SETUP__ = True
 
 
 def resolve_requirements(file):
-    path_dir = os.path.dirname(file)
     requirements = []
     with open(file) as f:
         req = f.read().splitlines()
         for r in req:
-            r_path = os.path.join(path_dir, r.split(" ")[1])
             if r.startswith("-r"):
+                r_path = os.path.join(os.path.dirname(file), r.split(" ")[1])
                 requirements += resolve_requirements(r_path)
             else:
                 requirements.append(r)
