@@ -25,8 +25,8 @@ sys.path.insert(0, os.path.abspath(PATH_ROOT))
 
 import rising  # noqa: E402
 
-for md in ["CONTRIBUTING.md", "README.md"]:
-    shutil.copy(os.path.join(PATH_ROOT, ".github", md), os.path.join(PATH_HERE, md.lower()))
+shutil.copy(os.path.join(PATH_ROOT, "README.md"), os.path.join(PATH_HERE, "readme.md"))
+shutil.copy(os.path.join(PATH_ROOT, ".github", "CONTRIBUTING.md"), os.path.join(PATH_HERE, "contributing.md"))
 
 converted_readme = pypandoc.convert_file("readme.md", "rst").split("\n")
 os.remove("readme.md")
