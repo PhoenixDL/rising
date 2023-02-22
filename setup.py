@@ -18,7 +18,8 @@ def resolve_requirements(file):
         req = f.read().splitlines()
         for r in req:
             if r.startswith("-r"):
-                requirements += resolve_requirements(os.path.join(os.path.dirname(file), r.split(" ")[1]))
+                r_path = os.path.join(os.path.dirname(file), r.split(" ")[1])
+                requirements += resolve_requirements(r_path)
             else:
                 requirements.append(r)
     return requirements
